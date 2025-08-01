@@ -1,32 +1,39 @@
-/**
- * First we will load all of this project's JavaScript dependencies which
- * includes Vue and other libraries. It is a great starting point when
- * building robust, powerful web applications using Vue and Laravel.
- */
+import './bootstrap'
+import './alerts'
+import './forms'
+import './bills/bill'
+import './helpers'
+import orders from './quick-sales/orders.js'
+import products from './quick-sales/products.js'
+import presentations from './quick-sales/presentations.js'
+import cart from './quick-sales/cart.js'
+import change from './quick-sales/change.js'
+import customers from './quick-sales/customers.js'
+import modalTables from './quick-sales/modal-tables.js'
+import ticketBill from './pdfs/ticket-bill.js'
+import ticketOpenCashRegister from './pdfs/ticket-open-cash-register.js'
+import ticketPreBill from './pdfs/ticket-pre-bill.js'
+import ticketCommandBill from './pdfs/ticket-command-bill.js'
+import ticketFinancePaid from './pdfs/ticket-finance-paid.js'
+import config from './config.js'
+import Alpine from 'alpinejs' //..
 
-require('./bootstrap');
+Alpine.data('alpineOrders', orders)
+Alpine.data('alpineProducts', products)
+Alpine.data('alpineCart', cart)
+Alpine.data('alpinePresentations', presentations)
+Alpine.data('alpineChange', change)
+Alpine.data('alpineCustomers', customers)
+Alpine.data('alpineModalTables', modalTables)
+Alpine.data('alpineTicketBill', ticketBill)
+Alpine.data('alpineTicketOpenCashRegister', ticketOpenCashRegister)
+Alpine.data('alpineTicketPreBill', ticketPreBill)
+Alpine.data('alpineTicketCommandBill', ticketCommandBill)
+Alpine.data('alpineTicketFinancePaid', ticketFinancePaid)
+Alpine.store('config', config())
 
-window.Vue = require('vue');
+window.Alpine = Alpine
 
-/**
- * The following block of code may be used to automatically register your
- * Vue components. It will recursively scan this directory for the Vue
- * components and automatically register them with their "basename".
- *
- * Eg. ./components/ExampleComponent.vue -> <example-component></example-component>
- */
+Alpine.start()
 
-// const files = require.context('./', true, /\.vue$/i);
-// files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default));
-
-Vue.component('example-component', require('./components/ExampleComponent.vue').default);
-
-/**
- * Next, we will create a fresh Vue application instance and attach it to
- * the page. Then, you may begin adding components to this application
- * or customize the JavaScript scaffolding to fit your unique needs.
- */
-
-const app = new Vue({
-    el: '#app',
-});
+import './alpine'
