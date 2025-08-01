@@ -1,80 +1,71 @@
+@php
+  $config = [
+      'customer' => App\Models\Customer::default()->toArray(),
+      'change' => session('config')->change == '0',
+      'print' => session('config')->print == '0',
+      'width_ticket' => session('config')->width_ticket,
+      'format_percentage_tip' => session('config')->format_percentage_tip,
+      'percentage_tip' => session('config')->percentage_tip,
+  ];
+@endphp
+
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <!-- CSRF Token -->
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+  @isset($title)
+    <title>{{ $title }}</title>
+  @else
+    <title>@yield('title')</title>
+  @endisset
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+  <!-- Fonts and styles -->
+  <link rel="stylesheet" href="https://fonts.bunny.net/css2?family=Nunito:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="{{ asset('vendor/icomoon-v1.0/style.css') }}?v9">
+  <style id="page-rule">
+    @page {
+      size: 80mm 178mm;
+      margin: 0cm;
+    }
+  </style>
 
-    <!-- Scripts -->
-    <script src="{{ asset('js/app.js') }}" defer></script>
+  <!-- Scripts -->
+  <script src="{{ asset('ts/app.js') }}" defer></script>
 
-    <!-- Fonts -->
-    <link rel="dns-prefetch" href="//fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <!-- Styles -->
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+  @livewireStyles
+
 </head>
-<body>
-    <div id="app">
-        <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
-            <div class="container">
-                <a class="navbar-brand" href="{{ url('/') }}">
-                    {{ config('app.name', 'Laravel') }}
-                </a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
 
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <!-- Left Side Of Navbar -->
-                    <ul class="navbar-nav mr-auto">
+<body class="antialiased scroll-smooth font-manrope">
 
-                    </ul>
+  <div class="min-h-screen bg-gray-100 no-print text-slate-800">
 
-                    <!-- Right Side Of Navbar -->
-                    <ul class="navbar-nav ml-auto">
-                        <!-- Authentication Links -->
-                        @guest
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
-                            </li>
-                            @if (Route::has('register'))
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
-                                </li>
-                            @endif
-                        @else
-                            <li class="nav-item dropdown">
-                                <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                    {{ Auth::user()->name }} <span class="caret"></span>
-                                </a>
+    <div x-data x-init='$store.config.set({{ json_encode($config) }});'></div>
 
-                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="{{ route('logout') }}"
-                                       onclick="event.preventDefault();
-                                                     document.getElementById('logout-form').submit();">
-                                        {{ __('Logout') }}
-                                    </a>
+    <x-loads.alpine />
 
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                                        @csrf
-                                    </form>
-                                </div>
-                            </li>
-                        @endguest
-                    </ul>
-                </div>
-            </div>
-        </nav>
+    <livewire:admin.menu>
 
-        <main class="py-4">
-            @yield('content')
-        </main>
-    </div>
+      <main class="{{ request()->routeIs('admin.quick-sales.create') ? 'pl-14' : 'pl-52' }} pt-14 min-h-screen">
+        {{ $slot }}
+      </main>
+
+  </div>
+
+  @include('pdfs.ticket-open-cash-register')
+  @include('partials.footer')
+
+  @stack('html')
+
+  @stack('js')
+
+  @livewireScripts
 </body>
+
 </html>
