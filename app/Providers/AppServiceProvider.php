@@ -17,5 +17,9 @@ class AppServiceProvider extends ServiceProvider {
         Blade::directive('formatToCop', function ($value) {
             return "<?php echo '$ ' . number_format($value, 0, '.', ','); ?>";
         });
+
+        if (app()->environment('production')) {
+            URL::forceScheme('https');
+        }
     }
 }
