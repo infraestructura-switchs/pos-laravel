@@ -97,8 +97,8 @@ class ModuleSeeder extends Seeder
             ],
             [
                 'name' => 'ventas rapidas',
-                'is_enabled' => 0,
-                'is_functionality' => 0
+                'is_enabled' => 1,
+                'is_functionality' => 1
             ],
             [
                 'name' => 'reporte de ventas diarias',

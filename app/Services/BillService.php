@@ -9,6 +9,8 @@ use App\Models\Product;
 use App\Services\Factus\ElectronicBillService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class BillService
 {
@@ -195,5 +197,114 @@ class BillService
             $response = ElectronicBillService::validateCreditNote($bill);
             $response = ElectronicBillService::saveCreditNote($response->json(), $bill);
         }
+    }
+
+    public function create(array $input): int
+    {
+        $validator = Validator::make($input, [
+            'reference_code'     => 'nullable|string|unique:bills,reference_code',
+            'number'             => 'nullable|string|unique:bills,number',
+            'cost'               => 'required|integer|min:0',
+            'tip'                => 'required|integer|min:0',
+            'subtotal'           => 'required|integer|min:0',
+            'discount'           => 'required|integer|min:0',
+            'total'              => 'required|integer|min:0',
+            'cash'               => 'required|integer|min:0',
+            'status'             => 'required|in:0,1',
+            'observation'        => 'nullable|string',
+            'terminal_id'        => 'required|exists:terminals,id',
+            'customer_id'        => 'required|exists:customers,id',
+            'user_id'            => 'required|exists:users,id',
+            'payment_method_id'  => 'required|exists:payment_methods,id',
+            'numbering_range_id' => 'nullable|exists:numbering_ranges,id',
+        ]);
+
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
+
+        $bill = Bill::create($input);
+
+        return $bill->id;
+    }
+
+    public function update(int $id, array $input): bool
+    {
+        $bill = Bill::findOrFail($id);
+
+        $validator = Validator::make($input, [
+            'reference_code'     => 'nullable|string|unique:bills,reference_code,' . $id,
+            'number'             => 'nullable|string|unique:bills,number,' . $id,
+            'cost'               => 'sometimes|required|integer|min:0',
+            'tip'                => 'sometimes|required|integer|min:0',
+            'subtotal'           => 'sometimes|required|integer|min:0',
+            'discount'           => 'sometimes|required|integer|min:0',
+            'total'              => 'sometimes|required|integer|min:0',
+            'cash'               => 'sometimes|required|integer|min:0',
+            'status'             => 'sometimes|required|in:0,1',
+            'observation'        => 'nullable|string',
+            'terminal_id'        => 'sometimes|required|exists:terminals,id',
+            'customer_id'        => 'sometimes|required|exists:customers,id',
+            'user_id'            => 'sometimes|required|exists:users,id',
+            'payment_method_id'  => 'sometimes|required|exists:payment_methods,id',
+            'numbering_range_id' => 'nullable|exists:numbering_ranges,id',
+        ]);
+
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
+
+        $bill->update($input);
+
+        return true;
+    }
+
+    public function getById(int $id): array
+    {
+        $bill = Bill::findOrFail($id);
+        return $bill->toArray();
+    }
+
+    public function getByFilters(array $filters): array
+    {
+        $query = Bill::query();
+
+        if (!empty($filters['reference_code'])) {
+            $query->where('reference_code', 'like', '%' . $filters['reference_code'] . '%');
+        }
+
+        if (!empty($filters['number'])) {
+            $query->where('number', 'like', '%' . $filters['number'] . '%');
+        }
+
+        if (isset($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (!empty($filters['customer_id'])) {
+            $query->where('customer_id', $filters['customer_id']);
+        }
+
+        if (!empty($filters['terminal_id'])) {
+            $query->where('terminal_id', $filters['terminal_id']);
+        }
+
+        if (!empty($filters['user_id'])) {
+            $query->where('user_id', $filters['user_id']);
+        }
+
+        if (!empty($filters['payment_method_id'])) {
+            $query->where('payment_method_id', $filters['payment_method_id']);
+        }
+
+        if (!empty($filters['numbering_range_id'])) {
+            $query->where('numbering_range_id', $filters['numbering_range_id']);
+        }
+
+        $orderBy = $filters['order_by'] ?? 'id';
+        $orderDir = $filters['order_dir'] ?? 'ASC';
+        $perPage = $filters['per_page'] ?? 10;
+
+        return $query->orderBy($orderBy, $orderDir)->paginate($perPage)->toArray();
     }
 }
