@@ -1,11 +1,8 @@
-/public/hot
-/public/storage
-/storage/*.key
 /vendor
 /node_modules
-composer-setup.php
-pendientes
 .env
+.env_prod
+.env-render
 .env.backup
 .htaccess
 .phpunit.result.cache
@@ -16,4 +13,3 @@ npm-debug.log
 yarn-error.log
 /.idea
 /.vscode
-composer.lock
