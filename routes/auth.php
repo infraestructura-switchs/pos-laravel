@@ -35,25 +35,25 @@ Route::middleware('guest')->group(function () {
                 ->name('password.update'); */
 
     //Clear Cache facade value:
-    Route::get('/clear-cache', function () {
+    Route::get('clear-cache', function () {
         $exitCode = Artisan::call('cache:clear');
         return '<h1>Cache facade value cleared</h1>';
     });
 
 //Reoptimized class loader:
-    Route::get('/optimize', function () {
+    Route::get('optimize', function () {
         $exitCode = Artisan::call('optimize');
         return '<h1>Reoptimized class loader</h1>';
     });
 
 //Route cache:
-    Route::get('/route-cache', function () {
+    Route::get('route-cache', function () {
         $exitCode = Artisan::call('route:cache');
         return '<h1>Routes cached</h1>';
     });
 
 //Clear Route cache:
-    Route::get('/route-clear', function () {
+    Route::get('route-clear', function () {
         $exitCode = Artisan::call('route:clear');
         return '<h1>Route cache cleared</h1>';
     });
@@ -65,14 +65,14 @@ Route::middleware('guest')->group(function () {
     });
 
 //Clear Config cache:
-    Route::get('/config-cache', function () {
+    Route::get('config-cache', function () {
         $exitCode = Artisan::call('config:cache');
         return '<h1>Clear Config cleared</h1>';
     });
 
 //Route List:
 //php artisan route:list
-    Route::get('/route-list', function () {
+    Route::get('route-list', function () {
         $exitCode = Artisan::call('route:list');
         return '<h1>Clear route list</h1>' . $exitCode;
     });
