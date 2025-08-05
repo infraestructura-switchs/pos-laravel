@@ -19,7 +19,8 @@ ENV LOG_CHANNEL stderr
 ENV COMPOSER_ALLOW_SUPERUSER 1
 
 RUN chown -R www-data:www-data /var/www/html \
- && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+ && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
+  &&  chmod -R 775  /var/www/html/storage/logs/laravel.log
 
 
 CMD ["/start.sh"]
