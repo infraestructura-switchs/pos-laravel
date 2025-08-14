@@ -12,9 +12,14 @@ export default () => ({
   },
 
   init() {
+    console.log('🚀 Iniciando componente orders...');
+    // Exponer la instancia globalmente para que las funciones onclick puedan accederla
+    window.alpineOrdersInstance = this;
     this.events()
+    console.log('📞 Llamando getOrders desde init...');
     this.getOrders()
     this.config = this.$store.config
+    console.log('⚙️ Config cargada:', this.config);
   },
   events() {
     window.addEventListener('store', (event) => {
@@ -40,12 +45,20 @@ export default () => ({
       this.updateCustomer(event.detail)
     })
 
+    // Escuchar cuando se actualiza un cliente para refrescar las mesas
+    window.addEventListener('customer-updated', (event) => {
+      this.getOrders()
+    })
+
     window.addEventListener('update-table', (event) => {
       this.updateTable(event.detail)
     })
   },
   async getOrders() {
-    await this.$wire.getOrders().then((result) => (this.orders = result))
+    console.log('🔍 Refrescando mesas...');
+    // Usar el método refreshOrders del componente Livewire en lugar de getOrders
+    await Livewire.emit('refresh-orders');
+    console.log('✅ Mesas refrescadas');
   },
   loadOrder(order = null) {
     this.order = JSON.parse(JSON.stringify(order === null ? this.orderEmty : order))
@@ -59,7 +72,12 @@ export default () => ({
     this.$dispatch('toggle-view', true)
   },
   showCustomers(order) {
-    this.order = JSON.parse(JSON.stringify(order))
+    // No sobrescribir this.order, solo actualizar el cliente si es necesario
+    // this.order ya contiene los productos actuales de la sesión
+    if (!this.order.id) {
+      // Si no hay orden actual, usar la orden pasada como parámetro
+      this.order = JSON.parse(JSON.stringify(order))
+    }
     this.$dispatch('open-customers', true)
   },
   updateCustomer(customer) {
@@ -67,8 +85,12 @@ export default () => ({
 
     this.$wire.updateCustomer(this.order).then((result) => {
       if (result === 'success') {
-        this.order = []
+        // NO vaciar this.order, solo refrescar las mesas
+        // this.order = []  // ← COMENTADO: esto causaba que se perdieran los productos
         this.getOrders()
+        
+        // Actualizar la vista para mostrar el cliente actualizado
+        this.$dispatch('current-order', this.order)
       }
     })
   },
@@ -94,7 +116,7 @@ export default () => ({
       toggleLoading('load-panel', false)
       if (result === 'success') {
         this.order = []
-        this.getOrders()
+        this.getOrders()  // Refresca las mesas automáticamente
         this.$dispatch('toggle-view', false)
       }
     })
@@ -106,7 +128,7 @@ export default () => ({
       toggleLoading('load-panel', false)
       if (result === 'success') {
         this.order = []
-        this.getOrders()
+        this.getOrders()  // Refresca las mesas automáticamente
         this.$dispatch('toggle-view', false)
       }
     })

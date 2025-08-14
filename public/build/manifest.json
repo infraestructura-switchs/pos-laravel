@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-3fb6d21c.css",
+    "file": "assets/app-0968d860.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
@@ -21,7 +21,7 @@
     "src": "resources/css/icons/fonts/tabler-icons.woff2"
   },
   "resources/js/app.js": {
-    "file": "assets/app-ccb5a005.js",
+    "file": "assets/app-3e7da3ce.js",
     "isEntry": true,
     "src": "resources/js/app.js"
   },
