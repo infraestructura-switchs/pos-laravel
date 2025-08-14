@@ -12,37 +12,24 @@ class Order extends Model
 
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'products' => 'array',
+        'customer' => 'array',
+        'delivery_address' => 'string',
+        'is_active' => 'boolean',
+    ];
+
     protected $appends = [
         'is_available'
     ];
 
     /**
-     * accessor and mutators
-     */
-    public function products(): Attribute
-    {
-        return new Attribute(
-            get: fn($value) => json_decode($value, true),
-            set: fn($value) => json_encode($value)
-        );
-    }
-
-    public function customer(): Attribute
-    {
-        return new Attribute(
-            get: fn($value) => json_decode($value, true),
-            set: fn($value) => json_encode($value)
-        );
-    }
-
-    /**
      * appends
      */
-
-     public function isAvailable(): Attribute
-     {
+    public function isAvailable(): Attribute
+    {
         return new Attribute(
-            get: fn () => count($this->products) ? false : true
+            get: fn () => empty($this->products)
         );
-     }
+    }
 }

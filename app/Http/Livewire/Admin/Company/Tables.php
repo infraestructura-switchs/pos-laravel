@@ -17,52 +17,100 @@ class Tables extends Component
 
     public function mount()
     {
-        // Obtener el número actual de mesas
-        $this->numberOfTables = Order::count();
+        \Log::info('🚀 Tables component montado');
+        // Obtener el número actual de mesas ACTIVAS
+        $this->numberOfTables = Order::where('is_active', true)->count();
+        \Log::info('📊 Número inicial de mesas activas:', ['count' => $this->numberOfTables]);
     }
 
+  
     public function updateTables()
+{
+    \Log::info('🔧 updateTables() llamado', [
+        'numberOfTables' => $this->numberOfTables,
+        'tablePrefix' => $this->tablePrefix
+    ]);
+    
+    $this->validate();
+
+    // Obtener todas las órdenes ACTIVAS existentes
+    $existingOrders = Order::where('is_active', true)->get();
+    $currentCount = $existingOrders->count();
+
+    \Log::info('📊 Estado actual:', [
+        'currentCount' => $currentCount,
+        'requestedTables' => $this->numberOfTables
+    ]);
+
+    if ($this->numberOfTables > $currentCount) {
+        // Agregar mesas faltantes
+        \Log::info('➕ Agregando mesas', ['desde' => $currentCount + 1, 'hasta' => $this->numberOfTables]);
+        for ($i = $currentCount + 1; $i <= $this->numberOfTables; $i++) {
+            $newOrder = Order::create([
+                'name' => $this->tablePrefix . ' ' . $i,
+                'customer' => [], // Array vacío, no string
+                'products' => [], // Array vacío, no string
+                'total' => 0,
+                'delivery_address' => '',
+                'is_active' => true // Asegurar que esté activa
+            ]);
+            \Log::info('✅ Mesa creada:', ['id' => $newOrder->id, 'name' => $newOrder->name]);
+        }
+    } elseif ($this->numberOfTables < $currentCount) {
+        // Desactivar mesas excedentes (solo las que estén vacías)
+        \Log::info('➖ Desactivando mesas', ['cantidad' => $currentCount - $this->numberOfTables]);
+        $ordersToDeactivate = Order::where('total', 0)
+            ->where('is_active', true)
+            ->whereJsonLength('customer', 0)  // Array vacío
+            ->whereJsonLength('products', 0)  // Array vacío
+            ->orderBy('id', 'desc')
+            ->limit($currentCount - $this->numberOfTables)
+            ->get();
+        
+        \Log::info('🔍 Mesas a desactivar:', $ordersToDeactivate->pluck('id', 'name')->toArray());
+        
+        foreach ($ordersToDeactivate as $order) {
+            $order->update(['is_active' => false]);
+            \Log::info('❌ Mesa desactivada:', ['id' => $order->id, 'name' => $order->name]);
+        }
+    } else {
+        \Log::info('✅ No hay cambios en cantidad');
+    }
+
+    // Actualizar el prefijo de todas las mesas activas
+    $this->updateTablePrefixes();
+
+    $this->emit('success', 'Mesas actualizadas correctamente');
+    
+    // Emitir evento para actualizar las mesas en ventas rápidas
+    $this->dispatchBrowserEvent('tables-updated');
+}
+
+    private function updateTablePrefixes()
     {
-        $this->validate();
-
-        // Obtener todas las órdenes existentes
-        $existingOrders = Order::all();
-        $currentCount = $existingOrders->count();
-
-        if ($this->numberOfTables > $currentCount) {
-            // Agregar mesas faltantes
-            for ($i = $currentCount + 1; $i <= $this->numberOfTables; $i++) {
-                Order::create([
-                    'name' => $this->tablePrefix . ' ' . $i,
-                    'customer' => '[]',
-                    'products' => '[]',
-                    'total' => 0,
-                    'delivery_address' => ''
+        \Log::info('🏷️ Actualizando prefijos de mesas', ['prefijo' => $this->tablePrefix]);
+        
+        // Obtener todas las mesas activas ordenadas por ID
+        $activeTables = Order::where('is_active', true)
+                           ->orderBy('id', 'asc')
+                           ->get();
+        
+        // Actualizar el nombre de cada mesa con el nuevo prefijo
+        foreach ($activeTables as $index => $table) {
+            $newName = $this->tablePrefix . ' ' . ($index + 1);
+            $oldName = $table->name;
+            
+            if ($oldName !== $newName) {
+                $table->update(['name' => $newName]);
+                \Log::info('🏷️ Prefijo actualizado:', [
+                    'id' => $table->id, 
+                    'nombre_anterior' => $oldName, 
+                    'nombre_nuevo' => $newName
                 ]);
             }
-        } elseif ($this->numberOfTables < $currentCount) {
-            // Eliminar mesas excedentes (solo las que estén vacías)
-            $ordersToDelete = Order::where('total', 0)
-                ->where('customer', '[]')
-                ->where('products', '[]')
-                ->orderBy('id', 'desc')
-                ->limit($currentCount - $this->numberOfTables)
-                ->get();
-            
-            foreach ($ordersToDelete as $order) {
-                $order->delete();
-            }
         }
-
-        // Renombrar todas las mesas con el nuevo prefijo
-        $orders = Order::orderBy('id')->get();
-        foreach ($orders as $index => $order) { 
-            $order->update([
-                'name' => $this->tablePrefix . ' ' . ($index + 1)
-            ]);
-        }
-
-        $this->emit('success', 'Mesas actualizadas correctamente');
+        
+        \Log::info('✅ Prefijos actualizados correctamente');
     }
 
     public function render()
