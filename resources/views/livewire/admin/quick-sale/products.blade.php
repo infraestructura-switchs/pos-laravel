@@ -53,6 +53,15 @@
               <div class="flex h-full flex-col px-1 py-2"
                 :class="item.has_stock ? 'hover:bg-cyan-500 hover:text-white cursor-pointer ' : ''">
 
+                <!-- Imagen del producto -->
+                <div class="mb-2 flex justify-center">
+                  <img :src="item.image_url || '/images/no-product-image.svg'" 
+                       :alt="item.name"
+                       class="h-16 w-16 object-cover rounded"
+                       loading="lazy"
+                       onerror="this.src='/images/no-product-image.svg'">
+                </div>
+
                 <div class="mt-auto select-none text-xs">
                   <span x-text="item.reference" class="font-medium text-blue-600"></span>
                   <p x-text="item.name" class="leading-3"></p>

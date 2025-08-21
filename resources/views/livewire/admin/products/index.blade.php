@@ -20,6 +20,9 @@
         <table class="table-sm">
             <thead >
                 <tr>
+                    <th>
+                        Imagen
+                    </th>
                     <th left>
                         Código barras
                     </th>
@@ -52,6 +55,11 @@
             <tbody>
                 @forelse ($products as $item)
                     <tr wire:key="product-{{ $item->id }}">
+                        <td class="w-16">
+                            <img src="{{ $item->image_url }}" 
+                                 alt="{{ $item->name }}" 
+                                 class="h-12 w-12 object-cover rounded-lg">
+                        </td>
                         <td left class="{{ !$item->top ? 'text-green-500 font-bold' : ''  }}">
                             {{ $item->barcode }}
                         </td>

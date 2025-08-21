@@ -26,8 +26,8 @@ class ProductController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Productos encontrados con éxito.',
-                'data' => response()->json($product)->original
+                'message' => 'Producto obtenido con éxito.',
+                'data' => $product,
             ]);
         } catch (\Throwable $e) {
             return response()->json([
@@ -46,7 +46,11 @@ class ProductController extends Controller
         ]);
 
         $data = $this->productService->getByFilters($request->all());
-        return response()->json($data);
+        return response()->json([
+            'success' => true,
+            'message' => 'Productos obtenidos con éxito.',
+            'data' => $data
+        ]);
     }
 
     public function store(Request $request): JsonResponse

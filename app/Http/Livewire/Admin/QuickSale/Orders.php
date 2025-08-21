@@ -28,18 +28,89 @@ class Orders extends Component
     use OrderTrait;
     use UtilityTrait;
 
-    public function mount() {}
+    public $orders = [];
+    
+    protected $listeners = [
+        'tables-updated' => 'loadOrders',
+        'refresh-orders' => 'loadOrders'
+    ];
+
+    public function mount() 
+    {
+        $this->loadOrders();
+    }
+    
+    public function loadOrders()
+    {
+        $this->orders = $this->getOrders()->toArray();
+    }
+    
+    public function refreshOrders()
+    {
+        $this->loadOrders();
+        $this->emit('orders-refreshed');
+    }
 
     public function render()
     {
         return view('livewire.admin.quick-sale.orders');
     }
 
+
     public function getOrders()
     {
-        return Order::select('id', 'name', 'customer', 'products', 'total','delivery_address')->get()->toArray();
+        try {
+            \Log::info('🔍 getOrders() llamado desde JavaScript');
+            
+            // Filtrar solo las mesas activas
+            $orders = Order::where('is_active', 1)
+                           ->orderBy('id', 'asc')
+                           ->get();
+            
+    
+            
+                    // Mapear los datos para asegurar consistencia
+        $mappedOrders = $orders->map(function ($order) {
+            // Verificar si la mesa está ocupada (tiene productos o total > 0)
+            $hasProducts = !empty($order->products) && count($order->products) > 0;
+            $hasTotal = $order->total > 0;
+            $isOccupied = $hasProducts || $hasTotal;
+            
+            // Solo asignar cliente por defecto si la mesa está ocupada
+            $customer = $order->customer;
+            if ($isOccupied && (empty($customer) || !isset($customer['names']))) {
+                $customer = ['names' => 'Consumidor Final'];
+            } elseif (!$isOccupied) {
+                // Mesa disponible - no mostrar cliente
+                $customer = ['names' => ''];
+            }
+            
+            return [
+                'id' => $order->id,
+                'name' => $order->name,
+                'products' => is_array($order->products) ? $order->products : [],
+                'customer' => $customer,
+                'total' => intval($order->total ?? 0),
+                'delivery_address' => $order->delivery_address ?? '',
+                'is_available' => $isOccupied ? false : true  // Mesa ocupada = no disponible
+            ];
+        });
+            
+    
+            
+            return $mappedOrders;
+            
+        } catch (\Exception $e) {
+            \Log::error('❌ Error en getOrders():', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            
+            // Retornar array vacío en caso de error
+            return collect([]);
+        }
     }
-
     public function store($order)
     {
 
@@ -60,7 +131,8 @@ class Orders extends Component
 
     public function update($order)
     {
-        if (! collect($order['products'])->count()) {
+        // Verificar que products existe antes de acceder a él
+        if (!isset($order['products']) || !collect($order['products'])->count()) {
             return $this->emit('alert', 'Agrega uno o mas productos');
         }
 
@@ -77,23 +149,40 @@ class Orders extends Component
 
     public function updateCustomer(array $orderArray)
     {
+        // Verificar si es "Factura en caja" (sin ID) o una mesa (con ID)
+        if (!isset($orderArray['id']) || empty($orderArray['id'])) {
+            // Es "Factura en caja" - no necesita actualizar BD, solo validar cliente
+            if (! count($orderArray['customer']) || ! is_array($orderArray['customer'])) {
+                $this->emit('alert', 'Selecciona un cliente');
+                return;
+            }
+
+            if (! Customer::where('id', $orderArray['customer']['id'])->exists()) {
+                $this->emit('alert', "El cliente {$orderArray['customer']['names']} no se encuentra registrado");
+                return;
+            }
+
+            // Para Factura en caja, solo emitir éxito sin guardar en BD
+            $this->emit('success', 'Cliente seleccionado para factura en caja');
+            return 'success';
+        }
+
+        // Es una mesa con ID - lógica original
         $order = Order::find($orderArray['id']);
 
+        // Validación original pero continuar después de mostrar advertencia
         if ($order->is_available) {
             $this->emit('alert', $order->name.' no contiene una orden');
-
-            return;
+            // No hacer return aquí - continuar con el proceso
         }
 
         if (! count($orderArray['customer']) || ! is_array($orderArray['customer'])) {
             $this->emit('alert', 'Selecciona un cliente');
-
             return;
         }
 
         if (! Customer::where('id', $orderArray['customer']['id'])->exists()) {
             $this->emit('alert', "El cliente {$orderArray['customer']['names']} no se encuentra registrado");
-
             return;
         }
 
@@ -101,6 +190,12 @@ class Orders extends Component
         $order->save();
 
         $this->emit('success', 'Cliente actualizado con éxito');
+        
+        // Emitir evento para refrescar las mesas
+        $this->dispatchBrowserEvent('customer-updated');
+        
+        // También recargar las mesas del componente
+        $this->loadOrders();
 
         return 'success';
     }

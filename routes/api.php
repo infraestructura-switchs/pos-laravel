@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\BillController;
 use App\Http\Controllers\Api\Company;
 use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\ProductImageController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\TaxRateController;
 use App\Http\Controllers\Api\TributeController;
@@ -33,6 +34,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/import', [ProductController::class, 'import']);
         Route::get('/import/template', [ProductController::class, 'downloadTemplate']);
         Route::get('/export/excel', [ProductController::class, 'exportExcel']);
+
+        // Product Images
+        Route::prefix('images')->group(function () {
+            Route::post('/upload-base64', [ProductImageController::class, 'uploadBase64']);
+            Route::get('/{productId}', [ProductImageController::class, 'show']);
+            Route::delete('/{productId}', [ProductImageController::class, 'destroy']);
+        });
     });
 
     // Categories

@@ -14,7 +14,14 @@ window.toggleLoading = (id, state) => {
 
 window.custRound = (value) => roundHalfEven(value, 0);
 
-window.formatToCop = (value) => numberFormat.format(value);
+window.formatToCop = (value) => {
+    // Si el valor es undefined, null, o no es un número, retornar $0
+    if (value === undefined || value === null || isNaN(value)) {
+        return numberFormat.format(0);
+    }
+    // Convertir a número y formatear
+    return numberFormat.format(Number(value));
+};
 
 window.strLimit = (str, limit) => str.length > limit ? str.substring(0, limit) : str
 

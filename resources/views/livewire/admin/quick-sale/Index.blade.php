@@ -1,7 +1,11 @@
 <x-app-layout>
 
   <div x-data="{ toggleView: false, order: {} }"
-    x-init="$watch('toggleView', value => { if (!value) order = {} })"
+    x-init="
+      $watch('toggleView', value => { 
+        if (!value) order = {} 
+      })
+    "
     @toggle-view.window="toggleView=$event.detail"
     @current-order.window="order=$event.detail"
     class="pb-10">
@@ -39,16 +43,24 @@
             class="font-semibold"></span>
         </a>
 
-        <div class="flex space-x-1 pr-4">
+        <div class="flex items-center space-x-2 pr-4">
           <span>Cliente:</span>
           <span x-text="order.customer.names"
             class="font-semibold"></span>
+          
+          <!-- Botón para asignar cliente -->
+          <button @click="window.alpineOrdersInstance?.showCustomers(order)"
+            class="ml-2 p-1 text-cyan-400 hover:text-cyan-600 hover:bg-cyan-50 rounded"
+            title="Asignar cliente">
+            <i class="ti ti-user text-lg"></i>
+          </button>
         </div>
 
       </div>
     </template>
 
-    <div x-show="!toggleView">
+    <div x-show="!toggleView" 
+         
       <livewire:admin.quick-sale.orders />
     </div>
 
