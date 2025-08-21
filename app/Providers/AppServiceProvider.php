@@ -8,6 +8,7 @@ use App\Services\Contracts\CloudinaryClientInterface;
 use App\Services\Contracts\ImageServiceInterface;
 use App\Services\CloudinaryService;
 use App\Services\ImageService;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider {
 
@@ -22,5 +23,10 @@ class AppServiceProvider extends ServiceProvider {
         Blade::directive('formatToCop', function ($value) {
             return "<?php echo '$ ' . number_format($value, 0, '.', ','); ?>";
         });
+        
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
     }
 }
+ 
