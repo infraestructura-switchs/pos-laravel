@@ -2,9 +2,7 @@
 
   <div x-data="{ toggleView: false, order: {} }"
     x-init="
-      console.log('🔧 toggleView inicial:', toggleView);
       $watch('toggleView', value => { 
-        console.log('🔧 toggleView cambió a:', value);
         if (!value) order = {} 
       })
     "

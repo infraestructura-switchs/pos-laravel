@@ -6,6 +6,7 @@ use App\Http\Controllers\Log;
 use App\Models\Category;
 use App\Models\Presentation;
 use App\Models\Product;
+use App\Services\Contracts\ImageServiceInterface;
 use App\Services\ModuleService;
 use App\Traits\LivewireTrait;
 use Illuminate\Support\Arr;
@@ -13,10 +14,11 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class Edit extends Component
 {
-    use LivewireTrait;
+    use LivewireTrait, WithFileUploads;
 
     protected $listeners = ['openEdit', 'setPresentation', 'refreshCategories', 'setTaxRates'];
 
@@ -29,6 +31,10 @@ class Edit extends Component
     public Collection $tax_rates;
 
     public $is_inventory_enabled = false;
+
+    // Image management properties
+    public $photo;
+    public $uploadingImage = false;
 
     public function mount()
     {
@@ -282,5 +288,54 @@ class Edit extends Component
 
         $this->emit('success', 'Producto actualizado con éxito');
         $this->emitTo('admin.products.index', 'render');
+    }
+
+    /**
+     * Upload image
+     */
+    public function uploadImage()
+    {
+
+        try {
+            $this->uploadingImage = true;
+
+            $imageService = app(ImageServiceInterface::class);
+            
+            $result = $imageService->uploadProductImage($this->product->id, $this->photo);
+
+            if ($result && isset($result['success']) && $result['success']) {
+
+                $this->emit('success', 'Imagen subida exitosamente');
+                $this->photo = null;
+                
+                // Refrescar el producto en la vista
+                $this->product = $this->product->fresh();
+                
+            } else {
+                $this->emit('error', 'Error al subir imagen: ' . ($result['error'] ?? 'Error desconocido'));
+            }
+        } catch (\Exception $e) {
+            $this->emit('error', 'Error inesperado: ' . $e->getMessage());
+        } finally {
+            $this->uploadingImage = false;
+        }
+    }
+
+    /**
+     * Remove product image
+     */
+    public function removeImage()
+    {
+        try {
+            if ($this->product->cloudinary_public_id) {
+                $imageService = app(ImageServiceInterface::class);
+                $imageService->deleteProductImage($this->product->id);
+                $this->product = $this->product->fresh();
+                $this->emit('success', 'Imagen eliminada exitosamente');
+            }
+        } catch (\Exception $e) {
+            Log::error('Error removing image: ' . $e->getMessage());
+            $this->emit('error', 'Error al eliminar la imagen');
+        }
     }
 }

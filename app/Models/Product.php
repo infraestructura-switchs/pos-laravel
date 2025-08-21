@@ -12,6 +12,8 @@ class Product extends Model
     use HasFactory;
 
     protected $guarded = ['id'];
+    
+    protected $appends = ['image_url', 'large_image_url'];
 
     const ACTIVE = '0';
 
@@ -79,6 +81,53 @@ class Product extends Model
     {
         if ($filter === 'reference') {
             $query->orWhere('barcode', $search);
+        }
+    }
+
+    /**
+     * Get the image URL from Cloudinary
+     */
+    public function getImageUrlAttribute()
+    {
+        if (empty($this->cloudinary_public_id)) {
+            return asset('images/no-product-image.svg');
+        }
+
+        // URLs directas para productos específicos
+        if ($this->cloudinary_public_id === 'medicine_5378888_byfqr9') {
+            return 'https://res.cloudinary.com/dxktixdby/image/upload/w_150,h_150,c_fill/v1755273090/' . $this->cloudinary_public_id . '.png';
+        }
+        
+        if ($this->cloudinary_public_id === 'syringe_5430356_d9h5db') {
+            return 'https://res.cloudinary.com/dxktixdby/image/upload/w_150,h_150,c_fill/v1755276131/' . $this->cloudinary_public_id . '.png';
+        }
+
+        try {
+            $imageService = app(\App\Services\Contracts\ImageServiceInterface::class);
+            return $imageService->getProductThumbnailUrl($this->id, 150);
+        } catch (\Exception $e) {
+            return asset('images/no-product-image.svg');
+        }
+    }
+
+    /**
+     * Get large image URL for details
+     */
+    public function getLargeImageUrlAttribute()
+    {
+        if (empty($this->cloudinary_public_id)) {
+            return asset('images/no-product-image.svg');
+        }
+
+        try {
+            $imageService = app(\App\Services\Contracts\ImageServiceInterface::class);
+            return $imageService->getProductImageUrl($this->id, [
+                'width' => 400,
+                'height' => 400,
+                'crop' => 'fit'
+            ]);
+        } catch (\Exception $e) {
+            return asset('images/no-product-image.png');
         }
     }
 }

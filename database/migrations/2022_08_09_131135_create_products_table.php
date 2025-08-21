@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->string('name');
             $table->unsignedInteger('cost');
             $table->unsignedInteger('price');
-            $table->unsignedInteger('stock');
+            $table->integer('stock')->default(0);
             $table->unsignedInteger('quantity')->comment('cantidad en unidades por producto (obligatorio cuando tiene otras presentaciones)');
             $table->unsignedBigInteger('units')->comment('cantidad en unidades (obligatorio cuando tiene otras presentaciones)');
             $table->enum('top', ['0', '1'])->comment('0 no destacado, 1 destacado');

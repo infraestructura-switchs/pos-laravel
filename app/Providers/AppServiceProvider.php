@@ -4,12 +4,16 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Routing\UrlGenerator;
+use App\Services\Contracts\CloudinaryClientInterface;
+use App\Services\Contracts\ImageServiceInterface;
+use App\Services\CloudinaryService;
+use App\Services\ImageService;
 
 class AppServiceProvider extends ServiceProvider {
 
     public function register() {
-
+        $this->app->bind(CloudinaryClientInterface::class, CloudinaryService::class);
+        $this->app->bind(ImageServiceInterface::class, ImageService::class);
     }
 
     public function boot(UrlGenerator $url)

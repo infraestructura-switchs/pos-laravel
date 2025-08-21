@@ -15,9 +15,16 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\Contracts\ImageServiceInterface;
 
 class ProductService
 {
+    private ImageServiceInterface $imageService;
+
+    public function __construct(ImageServiceInterface $imageService)
+    {
+        $this->imageService = $imageService;
+    }
     public function store(array $input): int
     {
         $rules = [
@@ -214,7 +221,7 @@ class ProductService
 
         $perPage = $filters['per_page'] ?? 10;
 
-        return $query->select('id', 'barcode', 'reference', 'category_id', 'name', 'cost', 'price', 'stock', 'status')
+        return $query->select('id', 'barcode', 'reference', 'category_id', 'name', 'cost', 'price', 'stock', 'status', 'cloudinary_public_id')
             ->paginate($perPage);
     }
 

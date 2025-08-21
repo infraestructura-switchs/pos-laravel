@@ -32,11 +32,16 @@ class Products extends Component
             ->get()
             ->pluck('name', 'id');
 
-        $this->products = Product::select(['id', 'reference', 'category_id', 'name', 'price', DB::raw('CASE WHEN stock > 0 || units > 0 || has_inventory = "1" THEN 1 ELSE 0 END AS has_stock')])
+        $this->products = Product::select(['id', 'reference', 'category_id', 'name', 'price', 'cloudinary_public_id', DB::raw('CASE WHEN stock > 0 || units > 0 || has_inventory = "1" THEN 1 ELSE 0 END AS has_stock')])
             ->where('status', '0')
             ->orderBy('top', 'ASC')
             ->orderBy('name', 'ASC')
             ->get()
+            ->map(function($product) {
+                $productArray = $product->toArray();
+                $productArray['image_url'] = $product->image_url; // Agregar la URL de imagen
+                return $productArray;
+            })
             ->toArray();
 
         $this->presentations = Presentation::select('id', 'name', 'price', 'product_id')

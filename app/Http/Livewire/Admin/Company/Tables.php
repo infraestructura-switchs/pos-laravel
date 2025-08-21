@@ -17,19 +17,16 @@ class Tables extends Component
 
     public function mount()
     {
-        \Log::info('🚀 Tables component montado');
+
         // Obtener el número actual de mesas ACTIVAS
         $this->numberOfTables = Order::where('is_active', true)->count();
-        \Log::info('📊 Número inicial de mesas activas:', ['count' => $this->numberOfTables]);
+
     }
 
   
     public function updateTables()
 {
-    \Log::info('🔧 updateTables() llamado', [
-        'numberOfTables' => $this->numberOfTables,
-        'tablePrefix' => $this->tablePrefix
-    ]);
+    
     
     $this->validate();
 
@@ -37,14 +34,11 @@ class Tables extends Component
     $existingOrders = Order::where('is_active', true)->get();
     $currentCount = $existingOrders->count();
 
-    \Log::info('📊 Estado actual:', [
-        'currentCount' => $currentCount,
-        'requestedTables' => $this->numberOfTables
-    ]);
+
 
     if ($this->numberOfTables > $currentCount) {
         // Agregar mesas faltantes
-        \Log::info('➕ Agregando mesas', ['desde' => $currentCount + 1, 'hasta' => $this->numberOfTables]);
+
         for ($i = $currentCount + 1; $i <= $this->numberOfTables; $i++) {
             $newOrder = Order::create([
                 'name' => $this->tablePrefix . ' ' . $i,
@@ -54,11 +48,11 @@ class Tables extends Component
                 'delivery_address' => '',
                 'is_active' => true // Asegurar que esté activa
             ]);
-            \Log::info('✅ Mesa creada:', ['id' => $newOrder->id, 'name' => $newOrder->name]);
+
         }
     } elseif ($this->numberOfTables < $currentCount) {
         // Desactivar mesas excedentes (solo las que estén vacías)
-        \Log::info('➖ Desactivando mesas', ['cantidad' => $currentCount - $this->numberOfTables]);
+
         $ordersToDeactivate = Order::where('total', 0)
             ->where('is_active', true)
             ->whereJsonLength('customer', 0)  // Array vacío
@@ -67,14 +61,14 @@ class Tables extends Component
             ->limit($currentCount - $this->numberOfTables)
             ->get();
         
-        \Log::info('🔍 Mesas a desactivar:', $ordersToDeactivate->pluck('id', 'name')->toArray());
+
         
         foreach ($ordersToDeactivate as $order) {
             $order->update(['is_active' => false]);
-            \Log::info('❌ Mesa desactivada:', ['id' => $order->id, 'name' => $order->name]);
+
         }
     } else {
-        \Log::info('✅ No hay cambios en cantidad');
+
     }
 
     // Actualizar el prefijo de todas las mesas activas
@@ -110,7 +104,6 @@ class Tables extends Component
             }
         }
         
-        \Log::info('✅ Prefijos actualizados correctamente');
     }
 
     public function render()

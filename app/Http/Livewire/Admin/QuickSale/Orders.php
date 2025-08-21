@@ -29,22 +29,22 @@ class Orders extends Component
     use UtilityTrait;
 
     public $orders = [];
-    
+
     protected $listeners = [
         'tables-updated' => 'loadOrders',
         'refresh-orders' => 'loadOrders'
     ];
 
-    public function mount() 
+    public function mount()
     {
         $this->loadOrders();
     }
-    
+
     public function loadOrders()
     {
         $this->orders = $this->getOrders()->toArray();
     }
-    
+
     public function refreshOrders()
     {
         $this->loadOrders();
@@ -61,52 +61,51 @@ class Orders extends Component
     {
         try {
             \Log::info('🔍 getOrders() llamado desde JavaScript');
-            
+
             // Filtrar solo las mesas activas
             $orders = Order::where('is_active', 1)
-                           ->orderBy('id', 'asc')
-                           ->get();
-            
-            \Log::info('📊 Mesas encontradas:', ['count' => $orders->count()]);
-            
-                    // Mapear los datos para asegurar consistencia
-        $mappedOrders = $orders->map(function ($order) {
-            // Verificar si la mesa está ocupada (tiene productos o total > 0)
-            $hasProducts = !empty($order->products) && count($order->products) > 0;
-            $hasTotal = $order->total > 0;
-            $isOccupied = $hasProducts || $hasTotal;
-            
-            // Solo asignar cliente por defecto si la mesa está ocupada
-            $customer = $order->customer;
-            if ($isOccupied && (empty($customer) || !isset($customer['names']))) {
-                $customer = ['names' => 'Consumidor Final'];
-            } elseif (!$isOccupied) {
-                // Mesa disponible - no mostrar cliente
-                $customer = ['names' => ''];
-            }
-            
-            return [
-                'id' => $order->id,
-                'name' => $order->name,
-                'products' => is_array($order->products) ? $order->products : [],
-                'customer' => $customer,
-                'total' => intval($order->total ?? 0),
-                'delivery_address' => $order->delivery_address ?? '',
-                'is_available' => $isOccupied ? false : true  // Mesa ocupada = no disponible
-            ];
-        });
-            
-            \Log::info('✅ Mesas procesadas correctamente:', ['count' => $mappedOrders->count()]);
-            
+                ->orderBy('id', 'asc')
+                ->get();
+
+
+
+            // Mapear los datos para asegurar consistencia
+            $mappedOrders = $orders->map(function ($order) {
+                // Verificar si la mesa está ocupada (tiene productos o total > 0)
+                $hasProducts = !empty($order->products) && count($order->products) > 0;
+                $hasTotal = $order->total > 0;
+                $isOccupied = $hasProducts || $hasTotal;
+
+                // Solo asignar cliente por defecto si la mesa está ocupada
+                $customer = $order->customer;
+                if ($isOccupied && (empty($customer) || !isset($customer['names']))) {
+                    $customer = ['names' => 'Consumidor Final'];
+                } elseif (!$isOccupied) {
+                    // Mesa disponible - no mostrar cliente
+                    $customer = ['names' => ''];
+                }
+
+                return [
+                    'id' => $order->id,
+                    'name' => $order->name,
+                    'products' => is_array($order->products) ? $order->products : [],
+                    'customer' => $customer,
+                    'total' => intval($order->total ?? 0),
+                    'delivery_address' => $order->delivery_address ?? '',
+                    'is_available' => $isOccupied ? false : true  // Mesa ocupada = no disponible
+                ];
+            });
+
+
+
             return $mappedOrders;
-            
         } catch (\Exception $e) {
             \Log::error('❌ Error en getOrders():', [
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine()
             ]);
-            
+
             // Retornar array vacío en caso de error
             return collect([]);
         }
@@ -172,7 +171,7 @@ class Orders extends Component
 
         // Validación original pero continuar después de mostrar advertencia
         if ($order->is_available) {
-            $this->emit('alert', $order->name.' no contiene una orden');
+            $this->emit('alert', $order->name . ' no contiene una orden');
             // No hacer return aquí - continuar con el proceso
         }
 
@@ -190,10 +189,10 @@ class Orders extends Component
         $order->save();
 
         $this->emit('success', 'Cliente actualizado con éxito');
-        
+
         // Emitir evento para refrescar las mesas
         $this->dispatchBrowserEvent('customer-updated');
-        
+
         // También recargar las mesas del componente
         $this->loadOrders();
 
@@ -245,7 +244,7 @@ class Orders extends Component
         $order = Order::find($order_id);
 
         $orderDefault = [
-            'name' => 'Mesa '.$order->id,
+            'name' => 'Mesa ' . $order->id,
             'customer' => [],
             'products' => [],
             'total' => 0,
@@ -371,7 +370,7 @@ class Orders extends Component
                 'names' => $order['customer']['names'],
             ],
             'bill' => [
-                'place'=> $order['name'],
+                'place' => $order['name'],
                 'subtotal' => $products->sum('total') + $tip,
                 'tip' => $tip,
                 'total' => $products->sum('total') + $tip,
@@ -383,7 +382,7 @@ class Orders extends Component
         ];
         if (!$isCommand) {
             $this->dispatchBrowserEvent('print-pre-ticket', $data);
-        }else{
+        } else {
             $this->dispatchBrowserEvent('print-command-bill', $data);
         }
 
