@@ -60,7 +60,7 @@
     </template>
 
     <div x-show="!toggleView" 
-         
+         x-init="console.log('📦 Componente Orders visible:', !toggleView)">
       <livewire:admin.quick-sale.orders />
     </div>
 

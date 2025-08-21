@@ -16,11 +16,16 @@ class AppServiceProvider extends ServiceProvider {
         $this->app->bind(ImageServiceInterface::class, ImageService::class);
     }
 
-
-    public function boot() {
+    public function boot(UrlGenerator $url)
+    {
         date_default_timezone_set('America/Bogota');
-        Blade::directive('formatToCop', function ($value) {
-            return "<?php echo '$ ' . number_format($value, 0, '.', ','); ?>";
-        });
+                Blade::directive('formatToCop', function ($value) {
+                    return "<?php echo '$ ' . number_format($value, 0, '.', ','); ?>";
+                });
+
+        if (env('APP_ENV') == 'production') {
+            $url->forceScheme('https');
+        }
     }
+
 }

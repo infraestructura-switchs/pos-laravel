@@ -104,7 +104,6 @@ class Tables extends Component
             }
         }
         
-
     }
 
     public function render()
