@@ -1,6 +1,7 @@
 /vendor
 /node_modules
 .env
+.env_local
 .env_prod
 .env-render
 .env.backup
