@@ -20,17 +20,8 @@ class Menu extends Component
 
     public function openCashRegister()
     {
-        $data = [
-            'user_id' => auth()->user()->id,
-            'user_name' => auth()->user()->name,
-            'datetime' => now()->format('d-m-y H:i:s'),
-        ];
-
-        $this->deleteRegisters();
-
-        Log::channel('cashRegister')->info('Apertura de caja', $data);
-
-        return $this->dispatchBrowserEvent('open-cash-register');
+        // Abrir el modal de apertura de caja
+        $this->emitTo('admin.cash-opening.create', 'openCreate');
     }
 
     public function getTokenFactus(): array

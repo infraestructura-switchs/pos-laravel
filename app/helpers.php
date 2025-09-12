@@ -35,38 +35,22 @@ if (! function_exists('getUrlLogo')) {
 if (! function_exists('getTerminal')) {
     function getTerminal(): Terminal
     {
-
         $user = auth()->user();
-        $key = 'terminals';
-
-        if (! Cache::has($key)) {
-            $terminals = Terminal::with('users')->where('status', Terminal::ACTIVE)->get();
-            Cache::put($key, $terminals, now()->addDay());
+        
+        // Si no hay usuario autenticado (como en comandos artisan)
+        if (!$user) {
+            return new Terminal();
         }
+        
+        // Consulta directa más eficiente
+        $terminal = Terminal::with('users')
+            ->where('status', Terminal::ACTIVE)
+            ->whereHas('users', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->first();
 
-        $terminals = Cache::get($key);
-
-        $terminal = new Terminal();
-
-        foreach ($terminals as $value) {
-
-            if ($value->users) {
-
-                foreach ($value->users as $item) {
-
-                    if ($item->id === $user->id) {
-                        $terminal = $value;
-                        break;
-                    }
-                }
-
-                if ($terminal->id) {
-                    break;
-                }
-            }
-        }
-
-        return $terminal;
+        return $terminal ?: new Terminal();
     }
 }
 

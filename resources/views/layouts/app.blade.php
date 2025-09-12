@@ -52,6 +52,8 @@
 
     <livewire:admin.menu>
 
+    <livewire:admin.cash-opening.create />
+
       <main class="{{ request()->routeIs('admin.quick-sales.create') ? 'pl-14' : 'pl-52' }} pt-14 min-h-screen">
         {{ $slot }}
       </main>

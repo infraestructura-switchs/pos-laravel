@@ -173,13 +173,13 @@
           <div class="hidden text-sm font-semibold text-slate-600 sm:block">
             Terminal: {{ getTerminal()->name }}
           </div>
+          
+          <div class="flex h-full items-center" title="Abrir caja registradora">
+            <button wire:click='openCashRegister'>
+              <i class="ico icon-payment text-xl text-green-600"></i>
+            </button>
+          </div>
         @endif
-
-        <div class="flex h-full items-center" title="Abrir caja registradora">
-          <button wire:click='openCashRegister'>
-            <i class="ico icon-payment text-xl text-green-600"></i>
-          </button>
-        </div>
 
         @if (App\Services\FactusConfigurationService::isApiEnabled())
           <div x-data="authenticatedFactus()">

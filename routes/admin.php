@@ -10,6 +10,7 @@ use App\Http\Livewire\Admin\Bills\Create as BillsCreate;
 use App\Http\Livewire\Admin\Bills\Index as BillsIndex;
 use App\Http\Livewire\Admin\Bills\Show as BillsShow;
 use App\Http\Livewire\Admin\CashClosing\Index as CashClosingIndex;
+use App\Http\Livewire\Admin\CashOpening\Index as CashOpeningIndex;
 use App\Http\Livewire\Admin\Company\Index as CompanyIndex;
 use App\Http\Livewire\Admin\Customers\Index;
 use App\Http\Livewire\Admin\DailySales\Index as DailySalesIndex;
@@ -113,6 +114,8 @@ Route::group(['middleware' => ['module:cierre de caja']], function () {
     Route::get('cierre-de-caja/pdf/{cashClosing}', [CashClosingController::class, 'show'])->name('cash-closing.pdf');
 
 });
+
+Route::get('apertura-de-caja', CashOpeningIndex::class)->middleware('module:cierre de caja')->name('cash-opening.index');
 
 Route::get('impuestos', TaxRatesIndex::class)->middleware('module:impuestos')->name('tax-rates.index');
 

@@ -71,11 +71,30 @@ export default () => ({
     this.products = JSON.parse(JSON.stringify(this.backupProducts))
   },
   addProduct(product) {
-    this.products.push({
-      ...product,
-      amount: 1,
-      total: product.price,
-    })
+    const existingProductIndex = this.products.findIndex(item => {
+      if (item.id !== product.id) return false;
+
+      if (Object.keys(item.presentation).length && Object.keys(product.presentation).length) {
+        return item.presentation.id === product.presentation.id;
+      }
+
+      if (!Object.keys(item.presentation).length && !Object.keys(product.presentation).length) {
+        return true;
+      }
+
+      return false;
+    });
+
+    if (existingProductIndex !== -1) {
+      this.products[existingProductIndex].amount++;
+      this.calcProduct(this.products[existingProductIndex]);
+    } else {
+      this.products.push({
+        ...product,
+        amount: 1,
+        total: product.price,
+      })
+    }
   },
   getProductName(product) {
     if (Object.keys(product.presentation).length) {

@@ -135,7 +135,36 @@ document.addEventListener('alpine:init', () => {
 
     addProduct() {
       if (this.validateDataForm()) {
-        this.products.push(this.getDataForm())
+        const newProduct = this.getDataForm();
+        
+        // Buscar si el producto ya existe en la factura
+        const existingProductIndex = this.products.findIndex(item => {
+          // Comparar por ID del producto
+          if (item.id !== newProduct.id) return false;
+          
+          // Si ambos tienen presentaciones, compararlas
+          if (Object.keys(item.presentation).length && Object.keys(newProduct.presentation).length) {
+            return item.presentation.id === newProduct.presentation.id && item.discount === newProduct.discount;
+          }
+          
+          // Si ninguno tiene presentaciones, son el mismo producto (verificar también descuento)
+          if (!Object.keys(item.presentation).length && !Object.keys(newProduct.presentation).length) {
+            return item.discount === newProduct.discount;
+          }
+          
+          // Si uno tiene presentación y el otro no, son diferentes
+          return false;
+        });
+
+        if (existingProductIndex !== -1) {
+          // El producto ya existe, sumar la cantidad (convertir a números enteros)
+          this.products[existingProductIndex].amount = parseInt(this.products[existingProductIndex].amount) + parseInt(newProduct.amount);
+          this.products[existingProductIndex].total = (this.products[existingProductIndex].amount * this.products[existingProductIndex].price) - this.products[existingProductIndex].discount;
+        } else {
+          // El producto no existe, agregarlo como nuevo
+          this.products.push(newProduct);
+        }
+        
         this.resetForm()
       } else {
         this.$refs.amount.focus()
