@@ -16,6 +16,8 @@
 
     <livewire:admin.quick-sale.customers />
 
+    <livewire:admin.customers.create />
+
     <livewire:admin.quick-sale.change />
 
     @include('livewire.admin.quick-sale.modal-tables')
@@ -48,19 +50,25 @@
           <span x-text="order.customer.names"
             class="font-semibold"></span>
           
-          <!-- Botón para asignar cliente -->
+          <!-- Botón para seleccionar cliente -->
           <button @click="window.alpineOrdersInstance?.showCustomers(order)"
             class="ml-2 p-1 text-cyan-400 hover:text-cyan-600 hover:bg-cyan-50 rounded"
-            title="Asignar cliente">
+            title="Seleccionar cliente">
             <i class="ti ti-user text-lg"></i>
+          </button>
+          
+          <!-- Botón para crear cliente nuevo -->
+          <button @click="Livewire.emitTo('admin.customers.create', 'openCreate')"
+            class="p-1 text-green-500 hover:text-green-700 hover:bg-green-50 rounded"
+            title="Crear cliente nuevo">
+            <i class="ti ti-user-plus text-lg"></i>
           </button>
         </div>
 
       </div>
     </template>
 
-    <div x-show="!toggleView" 
-         x-init="console.log('📦 Componente Orders visible:', !toggleView)">
+    <div x-show="!toggleView">
       <livewire:admin.quick-sale.orders />
     </div>
 

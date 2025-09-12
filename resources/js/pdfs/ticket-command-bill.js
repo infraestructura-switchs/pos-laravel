@@ -6,11 +6,21 @@ export default () => ({
   products: {},
 
   init() {
+    console.log('🔧 INIT: ticket-command-bill.js cargado correctamente')
     window.addEventListener('print-command-bill', (event) => {
-      if (!this.$store.config.print) return
+      console.log('🚀 EVENTO: print-command-bill recibido', event.detail)
+      console.log('📄 CONFIG: print habilitado?', this.$store.config.print)
+      
+      if (!this.$store.config.print) {
+        console.log('❌ BLOQUEADO: Configuración de impresión deshabilitada')
+        return
+      }
+      
+      console.log('✅ PROCESANDO: Iniciando impresión de comanda')
       this.show = true
       this.getBill(event.detail)
       this.$nextTick(() => {
+        console.log('🖨️ IMPRIMIENDO: Ejecutando window.print()')
         this.setHeight()
         window.print()
         this.products = {}

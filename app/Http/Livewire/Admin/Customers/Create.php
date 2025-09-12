@@ -101,11 +101,20 @@ class Create extends Component
 
         $customer = Customer::create($data);
 
-        $this->dispatchBrowserEvent('set-customer', $customer->only(['id', 'no_identification', 'names', 'phone']));
+        $customerData = $customer->only(['id', 'no_identification', 'names', 'phone']);
+        
+        // Disparar evento para actualizar cliente en las mesas
+        $this->dispatchBrowserEvent('update-customer', $customerData);
+        
+        // También disparar el evento original para compatibilidad con crear factura
+        $this->dispatchBrowserEvent('set-customer', $customerData);
 
         $this->emit('success', 'Cliente creado con éxito');
         $this->emitTo('admin.customers.index', 'render');
 
         $this->resetExcept('identificationDocuments', 'tributes', 'legalOrganizations');
+        
+        // Cerrar el modal automáticamente
+        $this->openCreate = false;
     }
 }

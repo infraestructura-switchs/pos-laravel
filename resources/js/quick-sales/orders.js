@@ -168,6 +168,7 @@ export default () => ({
     })
   },
   printPreBill(item, isCommand = false) {
+    console.log('🖨️ PRINT: printPreBill llamada', { item: item.name, isCommand })
     this.$wire.createBillOnlyPrint(item, isCommand)
   }
 })

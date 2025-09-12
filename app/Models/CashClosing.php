@@ -33,6 +33,11 @@ class CashClosing extends Model
         return $this->belongsTo(Terminal::class);
     }
 
+    public function cashOpening()
+    {
+        return $this->belongsTo(CashOpening::class);
+    }
+
     #scopes
     protected function scopeResponsible($query, $user_id)
     {
