@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('factus_configurations', function (Blueprint $table) {
             $table->id();
             $table->boolean('is_api_enabled');
-            $table->json('api');
+           $table->json('api')->nullable();
             $table->timestamps();
         });
     }

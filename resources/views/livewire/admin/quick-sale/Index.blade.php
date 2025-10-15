@@ -1,7 +1,11 @@
 <x-app-layout>
 
   <div x-data="{ toggleView: false, order: {} }"
-    x-init="$watch('toggleView', value => { if (!value) order = {} })"
+    x-init="
+      $watch('toggleView', value => { 
+        if (!value) order = {} 
+      })
+    "
     @toggle-view.window="toggleView=$event.detail"
     @current-order.window="order=$event.detail"
     class="pb-10">
@@ -11,6 +15,8 @@
       class="z-[999] hidden" />
 
     <livewire:admin.quick-sale.customers />
+
+    <livewire:admin.customers.create />
 
     <livewire:admin.quick-sale.change />
 
@@ -39,10 +45,24 @@
             class="font-semibold"></span>
         </a>
 
-        <div class="flex space-x-1 pr-4">
+        <div class="flex items-center space-x-2 pr-4">
           <span>Cliente:</span>
           <span x-text="order.customer.names"
             class="font-semibold"></span>
+          
+          <!-- Botón para seleccionar cliente -->
+          <button @click="window.alpineOrdersInstance?.showCustomers(order)"
+            class="ml-2 p-1 text-cyan-400 hover:text-cyan-600 hover:bg-cyan-50 rounded"
+            title="Seleccionar cliente">
+            <i class="ti ti-user text-lg"></i>
+          </button>
+          
+          <!-- Botón para crear cliente nuevo -->
+          <button @click="Livewire.emitTo('admin.customers.create', 'openCreate')"
+            class="p-1 text-green-500 hover:text-green-700 hover:bg-green-50 rounded"
+            title="Crear cliente nuevo">
+            <i class="ti ti-user-plus text-lg"></i>
+          </button>
         </div>
 
       </div>
@@ -53,14 +73,14 @@
     </div>
 
     <div x-show="toggleView"
-      class="flex space-x-4">
+      class="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">
 
-      <div class="w-full">
+      <div class="w-full lg:w-3/5 xl:w-2/3">
         <livewire:admin.quick-sale.products />
         @include('livewire.admin.quick-sale.presentations')
       </div>
 
-      <div class="w-[40%] xl:w-[33%]">
+      <div class="w-full lg:w-2/5 xl:w-1/3">
         @include('livewire.admin.quick-sale.cart')
       </div>
 

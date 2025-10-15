@@ -5,6 +5,7 @@ namespace App\Http\Livewire\Admin\CashClosing;
 use App\Enums\CashRegisters;
 use App\Models\Bill;
 use App\Models\CashClosing;
+use App\Models\CashOpening;
 use App\Models\DetailFinance;
 use App\Models\Output;
 use App\Models\PaymentMethod;
@@ -21,9 +22,9 @@ class Create extends Component
 
     public $openCreate = false;
 
-    public $bills, $lastRecord, $terminal;
+    public $bills, $lastRecord, $terminal, $currentOpening;
 
-    public $cash, $credit_card, $debit_card, $transfer, $tip, $outputs, $cashRegister, $base, $price, $total_sales, $observations;
+    public $cash, $credit_card, $debit_card, $transfer, $tip, $outputs, $gastos, $cashRegister, $base, $price, $total_sales, $observations;
 
     public function mount()
     {
@@ -43,6 +44,14 @@ class Create extends Component
     public function openCreate(Terminal $terminal)
     {
         $this->terminal = $terminal;
+        
+        // Verificar si hay una caja abierta para esta terminal
+        $this->currentOpening = CashOpening::getActiveCash($this->terminal->id);
+        
+        if (!$this->currentOpening) {
+            return $this->emit('alert', 'No hay una caja abierta para la terminal ' . $this->terminal->name . '. Debe abrir caja primero.');
+        }
+        
         $this->openCreate = true;
         $this->getData();
     }
@@ -50,6 +59,12 @@ class Create extends Component
     private function getData()
     {
         $this->lastRecord = CashClosing::latest('id')->where('terminal_id', $this->terminal->id)->first();
+        
+        // Usar dinero inicial de la apertura como base
+        if ($this->currentOpening) {
+            $this->base = $this->currentOpening->total_initial;
+        }
+        
         $this->getBills();
         $this->getFinances();
         $this->getOutputs();
@@ -58,8 +73,15 @@ class Create extends Component
 
     private function getBills()
     {
-
-        if ($this->lastRecord) {
+        // Usar la apertura de caja actual como punto de inicio
+        if ($this->currentOpening) {
+            $this->bills = Bill::where('created_at', '>=', $this->currentOpening->opened_at)
+                ->where('terminal_id', $this->terminal->id)
+                ->where('status', Bill::ACTIVA)
+                ->doesntHave('finance')
+                ->select('id', 'tip', 'total', 'payment_method_id')
+                ->get();
+        } elseif ($this->lastRecord) {
             $this->bills = Bill::where('created_at', '>', $this->lastRecord->created_at)
                 ->where('terminal_id', $this->terminal->id)
                 ->where('status', Bill::ACTIVA)
@@ -67,7 +89,6 @@ class Create extends Component
                 ->select('id', 'tip', 'total', 'payment_method_id')
                 ->get();
         } else {
-
             $this->bills = Bill::where('status', Bill::ACTIVA)
                 ->where('terminal_id', $this->terminal->id)
                 ->select('id', 'tip', 'total', 'payment_method_id')
@@ -86,10 +107,12 @@ class Create extends Component
 
     private function getFinances()
     {
-
         $query = DetailFinance::query()->where('terminal_id', $this->terminal->id);
 
-        if ($this->lastRecord) {
+        // Usar la apertura de caja actual como punto de inicio
+        if ($this->currentOpening) {
+            $query->where('created_at', '>=', $this->currentOpening->opened_at);
+        } elseif ($this->lastRecord) {
             $query->where('created_at', '>', $this->lastRecord->created_at);
         } else {
             $query->whereRelation('bill', 'bills.status', Bill::ACTIVA);
@@ -114,15 +137,19 @@ class Create extends Component
 
     private function getOutputs()
     {
-        if ($this->lastRecord) {
+        // Usar la apertura de caja actual como punto de inicio
+        if ($this->currentOpening) {
+            $this->outputs = Output::where('created_at', '>=', $this->currentOpening->opened_at)
+                ->where('terminal_id', $this->terminal->id)
+                ->where('from', CashRegisters::MAIN)
+                ->sum('price');
+        } elseif ($this->lastRecord) {
             $this->outputs = Output::where('created_at', '>', $this->lastRecord->created_at)
                 ->where('terminal_id', $this->terminal->id)
                 ->where('from', CashRegisters::MAIN)
-                ->select('id', 'value')
                 ->sum('price');
         } else {
-            $this->outputs = Output::select('id', 'value')
-                ->where('terminal_id', $this->terminal->id)
+            $this->outputs = Output::where('terminal_id', $this->terminal->id)
                 ->where('from', CashRegisters::MAIN)
                 ->sum('price');
         }
@@ -134,12 +161,14 @@ class Create extends Component
         $rules = [
             'base' => 'required|integer|min:0|max:99999999',
             'price' => 'required|integer|min:0|max:99999999',
+            'gastos' => 'nullable|integer|min:0|max:99999999',
             'observations' => 'nullable|string|max:255'
         ];
 
         $attributes = [
             'base' => 'base inicial',
             'price' => 'dinero real en caja',
+            'gastos' => 'gastos',
             'observations' => 'observaciones'
         ];
 
@@ -153,7 +182,7 @@ class Create extends Component
 
         $this->getData();
 
-        CashClosing::create([
+        $cashClosing = CashClosing::create([
             'base' => $this->base,
             'cash' => $this->cash,
             'debit_card' => $this->debit_card,
@@ -162,12 +191,19 @@ class Create extends Component
             'total_sales' => $this->total_sales,
             'tip' => $this->tip,
             'outputs' => $this->outputs,
+            'gastos' => $this->gastos ?: 0,
             'cash_register' => $this->cashRegister,
             'price' => $this->price,
             'observations' => $this->observations,
             'user_id' => auth()->user()->id,
             'terminal_id' => $this->terminal->id,
+            'cash_opening_id' => $this->currentOpening ? $this->currentOpening->id : null,
         ]);
+
+        // Cerrar la caja abierta
+        if ($this->currentOpening) {
+            $this->currentOpening->close();
+        }
 
         $this->reset();
         $this->terminal = new Terminal();

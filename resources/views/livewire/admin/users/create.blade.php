@@ -9,8 +9,8 @@
                 <x-wireui.input onlyNumbers label="Celular" wire:model.defer="phone" placeholder="Celular del empleado"  />
                 <x-wireui.native-select label="Rol" wire:model.defer="role" optionKeyValue="true" placeholder="Selecciona el rol" :options="$roles"  class="w-full"/>
                 <x-wireui.input label="Email" wire:model.defer="email" placeholder="Email del empleado"  />
-                <x-wireui.input label="Contraseña" type="password" wire:model.defer="password" placeholder="Contraseña" />
-                <x-wireui.input label="Confirma la contraseña" type="password" wire:model.defer="password_confirmation" placeholder="Confirma la contraseña" />
+                <x-wireui.input id="create_password" label="Contraseña" type="password" wire:model.defer="password" placeholder="Contraseña" />
+                <x-wireui.input id="create_password_confirmation" label="Confirma la contraseña" type="password" wire:model.defer="password_confirmation" placeholder="Confirma la contraseña" />
             </div>
 
             <x-slot:footer>

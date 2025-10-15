@@ -17,9 +17,12 @@
             <x-wireui.native-select wire:model.defer="filter" optionKeyValue="true" :options="$filters" />
         </x-slot:header>
 
-        <table class="table-sm">
+        <table class="table">
             <thead >
                 <tr>
+                    <th>
+                        Imagen
+                    </th>
                     <th left>
                         Código barras
                     </th>
@@ -28,6 +31,9 @@
                     </th>
                     <th left>
                         Nombre
+                    </th>
+                    <th left>
+                        Categoría
                     </th>
                     <th>
                         Impuestos(%)
@@ -52,6 +58,11 @@
             <tbody>
                 @forelse ($products as $item)
                     <tr wire:key="product-{{ $item->id }}">
+                        <td class="w-16">
+                            <img src="{{ $item->image_url }}" 
+                                 alt="{{ $item->name }}" 
+                                 class="h-12 w-12 object-cover rounded-lg">
+                        </td>
                         <td left class="{{ !$item->top ? 'text-green-500 font-bold' : ''  }}">
                             {{ $item->barcode }}
                         </td>
@@ -61,18 +72,15 @@
                         <td left>
                             {{ $item->name }}
                         </td>
-                        <td class="tooltip">
-                          <button class="flex items-center justify-center text-sm text-blue-500">
-                            <i class="ico icon-eye mr-1 text-base"></i>
-                            ver
-                          </button>
-                          <ul class="tooltip-content">
-                            @foreach ($item->taxRates as $taxRate)
-                              <li>
-                                {{ $taxRate->format_rate}}
-                              </li>
-                            @endforeach
-                          </ul>
+                        <td left>
+                            {{ $item->category?->name ?? '-' }}
+                        </td>
+                        <td>
+                            @if($item->taxRates->count() > 0)
+                                {{ $item->taxRates->pluck('format_rate')->implode(', ') }}
+                            @else
+                                -
+                            @endif
                         </td>
                         <td left>
                             @formatToCop($item->cost)

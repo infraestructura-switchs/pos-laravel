@@ -9,15 +9,21 @@ class OrderSeeder extends Seeder
 {
     public function run()
     {
-        $name = 'Mesa';
-
-        for ($i=1; $i < 21 ; $i++) {
-            Order::create([
-                'name' => "$name $i",
-                'customer' => [],
-                'products' => [],
-                'total' => 0,
-            ]);
+        // Desactivar todas las mesas existentes
+        Order::query()->update(['is_active' => false]);
+    
+        // Crear 20 mesas activas
+        for ($i = 1; $i <= 20; $i++) {
+            Order::updateOrCreate(
+                ['name' => 'Mesa ' . $i],
+                [
+                    'products' => [],
+                    'customer' => [],
+                    'total' => 0,
+                    'delivery_address' => '',
+                    'is_active' => true
+                ]
+            );
         }
     }
 }

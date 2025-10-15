@@ -1,3 +1,3 @@
-<button {{ $attributes->merge(['type' => 'submit', 'class' => 'inline-flex items-center px-4 py-2.5 border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest bg-gradient-to-r from-cyan-400 to-cyan-500 hover:from-cyan-300 hover:to-cyan-400 focus:outline-none disabled:opacity-25 transition ease-in-out duration-150']) }}>
+<button {{ $attributes->merge(['type' => 'submit', 'class' => 'inline-flex items-center px-4 py-2.5 border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest bg-gradient-to-r from-pink-700 to-pink-800 hover:from-pink-600 hover:to-pink-700 focus:outline-none disabled:opacity-25 transition ease-in-out duration-150']) }} style="background: linear-gradient(to right, #9D0154, #7A0142); hover:background: linear-gradient(to right, #8A0147, #6B0035);">
     {{ $slot }}
 </button>

@@ -14,7 +14,25 @@ window.toggleLoading = (id, state) => {
 
 window.custRound = (value) => roundHalfEven(value, 0);
 
-window.formatToCop = (value) => numberFormat.format(value);
+window.formatToCop = (value) => {
+    // Si el valor es undefined, null, o no es un número, retornar $0
+    if (value === undefined || value === null || isNaN(value)) {
+        return '$ 0';
+    }
+    
+    // Convertir a número, asegurándonos de que sea un entero
+    const numValue = Math.round(Number(value));
+    
+    // Validar que el valor sea finito
+    if (!isFinite(numValue)) {
+        return '$ 0';
+    }
+    
+    // Formatear manualmente para consistencia: separador de miles con coma
+    const formatted = numValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    
+    return '$ ' + formatted;
+};
 
 window.strLimit = (str, limit) => str.length > limit ? str.substring(0, limit) : str
 
@@ -45,7 +63,6 @@ window.calculateCheckDigit = (myNit) =>{
   myNit = myNit.replace(/\./g, '')
   myNit = myNit.replace(/-/g, '')
   if (isNaN(myNit)) {
-    console.log("El nit/cédula '" + myNit + "' no es válido(a).")
     return ''
   }
   vpri = new Array(16)

@@ -10,6 +10,7 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 
 class HttpService
 {
@@ -23,39 +24,69 @@ class HttpService
 
     private static function resolveAuthorization(): void
     {
-        $accessToken = AccessToken::first();
+        try {
+            $accessToken = AccessToken::first();
 
-        if (! $accessToken) {
-            $accessToken = self::getAccessToken();
-        }
-
-        if ($accessToken->expires_at <= now()) {
-
-            $response = Http::acceptJson()->post(self::$apiConfiguration['url'].'oauth/token', [
-                'grant_type' => 'refresh_token',
-                'refresh_token' => $accessToken->refresh_token,
-                'client_id' => self::$apiConfiguration['client_id'],
-                'client_secret' => self::$apiConfiguration['client_secret'],
-            ]);
-
-            $access_token = $response->json();
-
-            if ($response->status() === 401) {
-                if ($access_token['message'] === 'The refresh token is invalid.') {
-                    $access_token = self::getAccessToken();
-                }
+            if (! $accessToken) {
+                Log::info('🔑 HttpService - No existe token, obteniendo nuevo token...');
+                $accessToken = self::getAccessToken();
             }
 
-            $accessToken->fill([
-                'access_token' => $access_token['access_token'],
-                'refresh_token' => $access_token['refresh_token'],
-                'expires_at' => now()->addSecond($access_token['expires_in']),
+            if ($accessToken->expires_at <= now()) {
+                Log::info('⏰ HttpService - Token expirado, refrescando...', [
+                    'expires_at' => $accessToken->expires_at,
+                    'now' => now()
+                ]);
+
+                $response = Http::acceptJson()->post(self::$apiConfiguration['url'].'oauth/token', [
+                    'grant_type' => 'refresh_token',
+                    'refresh_token' => $accessToken->refresh_token,
+                    'client_id' => self::$apiConfiguration['client_id'],
+                    'client_secret' => self::$apiConfiguration['client_secret'],
+                ]);
+
+                $access_token_data = $response->json();
+
+                if ($response->status() === 401) {
+                    Log::warning('⚠️ HttpService - Token inválido, obteniendo nuevo token...', [
+                        'status' => $response->status(),
+                        'response' => $access_token_data
+                    ]);
+                    
+                    if (isset($access_token_data['message']) && $access_token_data['message'] === 'The refresh token is invalid.') {
+                        $accessToken = self::getAccessToken();
+                        self::$accessToken = $accessToken;
+                        return;
+                    }
+                }
+
+                // Verificar que la respuesta contiene los datos necesarios
+                if (!isset($access_token_data['access_token']) || !isset($access_token_data['refresh_token']) || !isset($access_token_data['expires_in'])) {
+                    Log::error('❌ HttpService - Respuesta inválida al refrescar token', [
+                        'status' => $response->status(),
+                        'response' => $access_token_data
+                    ]);
+                    throw new CustomException('Error al refrescar el token de acceso. Respuesta inválida de la API de Factus.');
+                }
+
+                $accessToken->fill([
+                    'access_token' => $access_token_data['access_token'],
+                    'refresh_token' => $access_token_data['refresh_token'],
+                    'expires_at' => now()->addSecond($access_token_data['expires_in']),
+                ]);
+
+                $accessToken->save();
+                Log::info('✅ HttpService - Token refrescado exitosamente');
+            }
+
+            self::$accessToken = $accessToken;
+        } catch (\Exception $e) {
+            Log::error('❌ HttpService::resolveAuthorization - Error inesperado', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
-
-            $accessToken->save();
+            throw $e;
         }
-
-        self::$accessToken = $accessToken;
     }
 
     private function formatEnpoint(string $endpoint): string

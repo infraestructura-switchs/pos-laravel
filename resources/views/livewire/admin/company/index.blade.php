@@ -6,6 +6,7 @@
 
   @can('isEnabled', [App\Models\Module::class, 'ventas rapidas'])
     <livewire:admin.company.quick-sales />
+    <livewire:admin.company.tables />
   @endcan
 
   <x-wireui.card title="Configuraciones generales">

@@ -13,6 +13,40 @@ class CashClosing extends Model
     use HasFactory;
 
     protected $guarded = ['id'];
+    
+    protected $fillable = [
+        'base',
+        'cash',
+        'debit_card',
+        'credit_card',
+        'transfer',
+        'financed',
+        'total_sales',
+        'tip',
+        'outputs',
+        'gastos',
+        'cash_register',
+        'price',
+        'observations',
+        'user_id',
+        'terminal_id',
+        'cash_opening_id',
+    ];
+
+    protected $casts = [
+        'base' => 'integer',
+        'cash' => 'integer',
+        'debit_card' => 'integer',
+        'credit_card' => 'integer',
+        'transfer' => 'integer',
+        'financed' => 'integer',
+        'total_sales' => 'integer',
+        'tip' => 'integer',
+        'outputs' => 'integer',
+        'gastos' => 'integer',
+        'cash_register' => 'integer',
+        'price' => 'integer',
+    ];
 
     #appends
     protected function formatCreatedAt(): Attribute
@@ -31,6 +65,11 @@ class CashClosing extends Model
     public function terminal()
     {
         return $this->belongsTo(Terminal::class);
+    }
+
+    public function cashOpening()
+    {
+        return $this->belongsTo(CashOpening::class);
     }
 
     #scopes

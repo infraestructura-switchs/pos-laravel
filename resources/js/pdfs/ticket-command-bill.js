@@ -7,14 +7,19 @@ export default () => ({
 
   init() {
     window.addEventListener('print-command-bill', (event) => {
-      if (!this.$store.config.print) return
+      if (!this.$store.config.print) {
+        return
+      }
       this.show = true
       this.getBill(event.detail)
       this.$nextTick(() => {
         this.setHeight()
         window.print()
-        this.products = {}
-        this.show = false
+        
+        setTimeout(() => {
+          this.products = {}
+          this.show = false
+        }, 500)
       })
     })
   },
@@ -27,7 +32,15 @@ export default () => ({
   },
 
   setHeight() {
-    let style = document.getElementById('page-rule')
+    // Usar elemento style único para evitar conflictos
+    let styleId = 'page-rule-command-bill'
+    let style = document.getElementById(styleId)
+    
+    if (!style) {
+      style = document.createElement('style')
+      style.id = styleId
+      document.head.appendChild(style)
+    }
 
     let oneLine = 0
     let twoLine = 0

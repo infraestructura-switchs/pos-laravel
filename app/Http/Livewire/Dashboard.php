@@ -25,15 +25,14 @@ class Dashboard extends Component
 
     public function mount()
     {
-        if (in_array(request()->getHost(), $this->enableDomains)) {
-            $this->startDate = Carbon::now()->startOfMonth()->format('Y-m-d');
-            $this->endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
+        if ($this->isDomainEnabled()) {
+            $this->initializeDateRange();
         }
     }
 
     public function render()
     {
-        if (in_array(request()->getHost(), $this->enableDomains)) {
+        if ($this->isDomainEnabled()) {
             $this->getData();
         }
 
@@ -52,5 +51,24 @@ class Dashboard extends Component
 
         $this->saleTotal = $bills->total;
         $this->costTotal = $bills->cost;
+    }
+
+    /**
+     * Verifica si el dominio actual está habilitado
+     */
+    public function isDomainEnabled(): bool
+    {
+        return in_array(request()->getHost(), $this->enableDomains)
+        || request()->getHost() === 'localhost' || request()->getHost() === '127.0.0.1'
+        || str_contains(request()->getHost(), 'switchs');
+    }
+
+    /**
+     * Inicializa el rango de fechas con el mes actual
+     */
+    private function initializeDateRange(): void
+    {
+        $this->startDate = Carbon::now()->startOfMonth()->format('Y-m-d');
+        $this->endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
     }
 }

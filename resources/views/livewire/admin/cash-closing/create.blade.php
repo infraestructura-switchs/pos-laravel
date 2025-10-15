@@ -5,9 +5,27 @@
 
       <x-wireui.errors />
 
-      <div class="flex items-end justify-end">
-        <span class="mr-1 font-semibold">Terminal: </span>
-        <span class="text-sm font-semibold">{{ $terminal->name }}</span>
+      <div class="flex items-end justify-between">
+        <div>
+          @if($currentOpening)
+            <div class="text-sm text-green-600">
+              <i class="ti ti-check-circle mr-1"></i>
+              Caja abierta desde: {{ $currentOpening->opened_at->format('d/m/Y H:i') }}
+            </div>
+            <div class="text-xs text-gray-600">
+              Base inicial registrada: @formatToCop($currentOpening->total_initial)
+            </div>
+          @else
+            <div class="text-sm text-red-600">
+              <i class="ti ti-alert-triangle mr-1"></i>
+              No hay caja abierta
+            </div>
+          @endif
+        </div>
+        <div class="text-right">
+          <span class="mr-1 font-semibold">Terminal: </span>
+          <span class="text-sm font-semibold">{{ $terminal->name }}</span>
+        </div>
       </div>
 
       <div class="grid grid-cols-2 gap-6 mt-4">
@@ -93,12 +111,32 @@
           </li>
 
           <div class="space-y-3">
-            <x-wireui.input label="Base inicial"
-              wire:model.debounce.500ms="base"
-              onlyNumbers />
+            @if($currentOpening)
+              <div class="p-3 bg-green-50 border border-green-200 rounded-lg">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Base inicial (desde apertura)</label>
+                <div class="text-lg font-semibold text-green-800">
+                  @formatToCop($base)
+                </div>
+                <p class="text-xs text-green-600 mt-1">
+                  Registrada el {{ $currentOpening->opened_at->format('d/m/Y H:i') }}
+                </p>
+              </div>
+            @else
+              <x-wireui.input label="Base inicial"
+                wire:model.debounce.500ms="base"
+                onlyNumbers />
+            @endif
+            
             <x-wireui.input label="Dinero real en caja"
               wire:model.defer="price"
               onlyNumbers />
+            
+            <x-wireui.input label="Gastos (opcional)"
+              wire:model.defer="gastos"
+              onlyNumbers 
+              placeholder="0"
+              prefix="$" />
+              
             <x-wireui.textarea label="Observaciones"
               wire:model.defer="observations"
               rows="3" />

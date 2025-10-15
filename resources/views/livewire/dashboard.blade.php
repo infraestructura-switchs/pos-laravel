@@ -1,5 +1,5 @@
 <div class="px-2 pt-2 pb-10">
-  @if (in_array(request()->getHost(), $enableDomains))
+  @if ($this->isDomainEnabled())
 
   <div class="flex justify-end items-end gap-x-4">
 

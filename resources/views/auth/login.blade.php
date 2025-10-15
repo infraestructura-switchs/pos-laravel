@@ -4,7 +4,7 @@
         <x-slot name="logo">
 
             <a href="/">
-                <x-application-logo class="h-36 fill-current text-gray-500" />
+                <x-application-logo class="h-20 w-auto object-contain" />
             </a>
 
         </x-slot>

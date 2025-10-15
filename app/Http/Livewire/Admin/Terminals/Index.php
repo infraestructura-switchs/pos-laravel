@@ -38,10 +38,19 @@ class Index extends Component
         }
 
         return collect(ApiService::numberingRanges())->transform(function ($item) {
+            // Use data_get to safely access array/object keys and avoid undefined index errors
+            $id = data_get($item, 'id');
+            $prefix = data_get($item, 'prefix', '');
+            $from = data_get($item, 'from', '');
+            $to = data_get($item, 'to', '');
+
             return [
-                'id' => $item['id'],
-                'name' => $item['prefix'].'('.$item['from'].'-'.$item['to'].')',
+                'id' => $id,
+                'name' => $prefix.'('.$from.'-'.$to.')',
             ];
+        })->filter(function ($value) {
+            // remove entries without an id
+            return ! is_null($value['id']);
         })->pluck('name', 'id');
     }
 }

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->json('customer');
             $table->unsignedInteger('total');
             $table->foreignId('user_id')->constrained();
+            $table->boolean('is_active');
 
             $table->timestamps();
         });

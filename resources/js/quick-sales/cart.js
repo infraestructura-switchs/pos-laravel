@@ -71,11 +71,30 @@ export default () => ({
     this.products = JSON.parse(JSON.stringify(this.backupProducts))
   },
   addProduct(product) {
-    this.products.push({
-      ...product,
-      amount: 1,
-      total: product.price,
-    })
+    const existingProductIndex = this.products.findIndex(item => {
+      if (item.id !== product.id) return false;
+
+      if (Object.keys(item.presentation).length && Object.keys(product.presentation).length) {
+        return item.presentation.id === product.presentation.id;
+      }
+
+      if (!Object.keys(item.presentation).length && !Object.keys(product.presentation).length) {
+        return true;
+      }
+
+      return false;
+    });
+
+    if (existingProductIndex !== -1) {
+      this.products[existingProductIndex].amount++;
+      this.calcProduct(this.products[existingProductIndex]);
+    } else {
+      this.products.push({
+        ...product,
+        amount: 1,
+        total: Number(product.price),
+      })
+    }
   },
   getProductName(product) {
     if (Object.keys(product.presentation).length) {
@@ -93,10 +112,11 @@ export default () => ({
   },
   calcProduct(item) {
     const amount = parseInt(item.amount)
+    const price = Number(item.price)
     if (amount !== NaN && amount <= 99999) {
-      item.total = item.price * amount
+      item.total = price * amount
     } else {
-      item.total = item.price * 1
+      item.total = price * 1
     }
   },
   dropProduct(index) {
@@ -120,6 +140,6 @@ export default () => ({
     this.showComment = !this.showComment;
   },
   get total() {
-    return this.products.map((item) => item.total).reduce((prev, curr) => prev + curr, 0)
+    return this.products.map((item) => Number(item.total)).reduce((prev, curr) => prev + curr, 0)
   },
 })

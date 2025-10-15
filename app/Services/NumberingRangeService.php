@@ -25,7 +25,7 @@ class NumberingRangeService
 
         $range = $terminal->first()->numberingRange;
 
-        if ($range->status !== '0') {
+        if ($range->status != 1) {
             throw new CustomException("El rango de numeración $range->prefix ($range->from - $range->to) se encuentra inactivo");
         }
 
