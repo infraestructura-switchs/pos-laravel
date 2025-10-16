@@ -300,11 +300,11 @@
   </nav>
 
   {{-- Sidebar Desktop --}}
-  <nav class="hidden md:block fixed inset-y-0 z-40 h-screen overflow-y-auto">
+  <nav class="hidden md:block fixed inset-y-0 z-40 h-screen">
 
-    <div class="{{ request()->routeIs('admin.quick-sales.create') || request()->routeIs('admin.direct-sale.create') ? 'w-14' : 'w-52 lg:w-60' }} flex h-full flex-col border bg-white pt-1 shadow shadow-gray-400 relative">
+    <div class="{{ request()->routeIs('admin.quick-sales.create') || request()->routeIs('admin.direct-sale.create') ? 'w-14' : 'w-52 lg:w-60' }} flex h-full flex-col border bg-white pt-12 shadow shadow-gray-400 relative">
 
-      <div class="overflow-hidden overflow-y-auto pb-3 pt-2">
+      <div class="overflow-hidden overflow-y-auto pb-3 pt-4">
         <ul class="space-y-1 lg:space-y-1.5 px-1.5 lg:px-2">
           @foreach ($links as $link)
             @if(isset($link['children']) && is_array($link['children']))
