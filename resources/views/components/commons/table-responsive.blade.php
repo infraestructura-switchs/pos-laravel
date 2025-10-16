@@ -1,4 +1,4 @@
-<div {{ $attributes }} class="bg-white border border-slate-200 shadow-sm overflow-x-auto rounded-lg">
+<div {{ $attributes }} class="bg-white border border-slate-200 shadow-sm overflow-x-auto rounded-lg" style="width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
 
     @if (isset($top))
         <div class="flex items-end justify-between py-1.5 px-2 bg-slate-100 border text-xs sm:text-sm md:text-tiny border-b shadow">

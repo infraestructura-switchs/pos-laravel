@@ -8,29 +8,26 @@
 
       </x-slot:header>
 
-      <div class="flex space-x-2 pl-2">
-        <div class="mb-1 px-1 pt-1">
+      <div class="pl-2 pr-2">
+        <div class="flex items-center gap-2">
 
           <x-commons.search id="searchProduct" placeholder="Buscar producto" x-ref="search" x-model="search"
-            x-on:keyup.escape="$refs.search.blur();" class="w-72 duration-300" autocomplete="off" />
+            x-on:keyup.escape="$refs.search.blur();" class="flex-1 min-w-0 h-9 duration-300" autocomplete="off" />
 
-          <div class="mt-2 flex justify-end">
-
-            <button x-on:click="setCategory(null)" class="rounded bg-indigo-600 px-2 py-0.5 text-sm text-white">
-              Eliminar filtros
-            </button>
-
-          </div>
+          <button x-on:click="setCategory(null)"
+            class="rounded bg-indigo-600 h-9 px-3 text-xs sm:text-sm text-white whitespace-nowrap">
+            Eliminar filtros
+          </button>
 
         </div>
 
-        <div class="h-[5.5rem] overflow-hidden overflow-y-auto pr-2">
-          <ul class="flex flex-wrap text-sm">
+        <div class="mt-2 h-[5.5rem] overflow-hidden overflow-y-auto">
+          <ul class="flex flex-wrap text-xs sm:text-sm gap-1">
 
             <template x-for="(item, key) in categories" :key="'category-' + key">
 
-              <li x-on:click="setCategory(key)" class="mr-2 mt-1.5 cursor-pointer rounded-full px-2"
-                :class="key == category_id ? 'text-white bg-cyan-500' : 'bg-slate-300'">
+              <li x-on:click="setCategory(key)" class="cursor-pointer rounded-full px-2 py-1 whitespace-nowrap"
+                :class="key == category_id ? 'text-white bg-cyan-500' : 'bg-slate-200 hover:bg-slate-300'">
                 <span x-text="item"></span>
               </li>
 
@@ -44,14 +41,23 @@
 
       <div class="h-96 overflow-hidden overflow-y-auto pb-2 pl-2 pt-2">
         <ul
-          class="grid grid-cols-2 gap-2 rounded pr-2 text-sm text-slate-800 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 rounded pr-2 text-xs sm:text-sm text-slate-800">
           <template x-for="(item, index) in filteredItems" :key="'product-' + item.id">
 
             <li x-on:click="setItem(item)"
               class="relative overflow-hidden rounded-md border border-slate-300 font-medium">
 
               <div class="flex h-full flex-col px-1 py-2"
-                :class="item.has_stock ? 'hover:bg-cyan-500 hover:text-white cursor-pointer ' : ''">
+:class="item.has_stock ? 'hover:bg-cyan-500 hover:text-white cursor-pointer ' : ''">
+
+                <!-- Imagen del producto -->
+                <div class="mb-2 flex justify-center">
+                  <img :src="item.image_url || '/images/no-product-image.svg'" 
+                       :alt="item.name"
+                       class="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 object-cover rounded"
+                       loading="lazy"
+                       onerror="this.src='/images/no-product-image.svg'">
+                </div>
 
                 <!-- Imagen del producto -->
                 <div class="mb-2 flex justify-center">
@@ -63,8 +69,8 @@
                 </div>
 
                 <div class="mt-auto select-none text-xs">
-                  <span x-text="item.reference" class="font-medium text-blue-600"></span>
-                  <p x-text="item.name" class="leading-3"></p>
+                  <span x-text="item.reference" class="font-medium text-blue-600 text-xs"></span>
+                  <p x-text="item.name" class="leading-3 text-xs sm:text-sm break-words"></p>
                 </div>
 
               </div>

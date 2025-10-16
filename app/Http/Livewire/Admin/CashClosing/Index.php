@@ -28,7 +28,7 @@ class Index extends Component
     public function render()
     {
         $this->totales = CashClosing::date($this->filterDate, $this->startDate, $this->endDate)
-            ->selectRaw('SUM(total_sales) as total_sales, SUM(outputs) as outputs, SUM(tip) as tips')
+            ->selectRaw('SUM(total_sales) as total_sales, SUM(outputs) as outputs, SUM(tip) as tips, SUM(gastos) as gastos')
             ->terminal($this->terminal_id)
             ->responsible($this->user_id)
             ->first();

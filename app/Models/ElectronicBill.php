@@ -12,11 +12,44 @@ class ElectronicBill extends Model
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
+    protected $casts = [
+        'is_validated' => 'boolean',
+    ];
+    
+    // Relationships
+    public function bill()
+    {
+        return $this->belongsTo(Bill::class);
+    }
+
+    // Accessors
     protected function numberingRange(): Attribute
     {
         return new Attribute(
-            get: fn ($value) => json_decode($value),
+            get: fn ($value) => $value ? json_decode($value, true) : null,
         );
     }
 
+    // Appends
+    protected function hasQrImage(): Attribute
+    {
+        return new Attribute(
+            get: fn () => !empty($this->qr_image)
+        );
+    }
+
+    protected function pdfUrl(): Attribute
+    {
+        return new Attribute(
+            get: fn () => route('electronic-bills.pdf', ['bill' => $this->bill_id])
+        );
+    }
+
+    protected function xmlUrl(): Attribute
+    {
+        return new Attribute(
+            get: fn () => route('electronic-bills.xml', ['bill' => $this->bill_id])
+        );
+    }
 }
+

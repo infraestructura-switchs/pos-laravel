@@ -3,6 +3,7 @@ export default () => ({
   order: [],
   config: {},
   view: null,
+  lastPrintTime: null,
   orderEmty: {
     customer: [],
     is_available: true,
@@ -12,14 +13,11 @@ export default () => ({
   },
 
   init() {
-    console.log('🚀 Iniciando componente orders...');
     // Exponer la instancia globalmente para que las funciones onclick puedan accederla
     window.alpineOrdersInstance = this;
     this.events()
-    console.log('📞 Llamando getOrders desde init...');
     this.getOrders()
     this.config = this.$store.config
-    console.log('⚙️ Config cargada:', this.config);
   },
   events() {
     window.addEventListener('store', (event) => {
@@ -55,10 +53,8 @@ export default () => ({
     })
   },
   async getOrders() {
-    console.log('🔍 Refrescando mesas...');
     // Usar el método refreshOrders del componente Livewire en lugar de getOrders
     await Livewire.emit('refresh-orders');
-    console.log('✅ Mesas refrescadas');
   },
   loadOrder(order = null) {
     this.order = JSON.parse(JSON.stringify(order === null ? this.orderEmty : order))
@@ -168,7 +164,13 @@ export default () => ({
     })
   },
   printPreBill(item, isCommand = false) {
-    console.log('🖨️ PRINT: printPreBill llamada', { item: item.name, isCommand })
+    // Simple debounce para evitar clics múltiples
+    const now = Date.now()
+    if (this.lastPrintTime && (now - this.lastPrintTime) < 1000) {
+      return
+    }
+    
+    this.lastPrintTime = now
     this.$wire.createBillOnlyPrint(item, isCommand)
   }
 })

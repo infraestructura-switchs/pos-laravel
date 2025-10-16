@@ -44,6 +44,38 @@
                 prefix="$"
               />
 
+              <x-wireui.input 
+                label="Tarjeta crédito (opcional)"
+                wire:model.lazy="tarjeta_credito"
+                onlyNumbers 
+                placeholder="0"
+                prefix="$"
+              />
+
+              <x-wireui.input 
+                label="Tarjeta débito (opcional)"
+                wire:model.lazy="tarjeta_debito"
+                onlyNumbers 
+                placeholder="0"
+                prefix="$"
+              />
+
+              <x-wireui.input 
+                label="Cheques (opcional)"
+                wire:model.lazy="cheques"
+                onlyNumbers 
+                placeholder="0"
+                prefix="$"
+              />
+
+              <x-wireui.input 
+                label="Otros métodos (opcional)"
+                wire:model.lazy="otros"
+                onlyNumbers 
+                placeholder="0"
+                prefix="$"
+              />
+
               <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
                 <div class="flex justify-between items-center">
                   <span class="font-semibold text-blue-800">Total inicial:</span>

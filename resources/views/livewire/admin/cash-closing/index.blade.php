@@ -43,6 +43,10 @@
         label="Ventas"
         value="{{ formatToCop($totales->total_sales) }}" />
 
+      <x-commons.tag tooltip="Total de gastos"
+        label="Gastos"
+        value="{{ formatToCop($totales->gastos) }}" />
+
     </x-slot:top>
 
     <x-slot:header>
@@ -105,6 +109,9 @@
             Propinas
           </th>
           <th>
+            Gastos
+          </th>
+          <th>
             Acciones
           </th>
         </tr>
@@ -147,6 +154,9 @@
 
             <td left>
               @formatToCop($item->tip)
+            </td>
+            <td left>
+              @formatToCop($item->gastos ?? 0)
             </td>
             <td actions>
               <x-buttons.icon icon="pdf"

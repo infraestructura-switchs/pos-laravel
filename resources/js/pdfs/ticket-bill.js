@@ -10,6 +10,12 @@ export default () => ({
   isElectronic: false,
 
   init() {
+    // NUEVO: Descarga automática para DirectSale (Vender)
+    window.addEventListener('direct-sale-download-ticket', (event) => {
+      this.downloadBill(event.detail)
+    })
+
+    // Mantener impresión para QuickSale (Ventas Rápidas)
     window.addEventListener('quick-sale-print-ticket', (event) => {
       if (!this.$store.config.print) return
       this.show = true
@@ -34,6 +40,28 @@ export default () => ({
         })
       })
     })
+  },
+
+  // NUEVO: Método para descargar automáticamente
+  downloadBill(billId) {
+    // Mostrar feedback visual (opcional)
+    if (window.Livewire) {
+      window.Livewire.emit('alert', 'Descargando factura...')
+    }
+
+    // Método 1: Simple y compatible con todos los navegadores
+    const link = document.createElement('a')
+    link.href = `/administrador/facturas-download/${billId}`
+    link.download = `factura-${billId}.pdf`
+    link.style.display = 'none'
+    
+    document.body.appendChild(link)
+    link.click()
+    
+    // Limpiar
+    setTimeout(() => {
+      document.body.removeChild(link)
+    }, 100)
   },
 
   getBill(url) {

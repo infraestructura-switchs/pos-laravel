@@ -73,14 +73,14 @@
     </div>
 
     <div x-show="toggleView"
-      class="flex space-x-4">
+      class="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">
 
-      <div class="w-full">
+      <div class="w-full lg:w-3/5 xl:w-2/3">
         <livewire:admin.quick-sale.products />
         @include('livewire.admin.quick-sale.presentations')
       </div>
 
-      <div class="w-[40%] xl:w-[33%]">
+      <div class="w-full lg:w-2/5 xl:w-1/3">
         @include('livewire.admin.quick-sale.cart')
       </div>
 

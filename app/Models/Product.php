@@ -15,6 +15,14 @@ class Product extends Model
     
     protected $appends = ['image_url', 'large_image_url'];
 
+    protected $casts = [
+        'price' => 'integer',
+        'cost' => 'integer',
+        'stock' => 'integer',
+        'quantity' => 'integer',
+        'units' => 'integer',
+    ];
+
     const ACTIVE = '0';
 
     const INACTIVE = '1';

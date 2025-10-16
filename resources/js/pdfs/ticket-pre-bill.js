@@ -7,14 +7,23 @@ export default () => ({
   delivery_address: '',
   init() {
     window.addEventListener('print-pre-ticket', (event) => {
-      if (!this.$store.config.print) return
+      if (!this.$store.config.print) {
+        return
+      }
       this.show = true
       this.getBill(event.detail)
+      
       this.$nextTick(() => {
         this.setHeight()
-        window.print()
-        this.products = {}
-        this.show = false
+        
+        setTimeout(() => {
+          window.print()
+          
+          setTimeout(() => {
+            this.products = {}
+            this.show = false
+          }, 1000)
+        }, 100)
       })
     })
   },
@@ -28,7 +37,15 @@ export default () => ({
   },
 
   setHeight() {
-    let style = document.getElementById('page-rule')
+    // Usar elemento style único para evitar conflictos
+    let styleId = 'page-rule-pre-bill'
+    let style = document.getElementById(styleId)
+    
+    if (!style) {
+      style = document.createElement('style')
+      style.id = styleId
+      document.head.appendChild(style)
+    }
 
     let oneLine = 0
     let twoLine = 0

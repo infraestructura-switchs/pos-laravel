@@ -22,6 +22,10 @@ class DatabaseSeeder extends Seeder {
         $this->call(UserSeeder::class);
         $this->call(TributeSeeder::class);
         $this->call(TaxRateSeeder::class);
+        $this->call(InvoiceProviderSeeder::class);
+        $this->call(DepartmentSeeder::class);
+        $this->call(CitySeeder::class);
+        $this->call(CurrencySeeder::class);
         $this->call(CompanySeeder::class);
         $this->call(ModuleSeeder::class);
         $this->call(OrderSeeder::class);
@@ -41,6 +45,7 @@ class DatabaseSeeder extends Seeder {
                 $this->call(ProviderSeeder::class);
                 $this->call(CategorySeeder::class);
                 $this->call(ProductSeeder::class);
+                $this->call(ProductosConciertosSeeder::class);
                 $this->call(StaffSeeder::class);
                 $this->call(PayrollSeeder::class);
                 /* $this->call(OutputSeeder::class); */
@@ -51,6 +56,7 @@ class DatabaseSeeder extends Seeder {
         $this->call(PaymentMethodSeeder::class);
         $this->call(TerminalSeeder::class);
         $this->call(FactusConfigurationSeeder::class);
+        $this->call(FactroConfigurationSeeder::class);
 
         if(App::environment('production')){
             shell_exec('chmod -R 777 ' . storage_path('app/public/'));

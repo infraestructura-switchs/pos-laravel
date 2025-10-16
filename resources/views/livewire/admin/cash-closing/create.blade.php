@@ -130,6 +130,13 @@
             <x-wireui.input label="Dinero real en caja"
               wire:model.defer="price"
               onlyNumbers />
+            
+            <x-wireui.input label="Gastos (opcional)"
+              wire:model.defer="gastos"
+              onlyNumbers 
+              placeholder="0"
+              prefix="$" />
+              
             <x-wireui.textarea label="Observaciones"
               wire:model.defer="observations"
               rows="3" />

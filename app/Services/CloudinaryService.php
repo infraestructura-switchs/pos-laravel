@@ -64,6 +64,42 @@ class CloudinaryService implements CloudinaryClientInterface
     }
 
     /**
+     * Upload a raw file (e.g., PDF) to Cloudinary
+     */
+    public function uploadRaw($filePath, $options = []): array
+    {
+        try {
+            $defaultOptions = [
+                'folder' => config('cloudinary.folder', 'pos-images'),
+                'resource_type' => 'raw',
+                'use_filename' => true,
+                'unique_filename' => true,
+                // Aumentar tiempo de espera para cargas de PDFs grandes
+                'timeout' => 120,
+            ];
+
+            $options = array_merge($defaultOptions, $options);
+
+            $result = $this->cloudinary->uploadApi()->upload($filePath, $options);
+
+            return [
+                'success' => true,
+                'public_id' => $result['public_id'],
+                'secure_url' => $result['secure_url'] ?? ($result['url'] ?? null),
+                'url' => $result['url'] ?? $result['secure_url'] ?? null,
+                'resource_type' => $result['resource_type'] ?? 'raw',
+            ];
+        } catch (Exception $e) {
+            Log::error('Cloudinary upload raw error: ' . $e->getMessage());
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
      * Delete an image from Cloudinary
      */
     public function deleteImage($publicId): array

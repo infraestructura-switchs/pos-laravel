@@ -47,7 +47,7 @@ class ModuleSeeder extends Seeder
             ],
             [
                 'name' => 'financiaciones',
-                'is_enabled' => 1,
+                'is_enabled' => 0,
                 'is_functionality' => 0
             ],
             [
@@ -101,20 +101,40 @@ class ModuleSeeder extends Seeder
                 'is_functionality' => 1
             ],
             [
+                'name' => 'vender',
+                'is_enabled' => 1,
+                'is_functionality' => 1
+            ],
+            [
                 'name' => 'reporte de ventas diarias',
-                'is_enabled' => 0,
-                'is_functionality' => 0
+                'is_enabled' => 1,
+                'is_functionality' => 1
             ],
             [
                 'name' => 'impuestos',
                 'is_enabled' => 0,
-                'is_functionality' => 0
+                'is_functionality' => 1
             ],
             [
                 'name' => 'inventario',
                 'is_enabled' => 0,
                 'is_functionality' => 1
-            ]
+            ],
+            [
+                'name' => 'remisiones',
+                'is_enabled' => 1,
+                'is_functionality' => 1
+            ],
+              [
+                'name' => 'entrada-salidas',
+                'is_enabled' => 1,
+                'is_functionality' => 1
+              ],
+              [
+                'name' => 'almacenes',
+                'is_enabled' => 1,
+                'is_functionality' => 1
+            ],
         ];
 
         foreach ($modules as $module) {

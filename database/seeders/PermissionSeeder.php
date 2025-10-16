@@ -32,7 +32,8 @@ class PermissionSeeder extends Seeder {
             'ventas rapidas',
             'reporte de ventas diarias',
             'impuestos',
-            'inventario'
+            'inventario','almacenes','remisiones','entrada-salidas',
+            'vender'
         ];
 
         foreach ($permissions as $key => $value) {

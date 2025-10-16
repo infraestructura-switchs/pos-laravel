@@ -34,7 +34,7 @@ class Index extends Component {
 
         $filter = [1 => 'reference',  2 => 'name'][$this->filter];
 
-        $products = Product::with('taxRates', 'taxRates.tribute')
+        $products = Product::with('taxRates', 'taxRates.tribute', 'category')
                     ->where($filter, 'LIKE', '%' . $this->search . '%')
                     ->filterBarcode($filter, $this->search)
                     ->latest()

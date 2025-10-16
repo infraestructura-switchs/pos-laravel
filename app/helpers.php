@@ -17,7 +17,17 @@ if (! function_exists('rounded')) {
 if (! function_exists('formatToCop')) {
     function formatToCop($value)
     {
-        return '$ '.number_format($value, 0, '.', ',');
+        // Asegurar que el valor sea numérico antes de formatear
+        if (!is_numeric($value)) {
+            $value = 0;
+        }
+        
+        // Convertir explícitamente a float para evitar problemas de tipo
+        $value = (float) $value;
+        
+        // Usar number_format con configuración explícita
+        // Punto (.) para separador decimal, coma (,) para separador de miles
+        return '$ ' . number_format($value, 0, '.', ',');
     }
 }
 

@@ -288,7 +288,7 @@ class Orders extends Component
 
             DB::beginTransaction();
 
-            $bill = BillService::store($products, $paymentMethod, $cash, $order['customer']['id'], $tip, '');
+            $bill = BillService::store($products, $paymentMethod, $cash, $order['customer']['id'], '', $tip);
 
             foreach ($products as $product) {
                 $detailBill = DetailBillService::store($bill, $product);

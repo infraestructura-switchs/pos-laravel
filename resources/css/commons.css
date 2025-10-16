@@ -83,7 +83,129 @@
 }
 
 .container{
-    @apply text-gray-700 max-w-7xl mx-auto px-4 pb-14;
+    @apply text-gray-700 max-w-full mx-auto px-4 pb-14;
+}
+
+/* Mejoras para el layout responsivo */
+.min-w-0 {
+    min-width: 0;
+}
+
+/* Asegurar que las tablas sean responsivas */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Mejorar el comportamiento del grid en pantallas pequeñas */
+@media (max-width: 640px) {
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* Asegurar que el contenido no se desborde */
+.max-w-full {
+    max-width: 100%;
+}
+
+/* Mejorar el scroll horizontal */
+.overflow-x-auto {
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(69, 69, 70, .6) transparent;
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+    height: 6px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+    background-color: rgba(69, 69, 70, .6);
+    border-radius: 3px;
+}
+
+/* Estilos específicos para tablas anchas */
+.table-sm {
+    table-layout: auto;
+    width: 100%;
+    min-width: 1000px;
+}
+
+.table-sm th,
+.table-sm td {
+    overflow: visible;
+    white-space: nowrap;
+    padding: 0.5rem 1rem;
+}
+
+/* Estilos para columnas específicas */
+.table-sm th[style*="width"],
+.table-sm td[style*="width"] {
+    box-sizing: border-box;
+}
+
+/* Mejorar el scroll horizontal para tablas */
+.overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+    height: 8px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+    background: rgba(243, 244, 246, 0.5);
+    border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.5);
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+    background: rgba(107, 114, 128, 0.7);
+}
+
+/* Forzar que las tablas tengan el ancho correcto */
+.table-sm {
+    min-width: 1000px !important;
+    width: max-content !important;
+}
+
+/* Asegurar que el contenedor de la tabla permita scroll */
+.bg-white.border.border-slate-200.shadow-sm.overflow-x-auto {
+    overflow-x: auto !important;
+    width: 100% !important;
+}
+
+/* Mejorar la visibilidad de las barras de scroll */
+.overflow-x-auto::-webkit-scrollbar {
+    height: 12px !important;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+    background: #f1f5f9 !important;
+    border-radius: 6px !important;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+    background: #94a3b8 !important;
+    border-radius: 6px !important;
+    border: 2px solid #f1f5f9 !important;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+    background: #64748b !important;
 }
 
 

@@ -13,6 +13,10 @@ class CashOpening extends Model
     protected $fillable = [
         'initial_cash',
         'initial_coins',
+        'tarjeta_credito',
+        'tarjeta_debito',
+        'cheques',
+        'otros',
         'total_initial',
         'observations',
         'user_id',
@@ -26,6 +30,10 @@ class CashOpening extends Model
         'is_active' => 'boolean',
         'initial_cash' => 'integer',
         'initial_coins' => 'integer',
+        'tarjeta_credito' => 'integer',
+        'tarjeta_debito' => 'integer',
+        'cheques' => 'integer',
+        'otros' => 'integer',
         'total_initial' => 'integer',
     ];
 

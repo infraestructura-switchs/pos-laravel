@@ -24,7 +24,7 @@ class Create extends Component
 
     public $bills, $lastRecord, $terminal, $currentOpening;
 
-    public $cash, $credit_card, $debit_card, $transfer, $tip, $outputs, $cashRegister, $base, $price, $total_sales, $observations;
+    public $cash, $credit_card, $debit_card, $transfer, $tip, $outputs, $gastos, $cashRegister, $base, $price, $total_sales, $observations;
 
     public function mount()
     {
@@ -161,12 +161,14 @@ class Create extends Component
         $rules = [
             'base' => 'required|integer|min:0|max:99999999',
             'price' => 'required|integer|min:0|max:99999999',
+            'gastos' => 'nullable|integer|min:0|max:99999999',
             'observations' => 'nullable|string|max:255'
         ];
 
         $attributes = [
             'base' => 'base inicial',
             'price' => 'dinero real en caja',
+            'gastos' => 'gastos',
             'observations' => 'observaciones'
         ];
 
@@ -189,6 +191,7 @@ class Create extends Component
             'total_sales' => $this->total_sales,
             'tip' => $this->tip,
             'outputs' => $this->outputs,
+            'gastos' => $this->gastos ?: 0,
             'cash_register' => $this->cashRegister,
             'price' => $this->price,
             'observations' => $this->observations,

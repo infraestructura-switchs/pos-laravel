@@ -55,7 +55,7 @@ function getProductsByRate(rates, products) {
 function getTotalsByRate(rates, productsByRate) {
     const totalsByRate = [];
     rates.forEach(value => {
-        totalsByRate[value] = productsByRate[value].map(item => item.total).reduce((prev, curr) => prev + curr, 0);
+        totalsByRate[value] = productsByRate[value].map(item => Number(item.total)).reduce((prev, curr) => prev + curr, 0);
     })
 
     return totalsByRate;
@@ -77,6 +77,6 @@ function getIvaByRate(totalsByRate) {
 
 function getTotalIva(ivaByRate) {
     const array = Object.values(ivaByRate);
-    const value = array.reduce((prev, curr) => prev + curr, 0);
+    const value = array.reduce((prev, curr) => Number(prev) + Number(curr), 0);
     return value
 }

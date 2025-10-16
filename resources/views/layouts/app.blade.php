@@ -54,7 +54,7 @@
 
     <livewire:admin.cash-opening.create />
 
-      <main class="{{ request()->routeIs('admin.quick-sales.create') ? 'pl-14' : 'pl-52' }} pt-14 min-h-screen">
+      <main class="pt-12 md:pt-14 min-h-screen {{ request()->routeIs('admin.quick-sales.create') || request()->routeIs('admin.direct-sale.create') ? 'md:pl-14' : 'md:pl-52 lg:pl-60' }}">
         {{ $slot }}
       </main>
 

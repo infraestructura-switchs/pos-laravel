@@ -14,6 +14,9 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\TerminalController;
 use Illuminate\Support\Facades\Route;
+use App\Models\Bill;
+use App\Services\CloudinaryService;
+use App\Http\Controllers\Admin\BillController as AdminBillController;
 
 // Rutas públicas (sin autenticación)
 Route::post('/auth/login', [AuthController::class, 'login']);
@@ -137,4 +140,43 @@ Route::get('/health', function () {
         'message' => 'API funcionando correctamente',
         'timestamp' => now()->toISOString()
     ]);
+});
+
+// Ruta pública SOLO para probar subida de PDF de factura a Cloudinary
+Route::get('pdf-upload/bill/{bill}', function (Bill $bill) {
+    try {
+        $controller = app(AdminBillController::class);
+        $pdfBase64 = $controller->getBillBase64($bill->id);
+        $pdfContent = base64_decode($pdfBase64);
+
+        $dir = storage_path('app/pdfs');
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0775, true);
+        }
+        $fileName = 'Factura_' . ($bill->number ?? $bill->id) . '.pdf';
+        $filePath = $dir . DIRECTORY_SEPARATOR . $fileName;
+        file_put_contents($filePath, $pdfContent);
+
+        /** @var CloudinaryService $cloud */
+        $cloud = app(CloudinaryService::class);
+        $upload = $cloud->uploadRaw($filePath, [
+            'folder' => config('cloudinary.folder', 'pos-images') . '/bills',
+            'public_id' => 'bill_' . ($bill->number ?? $bill->id) . '_' . time(),
+            'resource_type' => 'raw',
+        ]);
+
+        @unlink($filePath);
+
+        if (!($upload['success'] ?? false)) {
+            return response()->json($upload, 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'file_url' => $upload['secure_url'] ?? $upload['url'] ?? null,
+        ]);
+    } catch (\Throwable $e) {
+        \Log::error('api pdf-upload bill error: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+    }
 });

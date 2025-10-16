@@ -17,7 +17,7 @@
             <x-wireui.native-select wire:model.defer="filter" optionKeyValue="true" :options="$filters" />
         </x-slot:header>
 
-        <table class="table-sm">
+        <table class="table">
             <thead >
                 <tr>
                     <th>
@@ -31,6 +31,9 @@
                     </th>
                     <th left>
                         Nombre
+                    </th>
+                    <th left>
+                        Categoría
                     </th>
                     <th>
                         Impuestos(%)
@@ -69,18 +72,15 @@
                         <td left>
                             {{ $item->name }}
                         </td>
-                        <td class="tooltip">
-                          <button class="flex items-center justify-center text-sm text-blue-500">
-                            <i class="ico icon-eye mr-1 text-base"></i>
-                            ver
-                          </button>
-                          <ul class="tooltip-content">
-                            @foreach ($item->taxRates as $taxRate)
-                              <li>
-                                {{ $taxRate->format_rate}}
-                              </li>
-                            @endforeach
-                          </ul>
+                        <td left>
+                            {{ $item->category?->name ?? '-' }}
+                        </td>
+                        <td>
+                            @if($item->taxRates->count() > 0)
+                                {{ $item->taxRates->pluck('format_rate')->implode(', ') }}
+                            @else
+                                -
+                            @endif
                         </td>
                         <td left>
                             @formatToCop($item->cost)

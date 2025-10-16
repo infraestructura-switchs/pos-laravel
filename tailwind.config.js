@@ -16,6 +16,13 @@ module.exports = {
                 'manrope':['Manrope'],
                 sans: ['Nunito', ...defaultTheme.fontFamily.sans],
             },
+            screens: {
+                'xs': '640px',
+                'sm': '768px',
+                'md': '1024px',
+                'lg': '1366px', // Optimizado para 1366x768
+                'xl': '1536px',
+            },
         },
         fontSize: {
             'xs': '.75rem',

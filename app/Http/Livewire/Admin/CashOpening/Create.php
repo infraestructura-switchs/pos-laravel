@@ -20,6 +20,10 @@ class Create extends Component
     // Campos del formulario
     public $initial_cash = 0;
     public $initial_coins = 0;
+    public $tarjeta_credito = 0;
+    public $tarjeta_debito = 0;
+    public $cheques = 0;
+    public $otros = 0;
     public $total_initial = 0;
     public $observations = '';
 
@@ -58,9 +62,31 @@ class Create extends Component
         $this->calculateTotal();
     }
 
+    public function updatedTarjetaCredito()
+    {
+        $this->calculateTotal();
+    }
+
+    public function updatedTarjetaDebito()
+    {
+        $this->calculateTotal();
+    }
+
+    public function updatedCheques()
+    {
+        $this->calculateTotal();
+    }
+
+    public function updatedOtros()
+    {
+        $this->calculateTotal();
+    }
+
     private function calculateTotal()
     {
-        $this->total_initial = intval($this->initial_cash) + intval($this->initial_coins);
+        $this->total_initial = intval($this->initial_cash) + intval($this->initial_coins) + 
+                              intval($this->tarjeta_credito) + intval($this->tarjeta_debito) + 
+                              intval($this->cheques) + intval($this->otros);
     }
 
     /**
@@ -84,7 +110,7 @@ class Create extends Component
         }
 
         $this->resetValidation();
-        $this->reset(['initial_cash', 'initial_coins', 'total_initial', 'observations']);
+        $this->reset(['initial_cash', 'initial_coins', 'tarjeta_credito', 'tarjeta_debito', 'cheques', 'otros', 'total_initial', 'observations']);
         $this->openCreate = true;
     }
 
@@ -96,12 +122,20 @@ class Create extends Component
         $rules = [
             'initial_cash' => 'required|integer|min:0|max:99999999',
             'initial_coins' => 'nullable|integer|min:0|max:99999999',
+            'tarjeta_credito' => 'nullable|integer|min:0|max:99999999',
+            'tarjeta_debito' => 'nullable|integer|min:0|max:99999999',
+            'cheques' => 'nullable|integer|min:0|max:99999999',
+            'otros' => 'nullable|integer|min:0|max:99999999',
             'observations' => 'nullable|string|max:255'
         ];
 
         $attributes = [
             'initial_cash' => 'dinero inicial en efectivo',
             'initial_coins' => 'monedas iniciales',
+            'tarjeta_credito' => 'tarjeta de crédito',
+            'tarjeta_debito' => 'tarjeta de débito',
+            'cheques' => 'cheques',
+            'otros' => 'otros métodos de pago',
             'observations' => 'observaciones'
         ];
 
@@ -128,6 +162,10 @@ class Create extends Component
         $cashOpening = CashOpening::create([
             'initial_cash' => $this->initial_cash,
             'initial_coins' => $this->initial_coins ?: 0,
+            'tarjeta_credito' => $this->tarjeta_credito ?: 0,
+            'tarjeta_debito' => $this->tarjeta_debito ?: 0,
+            'cheques' => $this->cheques ?: 0,
+            'otros' => $this->otros ?: 0,
             'total_initial' => $this->total_initial,
             'observations' => $this->observations,
             'user_id' => auth()->id(),
@@ -145,6 +183,10 @@ class Create extends Component
             'user' => auth()->user()->name,
             'initial_cash' => $this->initial_cash,
             'initial_coins' => $this->initial_coins,
+            'tarjeta_credito' => $this->tarjeta_credito,
+            'tarjeta_debito' => $this->tarjeta_debito,
+            'cheques' => $this->cheques,
+            'otros' => $this->otros,
             'total_initial' => $this->total_initial,
             'observations' => $this->observations,
             'datetime' => now()->format('d-m-Y H:i:s'),

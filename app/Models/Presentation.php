@@ -15,6 +15,11 @@ class Presentation extends Model {
 
     protected $guarded=['id'];
 
+    protected $casts = [
+        'price' => 'integer',
+        'quantity' => 'integer',
+    ];
+
     public function product(){
         return $this->belongsTo(Product::class);
     }

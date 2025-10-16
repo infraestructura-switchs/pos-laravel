@@ -11,8 +11,8 @@
                     <x-wireui.native-select label="Rol" wire:model.defer="role" optionKeyValue="true" placeholder="Selecciona el rol" :options="$roles"  class="w-full"/>
                 @endif
                 <x-wireui.input label="Email" wire:model.defer="user.email" placeholder="Email del empleado"  />
-                <x-wireui.input label="Contraseña" type="password" wire:model.defer="password" placeholder="Contraseña" />
-                <x-wireui.input label="Confirma la contraseña" type="password" wire:model.defer="password_confirmation" placeholder="Confirma la contraseña" />
+                <x-wireui.input id="edit_password" label="Contraseña" type="password" wire:model.defer="password" placeholder="Contraseña" />
+                <x-wireui.input id="edit_password_confirmation" label="Confirma la contraseña" type="password" wire:model.defer="password_confirmation" placeholder="Confirma la contraseña" />
                 @if ($user->id !== 1)
                     <x-buttons.switch wire:model.defer="user.status" active="activo" inactive="Inactivo" />
                 @endif

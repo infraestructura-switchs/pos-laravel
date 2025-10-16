@@ -1,5 +1,6 @@
-window.options = { style: 'currency', currency: 'USD', minimumFractionDigits: 0 };
-window.numberFormat = new Intl.NumberFormat('en-US', options);
+// Configuración consistente con PHP: usar formato colombiano pero con punto decimal
+window.options = { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 };
+window.numberFormat = new Intl.NumberFormat('es-CO', options);
 
 window.onlyNumbers = function(event, allowAll=false) {
   if (!allowAll) {

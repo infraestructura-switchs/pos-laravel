@@ -6,25 +6,20 @@ export default () => ({
   products: {},
 
   init() {
-    console.log('🔧 INIT: ticket-command-bill.js cargado correctamente')
     window.addEventListener('print-command-bill', (event) => {
-      console.log('🚀 EVENTO: print-command-bill recibido', event.detail)
-      console.log('📄 CONFIG: print habilitado?', this.$store.config.print)
-      
       if (!this.$store.config.print) {
-        console.log('❌ BLOQUEADO: Configuración de impresión deshabilitada')
         return
       }
-      
-      console.log('✅ PROCESANDO: Iniciando impresión de comanda')
       this.show = true
       this.getBill(event.detail)
       this.$nextTick(() => {
-        console.log('🖨️ IMPRIMIENDO: Ejecutando window.print()')
         this.setHeight()
         window.print()
-        this.products = {}
-        this.show = false
+        
+        setTimeout(() => {
+          this.products = {}
+          this.show = false
+        }, 500)
       })
     })
   },
@@ -37,7 +32,15 @@ export default () => ({
   },
 
   setHeight() {
-    let style = document.getElementById('page-rule')
+    // Usar elemento style único para evitar conflictos
+    let styleId = 'page-rule-command-bill'
+    let style = document.getElementById(styleId)
+    
+    if (!style) {
+      style = document.createElement('style')
+      style.id = styleId
+      document.head.appendChild(style)
+    }
 
     let oneLine = 0
     let twoLine = 0
