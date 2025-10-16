@@ -1,20 +1,18 @@
 <?php
+
 namespace App\Services\Factro;
 
 use App\Enums\LegalOrganization;
 use App\Exceptions\CustomException;
 use App\Models\Bill;
-use App\Models\Tribute;
 use App\Models\Company;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use App\Services\FactroConfigurationService;
 
 class FactroElectronicBillService
 {
-
 
     private static function prepareData(Bill $bill): array
     {
@@ -25,62 +23,68 @@ class FactroElectronicBillService
         $tributosAggregate = [];
 
         foreach ($details as $detail) {
+            $tribute1 = $detail->documentTaxes->first();
+            $hasTax = false;
+            $taxRate = 0;
+            $tribute2 = null;
+            $apiTributeId = null;
+            $tributeName = null;
+
+            if ($tribute1) {
+                $tributeName = $tribute1->tribute_name;
+                if ($tributeName && !empty(trim($tributeName))) {
+                    $tribute2 = $tribute1->taxRates->first();
+                    if ($tribute2 && $tribute2->rate > 0) {
+                        $hasTax = true;
+                        $taxRate = $tribute2->rate / 100;
+                    }
+                }
+            }
+
+
             $valorUnitarioBruto = $detail->price;
+            if ($hasTax) {
+                $valorUnitarioBruto = $detail->price / (1 + $taxRate);
+            }
+
             $valorBruto = $valorUnitarioBruto * $detail->amount;
             $totalBruto += $valorBruto;
 
-            $tribute1 = $detail->documentTaxes->first();
-            $hasTax = false;
-            $tributeName = null;
-            $apiTributeId = null;
-            $tribute2 = null;
+            Log::info('Detalle de factura', [
+                'precio_original' => $detail->price,
+                'precio_bruto_ajustado' => $valorUnitarioBruto,
+                'cantidad' => $detail->amount,
+                'valor_bruto' => $valorBruto,
+                'tiene_impuesto' => $hasTax,
+                'tasa_impuesto' => $taxRate,
+            ]);
+
             $valorImporte = 0;
+            if ($hasTax) {
+                $valorImporte = $valorBruto * $taxRate;
+                $totalImpuestos += $valorImporte;
 
-            Log::info('documentTaxes 1', ['documentTaxes' => $detail->documentTaxes]);
-            if ($tribute1 ) {
-                 Log::info('tribute1 1', ['tribute1' => $tribute1]);
-                $tributeName = $tribute1->tribute_name; 
-                if ($tributeName && !empty(trim($tributeName)) ) {
-                    $tribute2 = $tribute1->taxRates->first();
-                    Log::info('tribute2 2', ['tribute2' => $tribute2]);
-                    if ($tribute2 && $tribute2->rate > 0) {
-                        $apiTributeId = self::$tributeMap[$tributeName] ;
-                        if ($apiTributeId) {
-                            $hasTax = true;
-                            $taxRate = $tribute2->rate / 100;
-                            $valorImporte = $valorBruto * $taxRate;
-                            $totalImpuestos += $valorImporte;
-
-
-                            $tributeKey = $apiTributeId;
-                            if (!isset($tributosAggregate[$tributeKey])) {
-                                $tributosAggregate[$tributeKey] = [
-                                    'id' => $apiTributeId,
-                                    'nombre' => $tributeName,
-                                    'esImpuesto' => true,
-                                    'valorImporteTotal' => $totalImpuestos,
-                                    'detalles' => []
-                                ];
-                            }
-                            $tributosAggregate[$tributeKey]['valorImporteTotal'] += $valorImporte;
-                            $tributosAggregate[$tributeKey]['detalles'][] = [
-                                'valorImporte' => round($valorImporte, 2),
-                                'valorBase' => round($valorBruto, 2),
-                                'porcentaje' => (float) $tribute2->rate,
-                            ];
-
-                            Log::info('Tribute mapeado', ['tribute_name' => $tributeName, 'api_id' => $apiTributeId]);
-                        } else {
-                            Log::error('apiTributeId no mapeado', ['tribute_name' => $tributeName, 'detail_id' => $detail->id]);
-                        }
-                    } else {
-                        Log::warning('Sin taxRate para tribute', ['tribute_id' => $tribute1->id]);
-                    }
+                $apiTributeId = self::$tributeMap[$tributeName] ?? null;
+                if (!$apiTributeId) {
+                    Log::error('apiTributeId no mapeado', ['tribute_name' => $tributeName, 'detail_id' => $detail->id]);
                 } else {
-                    Log::warning('tribute_name null o vacío para detail, skipping tax', ['detail_id' => $detail->id]);
+                    $tributeKey = $apiTributeId;
+                    if (!isset($tributosAggregate[$tributeKey])) {
+                        $tributosAggregate[$tributeKey] = [
+                            'id' => $apiTributeId,
+                            'nombre' => $tributeName,
+                            'esImpuesto' => true,
+                            'valorImporteTotal' => 0,
+                            'detalles' => []
+                        ];
+                    }
+                    $tributosAggregate[$tributeKey]['valorImporteTotal'] += round($valorImporte, 2);
+                    $tributosAggregate[$tributeKey]['detalles'][] = [
+                        'valorImporte' => round($valorImporte, 2),
+                        'valorBase' => round($valorBruto, 2),
+                        'porcentaje' => (float) $tribute2->rate,
+                    ];
                 }
-            } else {
-                 Log::info('Sin tributo para detail', ['detail_id' => $detail->id]);
             }
 
             $items[] = [
@@ -94,7 +98,7 @@ class FactroElectronicBillService
                 'valorUnitarioBruto' => round($valorUnitarioBruto, 2),
                 'valorBruto' => round($valorBruto, 2),
                 'cargosDescuentos' => [],
-                'tributos' => $hasTax ? [
+                'tributos' => $hasTax && $apiTributeId ? [
                     [
                         'id' => $apiTributeId,
                         'nombre' => $tributeName,
@@ -112,6 +116,20 @@ class FactroElectronicBillService
             throw new CustomException('No se pudieron preparar items para Factro');
         }
 
+
+        $calculatedTotal = $totalBruto - $bill->discount + $totalImpuestos;
+        if (abs($calculatedTotal - $bill->total) > 0.01) {
+            Log::error('Inconsistencia en total de factura', [
+                'bill_id' => $bill->id,
+                'calculated_total' => $calculatedTotal,
+                'stored_total' => $bill->total,
+                'subtotal' => $bill->subtotal,
+                'discount' => $bill->discount,
+                'total_impuestos' => $totalImpuestos,
+            ]);
+            throw new CustomException("El total almacenado ({$bill->total}) no coincide con el cálculo esperado ({$calculatedTotal}).");
+        }
+
         $customer = $bill->customer;
         $tipoIdentificacion = $customer->identificationDocument->code ?? 31;
         Log::info('Tipo Identificación mapeado', ['customer_id' => $customer->id, 'code' => $tipoIdentificacion]);
@@ -121,32 +139,35 @@ class FactroElectronicBillService
         $moneda = $company->currency->acronym ?? 'COP';
         Log::info('Moneda de company', ['moneda' => $moneda]);
         $dv = $customer->dv ?? '';
-         Log::info('DV', ['dv' => $dv]);
-        $departamento = $company->department; 
-        $ciudad = $company->city;  
+        Log::info('DV', ['dv' => $dv]);
+
+        $departamento = $company->department;
+        $ciudad = $company->city;
         $ubicacion = [
             'cityName' => $ciudad->city_name ?? 'tulua',
             'countrySubentity' => $departamento->department_name ?? 'CAUCA',
-            'address' => [$company->direction ?? 'CL 46 NORTE AV 5 A N 36'], 
-
+            'address' => [$company->direction ?? 'CL 46 NORTE AV 5 A N 36'],
         ];
         Log::info('Ubicación de company expandida', ['ubicacion' => $ubicacion]);
+
         $numberingRange = FactroApiService::getNumberingRangeForBill($bill->terminal_id ?? null);
-        $config = FactroConfigurationService::apiConfiguration();
+        Log::info('Datos de Factro expandidos bill->number numberingRange->current', [
+            'bill->number' => $bill->number,
+            'numberingRange->current' => $numberingRange->current,
+        ]);
 
-        Log::info('Datos de Factro expandidos bill->number numberingRange->current', ['bill->number' => $bill->number,$numberingRange->current]);
         $bill->number = $bill->number ?? ($numberingRange->current + 1);
-        
-        Log::info('Datos de Factro expandidos bill->number numberingRange->current completo', 
-        ['bill->number' => $bill->number,$numberingRange->current,
-       $numberingRange->prefix.$bill->number]);
-
+        Log::info('Datos de Factro expandidos bill->number numberingRange->current completo', [
+            'bill->number' => $bill->number,
+            'numberingRange->current' => $numberingRange->current,
+            'numero_completo' => $numberingRange->prefix . $bill->number,
+        ]);
 
         $data = [
             'documento' => [
                 'prefijo' => $numberingRange->prefix,
                 'numeroDocumento' => $bill->number,
-                'numeroDocumentoCompleto' => $numberingRange->prefix.$bill->number,
+                'numeroDocumentoCompleto' => $numberingRange->prefix . $bill->number,
                 'numeroAutorizacion' => $numberingRange->resolution_number,
                 'fechaInicioNumeracion' => $numberingRange->date_authorization,
                 'fechaFinNumeracion' => $numberingRange->expire,
@@ -185,22 +206,29 @@ class FactroElectronicBillService
                 'valorDescuentos' => round($bill->discount, 2),
                 'valorTotalSinImpuestos' => $hasTax ? round($totalBruto - $bill->discount, 2) : 0,
                 'valorTotalConImpuestos' => round($totalBruto - $bill->discount + $totalImpuestos, 2),
-                'valorNeto' => round($bill->total, 2)
+                'valorNeto' => round($totalBruto - $bill->discount + $totalImpuestos, 2),
             ],
             'detalles' => $items,
-            'tributos' => array_values($tributosAggregate), 
+            'tributos' => array_values($tributosAggregate),
             'versionIntegrador' => '1.0.1.2'
         ];
 
-        Log::info('Datos preparados para FACTRO', ['bill_id' => $bill->id, 'items_count' => count($items), 'total_bruto' => $totalBruto]);
+        Log::info('Datos preparados para FACTRO', [
+            'bill_id' => $bill->id,
+            'items_count' => count($items),
+            'total_bruto' => $totalBruto,
+            'total_impuestos' => $totalImpuestos,
+            'total_neto' => $data['totales']['valorNeto']
+        ]);
         Log::debug('Detalle datos para FACTRO', ['data' => $data]);
+
         return $data;
     }
         private static $tributeMap = [
-        'IBUA' => '05', 
-        'IVA' => '01',  
-        'INC' => '04',  
-        'ICUI' => '06',
+        'IBUA' => '5',
+        'IVA'  => '1',
+        'INC'  => '4',
+        'ICUI' => '6',
     ];
 
 
@@ -208,7 +236,7 @@ class FactroElectronicBillService
     {
         Log::info('Iniciando validación FACTRO para bill', ['bill' => $bill]);
         $data = self::prepareData($bill);
-        Log::info('Datos preparados para validación FACTRO data  ', ['$data ' => $data ]);
+        Log::info('Datos preparados para validación FACTRO data', ['data_keys' => array_keys($data)]);
         $httpService = FactroHttpService::apiHttp();
         $response = $httpService->post('send-invoice-public-key', $data);
         Log::info('Respuesta de FACTRO recibida', ['status' => $response->status(), 'bill_id' => $bill->id]);
@@ -217,10 +245,10 @@ class FactroElectronicBillService
 
     public static function saveElectronicBill(Response $response, array $data, Bill $bill): void
     {
-        $electronicBill = $data; 
+        $electronicBill = $data;
         Log::info('Respuesta electrónica FACTRO expandida', ['electronicBill' => $electronicBill]);
         $dianSuccess = $electronicBill['dianStatus'] === 'true';
-        $httpStatus = $response->status(); 
+        $httpStatus = $response->status();
 
         if (!$dianSuccess || $httpStatus !== 200) {
             Log::error('Error en DIAN o HTTP desde FACTRO', [
@@ -235,7 +263,7 @@ class FactroElectronicBillService
 
         $terminalId = $bill->terminal_id;
         $numberingRange = FactroApiService::getNumberingRangeForBill($terminalId);
-        $billNumberFull = $electronicBill['prefijo'].$electronicBill['numeroFactura'];
+        $billNumberFull = $electronicBill['prefijo'] . $electronicBill['numeroFactura'];
         $billNumber = $electronicBill['numeroFactura'];
         $bill->number = $billNumberFull;
         $bill->save();
