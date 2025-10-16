@@ -59,6 +59,15 @@
                        onerror="this.src='/images/no-product-image.svg'">
                 </div>
 
+                <!-- Imagen del producto -->
+                <div class="mb-2 flex justify-center">
+                  <img :src="item.image_url || '/images/no-product-image.svg'" 
+                       :alt="item.name"
+                       class="h-16 w-16 object-cover rounded"
+                       loading="lazy"
+                       onerror="this.src='/images/no-product-image.svg'">
+                </div>
+
                 <div class="mt-auto select-none text-xs">
                   <span x-text="item.reference" class="font-medium text-blue-600 text-xs"></span>
                   <p x-text="item.name" class="leading-3 text-xs sm:text-sm break-words"></p>
