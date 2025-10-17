@@ -2,6 +2,9 @@ FROM richarvey/nginx-php-fpm:3.1.6
 
 COPY . .
 
+# Copia tu configuración personalizada al directorio conf.d
+COPY conf.d/vhost.conf /etc/nginx/conf.d/vhost.conf
+
 # Image config
 ENV SKIP_COMPOSER 1
 ENV WEBROOT /var/www/html/public
@@ -16,5 +19,7 @@ ENV LOG_CHANNEL stderr
 
 # Allow composer to run as root
 ENV COMPOSER_ALLOW_SUPERUSER 1
+
+EXPOSE 80
 
 CMD ["/start.sh"]
