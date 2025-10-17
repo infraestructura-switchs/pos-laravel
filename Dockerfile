@@ -13,11 +13,8 @@ ENV REAL_IP_HEADER 1
 ENV APP_ENV production
 ENV APP_DEBUG false
 ENV LOG_CHANNEL stderr
-#ENV APP_KEY base64:xezR3eGeEbhmx0sQjF6JKSoO72QyBE9ScmoUzMbgkwI=
 
 # Allow composer to run as root
 ENV COMPOSER_ALLOW_SUPERUSER 1
-
-
 
 CMD ["/start.sh"]

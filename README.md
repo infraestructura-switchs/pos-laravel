@@ -1,134 +1,22 @@
-<p align="center">
-    <a href="https://aimeos.org/">
-        <img src="storage/app/public/images/system/logo-system.png" alt="Hallpos logo" title="Hallpos" height="180" />
-    </a>
-</p>
+# Laravel 11 with a Docker PHP Image
 
-[Hallpos](https://hallpos.com.co): Agiliza tus ventas, controla tu inventario y obtén informes al instante donde te encuentres. Nuestro sistema POS es fácil de usar y conectar con servicios de facturación electrónica.
+A demo repo for deploying a Laravel PHP application on [Render](https://render.com) using Docker. You can follow the getting started tutorial [here](https://render.com/docs/deploy-php-laravel-docker).
 
-![dashboard](./public/dashboard.png)
 
-Visit [demo](https://test.hallpos.com.co/) page:
-- User: admin@gmail.com
-- Password: 12345678
+## Deployment
 
-## Table Of Content
+1. [Create](https://dashboard.render.com/new/database) a new PostgreSQL database on Render and copy the internal DB URL to use below.
 
-- [Installation](#installation)
-  - [Requirements](#requirements)
-  - [Steps](#steps)
-- [Deploy](#deploy)
-  - [Requirements](#requirements-1)
-  - [Steps](#steps-1)
+2. Fork this repo to your own GitHub account.
 
-## Installation
+3. Create a new **Web Service** on Render, and give Render's GitHub app permission to access your new repo.
 
-### Requirements
+4. Select `Docker` for the environment, and add the following environment variable under the *Advanced* section:
 
-| Technology   | Version   |
-|--------------|-----------|
-| <img src="https://www.php.net//images/logos/new-php-logo.svg" width="100" style="margin-top:10px"> <p align="center">php</p> | >= 8     |
-| <img src="https://getcomposer.org/img/logo-composer-transparent3.png" width="80" style="margin-left:10px;margin-top:10px"> <p align="center">Composer</p> | >= 2 (optional)    |
+   | Key             | Value           |
+   | --------------- | --------------- |
+   | `APP_KEY`  | Copy the output of `php artisan key:generate --show` |
+   | `DATABASE_URL`  | The **internal database url** for the database you created above. |
+   | `DB_CONNECTION`  | `pgsql` |
 
-### Steps
-
-```bash
-git clone git@github.com:Halltec/pos-laravel-v2.git
-```
-
-To install the composer dependencies, execute this command:
-
-```bash
-cd pos-laravel-v2
-
-composer install
-# or install from composer.phar file:
-php composer.phar install
-```
-
-Create .env file, execute this command:
-
-```bash
-cp .env-example .env
-```
-
-Set database credentials to the following environment variables:
-
-```env
-DB_DATABASE=pos-laravel-v2
-DB_USERNAME=example
-DB_PASSWORD=example
-```
-
-After, execute this command:
-
-```bash
-php artisan key:generate
-php artisan migrate
-php artisan migrate:fresh --seed
-```
-
-## Deploy
-
-### Requirements
-
-| Technology   | Version   |
-|--------------|-----------|
-| <img src="https://www.php.net//images/logos/new-php-logo.svg" width="100" style="margin-top:10px"> <p align="center">php</p> | >= 8     |
-| <img src="https://getcomposer.org/img/logo-composer-transparent3.png" width="80" style="margin-left:10px;margin-top:10px"> <p align="center">Composer</p> | >= 2 (optional)    |
-
-### Steps
-
-Create subdomain to new project:
-
-```bash
-example.hallpos.com.co
-```
-
-Create database, user and into folder created from subdomain, clone Hallpos repository:
-
-```bash
-cd <path_folder_subdomain>
-rm default.php
-git clone git@github.com:Halltec/pos-laravel-v2.git .
-```
-
-To install the composer dependencies, execute this command:
-
-```bash
-composer install
-# or install from composer.phar file:
-php composer.phar install
-```
-
-Create .env file, execute this command:
-
-```bash
-cp .env-example .env
-```
-
-Change the following environment variables:
-
-```env
-APP_ENV=production
-APP_DEBUG=false
-APP_URL=<subdomain>
-```
-
-Set database credentials to the following environment variables:
-
-```env
-DB_DATABASE=example
-DB_USERNAME=example
-DB_PASSWORD=example
-```
-
-After, execute this command:
-
-```bash
-php artisan key:generate
-php artisan migrate:fresh --seed
-php artisan storage:link
-cp htaccess .htaccess
-chmod 775 -R storage/app/public
-```
+That's it! Your Laravel 11 app will be live on your Render URL as soon as the build finishes. You can test it out by registering and logging in.
