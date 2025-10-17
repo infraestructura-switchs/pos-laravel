@@ -1,11 +1,27 @@
-FROM ubuntu:jammy
+FROM richarvey/nginx-php-fpm:3.1.6
 
-RUN apt-get -qq update \
-    && apt-get -qq install -y --no-install-recommends nginx \
-    && rm -rf /var/lib/apt/lists/*
+COPY . .
+#COPY conf/nginx/nginx-site.conf /var/www/html/index.html
 
-COPY html/index.html /var/www/html/index.html
+# Image config
+ENV SKIP_COMPOSER 1
+ENV WEBROOT /var/www/html/public
+ENV PHP_ERRORS_STDERR 1
+ENV RUN_SCRIPTS 1
+ENV REAL_IP_HEADER 1
 
-EXPOSE 80
+# Laravel config
+ENV APP_ENV production
+ENV APP_DEBUG false
+ENV LOG_CHANNEL stderr
+#ENV APP_KEY base64:xezR3eGeEbhmx0sQjF6JKSoO72QyBE9ScmoUzMbgkwI=
 
-CMD ["nginx", "-g", "daemon off;"]
+# Allow composer to run as root
+ENV COMPOSER_ALLOW_SUPERUSER 1
+
+RUN chown -R www-data:www-data /var/www/html \
+ && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
+  &&  chmod -R 775  /var/www/html/storage/logs/laravel.log
+
+
+CMD ["/start.sh"]
