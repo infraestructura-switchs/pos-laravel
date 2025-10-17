@@ -9,7 +9,7 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ./src:/var/www
+      - ./:/var/www
       - ./conf/nginx/:/etc/nginx/conf.d/
       - ./conf/nginx/:/etc/supervisor/conf.d/
     depends_on:
