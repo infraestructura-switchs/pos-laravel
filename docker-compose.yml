@@ -1,29 +1,17 @@
 version: '3.8'
 
 services:
-
-  # Web Server Service
-  nginx:
-    image: nginx:alpine
-    container_name: nginx
-    ports:
-      - "8080:80"
-    volumes:
-      - ./:/var/www
-      - ./conf/nginx/:/etc/nginx/conf.d/
-      - ./conf/nginx/:/etc/supervisor/conf.d/
-    depends_on:
-      - app
-
-  # Application Service
   app:
-    container_name: blog
-    build:
-      context: ./php
-      dockerfile: Dockerfile
+    image: 'ammezie/laravel-coolify:latest'
     volumes:
-      - ./src:/var/www
-    ports:
-      - "9000:9000"
-    working_dir: /var/www
+      - '.:/var/www/html'
+      - './conf/nginx/:/etc/nginx/conf.d/'
+      - './conf/nginx/:/etc/supervisor/conf.d/'
+  worker:
+    image: 'ammezie/laravel-coolify:latest'
+    command: ["php", "/var/www/html/artisan", "queue:work", "--tries=3"]
+    volumes:
+      - '.:/var/www/html'
+      - './conf/nginx/:/etc/nginx/conf.d/'
+      - './conf/nginx/:/etc/supervisor/conf.d/'
 
