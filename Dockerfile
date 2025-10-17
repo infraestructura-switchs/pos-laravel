@@ -1,6 +1,7 @@
 FROM richarvey/nginx-php-fpm:3.1.6
 
 COPY . .
+#COPY conf/nginx/nginx-site.conf /var/www/html/index.html
 
 # Image config
 ENV SKIP_COMPOSER 1
@@ -24,4 +25,3 @@ RUN chown -R www-data:www-data /var/www/html \
 
 
 CMD ["/start.sh"]
-
