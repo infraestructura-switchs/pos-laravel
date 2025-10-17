@@ -1,55 +1,20 @@
-# Use a production-ready PHP-FPM image with Alpine for a smaller size
-FROM php:8.3-fpm-alpine
+FROM richarvey/nginx-php-fpm:3.1.6
 
-# Install system dependencies
-RUN apk add --no-cache \
-    nginx \
-    supervisor \
-    # Other dependencies your app needs
-    libpng \
-    libjpeg-turbo \
-    libwebp \
-    libzip \
-    freetype \
-    icu-dev \
-    git \
-    npm \
-    curl \
-    unzip
-
-# Install common PHP extensions
-RUN docker-php-ext-install \
-    pdo_mysql \
-    opcache \
-    zip \
-    exif \
-    pcntl \
-    mbstring \
-    gd
-
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
-
-# Set working directory
-WORKDIR /var/www/html
-
-# Copy application code into the container
 COPY . .
 
-# Run Composer installation, optimized for production
-RUN composer install --no-dev --optimize-autoloader
+# Image config
+ENV SKIP_COMPOSER 1
+ENV WEBROOT /var/www/html/public
+ENV PHP_ERRORS_STDERR 1
+ENV RUN_SCRIPTS 1
+ENV REAL_IP_HEADER 1
 
-# Run npm production build for your assets
-RUN npm ci && npm run build
+# Laravel config
+ENV APP_ENV production
+ENV APP_DEBUG false
+ENV LOG_CHANNEL stderr
 
-# Set permissions for the application
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-
-# Expose port 9000
-EXPOSE 9000
-
-# Set the entry point to run PHP-FPM and supervisor
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
-
+# Allow composer to run as root
+ENV COMPOSER_ALLOW_SUPERUSER 1
 
 CMD ["/start.sh"]
