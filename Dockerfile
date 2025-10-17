@@ -27,3 +27,11 @@ RUN composer install --no-interaction --optimize-autoloader --no-dev
 
 # Remove composer cache
 RUN rm -rf /var/www/html/.composer/cache
+
+
+# Allow composer to run as root
+ENV COMPOSER_ALLOW_SUPERUSER 1
+
+EXPOSE 80
+
+CMD ["/start.sh"]
