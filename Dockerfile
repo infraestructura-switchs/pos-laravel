@@ -1,55 +1,29 @@
-FROM php:8.2.11-fpm
+FROM serversideup/php:8.3-fpm-nginx
 
-# Install composer
-RUN echo "\e[1;33mInstall COMPOSER\e[0m"
-RUN cd /tmp \
-    && curl -sS https://getcomposer.org/installer | php \
-    && mv composer.phar /usr/local/bin/composer
+ENV PHP_OPCACHE_ENABLE=1
 
-RUN docker-php-ext-install pdo pdo_mysql
+USER root
 
-RUN apt-get update
+# Install Node.js
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get update \
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install useful tools
-RUN apt-get -y install apt-utils nano wget dialog vim
+# Copy application files
+COPY --chown=www-data:www-data . /var/www/html
 
-# Install important libraries
-RUN echo "\e[1;33mInstall important libraries\e[0m"
-RUN apt-get -y install --fix-missing \
-    apt-utils \
-    build-essential \
-    git \
-    curl \
-    libcurl4 \
-    libcurl4-openssl-dev \
-    zlib1g-dev \
-    libzip-dev \
-    zip \
-    libbz2-dev \
-    locales \
-    libmcrypt-dev \
-    libicu-dev \
-    libonig-dev \
-    libxml2-dev
+# Switch to non-root user
+USER www-data
 
-# RUN echo "\e[1;33mInstall important docker dependencies\e[0m"
-# RUN docker-php-ext-install \
-#     exif \
-#     pcntl \
-#     bcmath \
-#     ctype \
-#     curl \
-#     iconv \
-#     xml \
-#     soap \
-#     pcntl \
-#     mbstring \
-#     tokenizer \
-#     bz2 \
-#     zip \
-#     intl
+# Install dependencies and build
+RUN npm ci \
+    && npm run build \
+    && rm -rf /var/www/html/.npm
 
-# Install Postgre PDO
-RUN apt-get install -y libpq-dev \
-    && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
-    && docker-php-ext-install pdo pdo_pgsql pgsql
+# Install PHP dependencies
+RUN composer install --no-interaction --optimize-autoloader --no-dev
+
+# Remove composer cache
+RUN rm -rf /var/www/html/.composer/cache
