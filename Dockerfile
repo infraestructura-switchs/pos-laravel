@@ -1,29 +1,12 @@
-FROM serversideup/php:8.3-fpm-nginx
+FROM ubuntu:jammy
 
-ENV PHP_OPCACHE_ENABLE=1
-
-USER root
-
-# Install Node.js
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get update \
-    && apt-get install -y nodejs \
-    && apt-get clean \
+RUN apt-get -qq update \
+    && apt-get -qq install -y --no-install-recommends \
+       nginx=1.18.0-6ubuntu14.3 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy application files
-COPY --chown=www-data:www-data . /var/www/html
+COPY html/index.html /var/www/html/index.html
 
-# Switch to non-root user
-USER www-data
+EXPOSE 80
 
-# Install dependencies and build
-RUN npm ci \
-    && npm run build \
-    && rm -rf /var/www/html/.npm
-
-# Install PHP dependencies
-RUN composer install --no-interaction --optimize-autoloader --no-dev
-
-# Remove composer cache
-RUN rm -rf /var/www/html/.composer/cache
+CMD ["nginx", "-g", "daemon off;"]
