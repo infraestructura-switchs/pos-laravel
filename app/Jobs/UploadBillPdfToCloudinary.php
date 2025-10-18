@@ -80,11 +80,23 @@ class UploadBillPdfToCloudinary implements ShouldQueue
                 'resource_type' => 'raw',
             ]);
             
+            $pdfUrl = $upload['secure_url'] ?? $upload['url'] ?? null;
+            
             \Log::info('✅ Job UploadBillPdfToCloudinary - PDF subido a Cloudinary', [
                 'bill_id' => $this->billId,
                 'success' => $upload['success'] ?? false,
-                'url' => $upload['secure_url'] ?? $upload['url'] ?? 'N/A'
+                'url' => $pdfUrl
             ]);
+
+            // Guardar el URL del PDF en la base de datos
+            if ($pdfUrl && ($upload['success'] ?? false)) {
+                $bill->pdf_url = $pdfUrl;
+                $bill->save();
+                \Log::info('💾 Job UploadBillPdfToCloudinary - URL guardado en BD', [
+                    'bill_id' => $this->billId,
+                    'pdf_url' => $pdfUrl
+                ]);
+            }
 
             @unlink($tmpPath);
 

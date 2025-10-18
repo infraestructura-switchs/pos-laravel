@@ -513,7 +513,7 @@
           </div>
         @endif
 
-        @if (App\Services\FactusConfigurationService::isApiEnabled())
+        @if (App\Services\FactusConfigurationService::isApiEnabled() && isRoot())
           <div x-data="authenticatedFactus()">
             <button @click="openFactus()" class="flex h-full items-center" title="Abrir Factus">
               <x-icons.factus class="h-5 w-5 md:h-6 md:w-6 text-indigo-800" title="Factus activo" />
@@ -521,7 +521,7 @@
           </div>
         @endif
 
-        @if (App\Services\FactroConfigurationService::isApiEnabled())
+        @if (App\Services\FactroConfigurationService::isApiEnabled() && isRoot())
           <div x-data="authenticatedFactro()">
             <button @click="openFactro()" class="flex h-full items-center" title="Abrir Factro">
               <x-icons.factro class="h-6 w-6 text-indigo-800" title="Factro activo" />

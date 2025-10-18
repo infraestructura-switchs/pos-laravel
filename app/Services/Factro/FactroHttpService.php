@@ -35,8 +35,8 @@ class FactroHttpService
         $instance = new static;
         $config = FactroConfigurationService::apiConfiguration();
         $instance::$http = Http::timeout(180) 
-            ->retry(3, 10000, function ($attempt) { 
-                return $attempt * 2;
+            ->retry(3, 10000, function ($exception, $request) { 
+                return true; // Si deseas una lógica más elaborada, ajusta esto
             })
             ->withHeaders([
                 'Accept' => 'application/json',
@@ -64,8 +64,8 @@ class FactroHttpService
 
         Log::info('Enviando a FACTRO', ['endpoint' => $endpoint, 'formData_keys' => array_keys($formData)]);
 
-        ini_set('max_execution_time', 300); 
-        Log::info('Max execution time extendido a 300s para FACTRO');
+        ini_set('max_execution_time', 3000); 
+        Log::info('Max execution time extendido a 3000s para FACTRO');
 
         $startTime = microtime(true);
 

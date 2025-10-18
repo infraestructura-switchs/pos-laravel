@@ -176,8 +176,17 @@
           x-on:click="restore()"
           text="Resturar" />
 
-        <x-wireui.button @click="storeBill()"
-          text="Facturar" />
+        @if(request()->routeIs('admin.direct-sale.create'))
+          <x-wireui.button @click="showWhatsappConfirmation()"
+            text="Facturar"
+            wire:loading.attr="disabled"
+            wire:loading.class="opacity-50 cursor-not-allowed" />
+        @else
+          <x-wireui.button @click="storeBill()"
+            text="Facturar"
+            wire:loading.attr="disabled"
+            wire:loading.class="opacity-50 cursor-not-allowed" />
+        @endif
 
         @unless(request()->routeIs('admin.direct-sale.create'))
           <x-wireui.button x-show="order.id" x-text="update ? 'Actualizar' : 'Guardar'"

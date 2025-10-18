@@ -10,6 +10,7 @@ use App\Services\WhatsappPdfService;
 use App\Traits\UtilityTrait;
 use Illuminate\Support\Facades\View;
 use Mpdf\HTMLParserMode;
+use Illuminate\Support\Facades\Log;
 
 class BillController extends Controller
 {
@@ -17,6 +18,7 @@ class BillController extends Controller
 
     public function sendWhatsapp(Bill $bill, WhatsappPdfService $service)
     {
+        Log::info('Enviando factura por WhatsApp sendWhatsapp', ['bill_id' => $bill->id]);
         $result = $service->sendBillPdfViaWhatsapp($bill);
         if (!($result['success'] ?? false)) {
             return response()->json($result, 422);
@@ -26,7 +28,7 @@ class BillController extends Controller
 
     protected function createDPF(Bill $bill, $dest)
     {
-
+        Log::info('Creando PDF de factura createDPF', ['bill_id' => $bill->id]);
         // Asegurar configuración de empresa aun si no está en sesión en esta ruta.
         // Debe ser un objeto/Modelo porque las vistas PDF acceden como propiedades.
         $company = session('config') ?? Company::first();
@@ -67,6 +69,7 @@ class BillController extends Controller
 
     public function showWithWhatsapp(Bill $bill)
     {
+        Log::info('Mostrando factura con WhatsApp showWithWhatsapp', ['bill_id' => $bill->id]);
         $company = session('config') ?? Company::first();
         $customer = $bill->customer;
         $phone = $customer?->phone;
@@ -117,15 +120,16 @@ class BillController extends Controller
 
     public function download(Bill $bill)
     {
+        Log::info('Descargando factura download', ['bill_id' => $bill->id]);
         try {
-            \Log::info('📥 BillController::download - Iniciando descarga', [
+            Log::info('📥 BillController::download - Iniciando descarga', [
                 'bill_id' => $bill->id,
                 'is_electronic' => $bill->isElectronic
             ]);
 
             // Si es factura electrónica, usar el PDF completo con QR y CUFE
             if ($bill->isElectronic && $bill->electronicBill) {
-                \Log::info('⚡ BillController::download - Descargando factura electrónica', ['bill_id' => $bill->id]);
+                Log::info('⚡ BillController::download - Descargando factura electrónica', ['bill_id' => $bill->id]);
                 $pdfContent = base64_decode($this->getElectronicBillBase64($bill->id));
                 return response($pdfContent, 200, [
                     'Content-Type' => 'application/pdf',
@@ -134,8 +138,10 @@ class BillController extends Controller
             }
 
             // Ticket básico sin dependencias externas
-            \Log::info('📄 BillController::download - Descargando factura estándar', ['bill_id' => $bill->id]);
+            Log::info('📄 BillController::download - Descargando factura estándar', ['bill_id' => $bill->id]);
             $company = session('config') ?? Company::first();
+
+            Log::info('📄 BillController::download - Descargando factura estándar company ', ['company' => $company]);
 
             // Medidas del ticket: ancho en mm, alto dinámico aproximado
             $width = optional(session('config'))->width_ticket
@@ -224,7 +230,7 @@ class BillController extends Controller
                   . '</table>';
 
             $html .= '<div style="text-align:center; margin-top:10px; font-size:11px;">'
-                  . 'Elaborado por: SWICHTS<br/>www.switchs.co NIT: 901.740.642-1'
+                  . 'Elaborado por: SWICHTS 9999999<br/>www.switchs.co NIT: 901.740.642-1'
                   . '</div>';
 
             $html .= '</div>';
@@ -232,7 +238,7 @@ class BillController extends Controller
             $pdf->WriteHTML($html);
             return $pdf->Output('Factura-' . $bill->id . '.pdf', 'D');
         } catch (\Throwable $e) {
-            \Log::error('❌ BillController::download - Error', [
+            Log::error('❌ BillController::download - Error', [
                 'bill_id' => $bill->id ?? 'N/A',
                 'error' => $e->getMessage(),
                 'line' => $e->getLine()
@@ -288,7 +294,7 @@ class BillController extends Controller
                 'file_url' => $result['file_url'] ?? null,
             ]);
         } catch (\Throwable $e) {
-            \Log::error('uploadPdf Bill error: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            Log::error('uploadPdf Bill error: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
@@ -391,25 +397,33 @@ class BillController extends Controller
      */
     public function getElectronicBillBase64(int $billId): string
     {
-        \Log::info('⚡ BillController::getElectronicBillBase64 - Iniciando', ['bill_id' => $billId]);
-
+        Log::info('⚡ BillController::getElectronicBillBase64 - Iniciando', ['bill_id' => $billId]);
+        
         $bill = Bill::findOrFail($billId);
-
+        
         if (!$bill->electronicBill) {
-            \Log::warning('⚠️ BillController::getElectronicBillBase64 - No es factura electrónica, usando formato estándar');
+            Log::warning('⚠️ BillController::getElectronicBillBase64 - No es factura electrónica, usando formato estándar');
             return $this->getDirectSaleBillBase64($billId);
         }
 
         $company = session('config') ?? Company::first();
         $electronicBill = $bill->electronicBill;
+        Log::info('📋 BillController::getElectronicBillBase64 - Factura electrónica', [
+            'bill_id' => $billId,
+            'number' => $electronicBill->number,
+            'has_qr' => !empty($electronicBill->qr_image),
+            'has_cufe' => !empty($electronicBill->cufe),
+            'company' => $company->only(['name', 'nit', 'direction', 'phone'])
+        ]);
+        
         // El accessor ya decodifica el JSON, no hacer json_decode nuevamente
         $numberingRange = $electronicBill->numbering_range;
         // Si viene como array, convertir a objeto para compatibilidad con el template
         if (is_array($numberingRange)) {
             $numberingRange = (object) $numberingRange;
         }
-
-        \Log::info('📋 BillController::getElectronicBillBase64 - Datos factura electrónica', [
+        
+        Log::info('📋 BillController::getElectronicBillBase64 - Datos factura electrónica', [
             'bill_id' => $billId,
             'number' => $electronicBill->number,
             'has_qr' => !empty($electronicBill->qr_image),
@@ -437,7 +451,7 @@ class BillController extends Controller
 
         // HTML del ticket con factura electrónica
         $html = '<div style="font-size:12px; font-family: DejaVu Sans, sans-serif; color:#1e293b;">';
-
+        
         // Logo y empresa
         $html .= '<div style="text-align:center; margin-bottom:8px;">'
                . '<div style="font-weight:700; font-size:22px;">' . e($company->name ?? 'Empresa') . '</div>'
@@ -457,7 +471,7 @@ class BillController extends Controller
                    . 'Vig ' . e($numberingRange->months ?? '') . ' meses'
                    . '</div>';
         }
-
+        
         $html .= '<hr />';
 
         // Título factura electrónica
@@ -472,7 +486,7 @@ class BillController extends Controller
                . '<tr><td>C.C / NIT</td><td style="text-align:right;">' . e($bill->customer?->no_identification ?? '') . '</td></tr>'
                . '<tr><td>Cliente</td><td style="text-align:right;">' . e($bill->customer?->names ?? 'Consumidor Final') . '</td></tr>'
                . '</table>';
-
+        
         $html .= '<hr />';
 
         // Productos
@@ -493,7 +507,7 @@ class BillController extends Controller
                   . '</tr>';
         }
         $html .= '</tbody></table>';
-
+        
         $html .= '<hr style="border-top: 2px dotted #000;" />';
 
         // Totales
@@ -501,27 +515,27 @@ class BillController extends Controller
         $tip = number_format((int) ($bill->tip ?? 0), 0, ',', '.');
         $discount = number_format((int) ($bill->discount ?? 0), 0, ',', '.');
         $final = number_format((int) ($bill->final_total ?? $bill->total), 0, ',', '.');
-
+        
         $html .= '<table width="100%" style="font-size:12px; margin-top:4px;">'
               . '<tr><td style="text-align:right;">Subtotal:</td><td style="text-align:right; width:90px;">$' . $subtotal . '</td></tr>'
               . '<tr><td style="text-align:right;">Servicio voluntario:</td><td style="text-align:right;">$' . $tip . '</td></tr>'
               . '<tr><td style="text-align:right;">Descuento:</td><td style="text-align:right;">$' . $discount . '</td></tr>';
-
+        
         // Impuestos
         foreach ($bill->documentTaxes as $tax) {
             $taxAmount = number_format((int) $tax->tax_amount, 0, ',', '.');
             $html .= '<tr><td style="text-align:right;">' . e($tax->tribute_name) . ':</td><td style="text-align:right;">$' . $taxAmount . '</td></tr>';
         }
-
+        
         $html .= '<tr><td style="text-align:right; font-weight:700;">Total a pagar:</td><td style="text-align:right; font-weight:700;">$' . $final . '</td></tr>'
               . '</table>';
-
+        
         $html .= '<hr />';
 
         // Forma de pago
         $cash = number_format((int) ($bill->cash ?? $bill->final_total ?? $bill->total), 0, ',', '.');
         $change = number_format((int) ($bill->change ?? 0), 0, ',', '.');
-
+        
         $html .= '<table width="100%" style="font-size:12px;">'
               . '<tr><td style="text-align:center; font-weight:700;" colspan="2">Forma de pago</td></tr>'
               . '<tr><td style="text-align:right;">' . e($bill->paymentMethod->name ?? 'Efectivo') . ':</td><td style="text-align:right;">$' . $cash . '</td></tr>'
@@ -545,15 +559,15 @@ class BillController extends Controller
 
         // Footer
         $html .= '<div style="text-align:center; margin-top:10px; font-size:11px;">'
-              . 'Elaborado por: SWICHTS<br/>www.switchs.co NIT: 901.740.642-1'
+              . 'Elaborado por: ' . e($company->invoiceProvider->name ?? 'Empresa') . '<br/>' . e($company->invoiceProvider->url ?? 'Url') . ' NIT: ' . e($company->invoiceProvider->nit ?? 'Nit') . ''
               . '</div>';
-
+        
         $html .= '</div>';
 
         $pdf->WriteHTML($html);
-
-        \Log::info('✅ BillController::getElectronicBillBase64 - PDF generado exitosamente', ['bill_id' => $billId]);
-
+        
+        Log::info('✅ BillController::getElectronicBillBase64 - PDF generado exitosamente', ['bill_id' => $billId]);
+        
         return base64_encode($pdf->Output('Factura-' . $bill->number . '.pdf', 'S'));
     }
 

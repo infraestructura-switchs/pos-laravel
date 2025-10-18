@@ -10,6 +10,7 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use App\Services\FactroConfigurationService;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class FactroElectronicBillService
 {
@@ -271,9 +272,21 @@ class FactroElectronicBillService
         $qr = $electronicBill['qr'] ?? '';
         $cufe = $electronicBill['cufeOrCude'] ?? '';
 
+        // Nueva forma: Generar QR en base64 con simple-qrcode
+        if($electronicBill['qr'] ) {
+        $qrString = $electronicBill['qr'];
+        $qrBase64 = 'data:image/png;base64,' . base64_encode(
+            QrCode::format('png')->size(140)
+            ->generate($qrString)
+        );
+
+    
+
+        }
+
         $billData = [
             'number' => $billNumberFull,
-            'qr_image' => $qr,
+            'qr_image' => $qrBase64,
             'cufe' => $cufe,
             'numbering_range' => $numberingRange ? json_encode($numberingRange) : null,
             'is_validated' => true,

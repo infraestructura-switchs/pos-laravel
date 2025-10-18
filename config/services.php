@@ -40,7 +40,7 @@ return [
     ],
 
     'n8n' => [
-        'whatsapp_webhook_url' => env('N8N_WHATSAPP_WEBHOOK_URL', 'https://n8n-vwj1.onrender.com/webhook/factura'),
+        'whatsapp_webhook_url' => env('N8N_WHATSAPP_WEBHOOK_URL', 'https://n8nserver.movete.cloud/webhook/factura'),
         'timeout' => env('N8N_TIMEOUT', 10),
     ],
 

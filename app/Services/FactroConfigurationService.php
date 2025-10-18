@@ -14,8 +14,8 @@ class FactroConfigurationService
             return Cache::get('factro_api_configuration');
         }
 
-        $configuration = FactroConfiguration::first();
-        $api = $configuration ? $configuration->api : [];
+        //$configuration = FactroConfiguration::first();
+        //$api = $configuration ? $configuration->api : [];
 
         $api = [
             'url' => env('ARQFE_API_URL'),

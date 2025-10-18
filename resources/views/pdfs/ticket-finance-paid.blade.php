@@ -111,7 +111,7 @@
 
       {{-- footer --}}
       <div class="mt-8 text-xs">
-<p class="text-center leading-4">Elaborado por: SWICHTS</p>
+<p class="text-center leading-4">Elaborado por: SWICHTS </p>
       <p class="text-center leading-4">www.switchs.co NIT: 901.740.642-1</p>
       </div>
 

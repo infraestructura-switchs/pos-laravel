@@ -7,6 +7,7 @@ use App\Services\BillService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use App\Exceptions\CustomException;
+use Illuminate\Support\Facades\Log;
 
 class BillController extends Controller
 {
@@ -177,10 +178,18 @@ class BillController extends Controller
 
     public function validateElectronicBill($id)
     {
+        Log::info('📥 BillController::validateElectronicBill - Validando factura electrónica', [
+            'bill_id' => $id,
+            'user_id' => auth()->id()
+        ]);
         try {
             $bill = \App\Models\Bill::findOrFail($id);
             BillService::validateElectronicBill($bill);
 
+            Log::info('✅ BillController::validateElectronicBill - Factura electrónica validada correctamente', [
+                'bill_id' => $id,
+                'user_id' => auth()->id()
+            ]);
             return response()->json([
                 'success' => true,
                 'message' => 'Factura electrónica validada correctamente.',

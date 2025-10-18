@@ -14,7 +14,6 @@ use App\Services\DocumentTaxService;
 use App\Services\FactusConfigurationService;
 use App\Services\FactroConfigurationService;
 use App\Services\TerminalService;
-use App\Services\CloudinaryService;
 use App\Traits\UtilityTrait;
 use App\Utilities\CalcItemValues;
 use Illuminate\Contracts\Cache\LockTimeoutException;
@@ -192,11 +191,6 @@ class Create extends Component
             }
         }
 
-        // Subir PDF a Cloudinary automáticamente
-         Log::info('Starting PDF upload to Cloudinary for bill: ' . $bill->id);
-       file_put_contents(storage_path('logs/debug.log'), 'About to call uploadPdfToCloudinary for bill: ' . $bill->id . PHP_EOL, FILE_APPEND);
-       $this->uploadPdfToCloudinary($bill);
-
         $this->dispatchBrowserEvent('print-ticket', $bill->id);
     }
 
@@ -224,58 +218,4 @@ class Create extends Component
         }
     }
 
-    /**
-     * Sube el PDF de la factura a Cloudinary automáticamente
-     */
-    private function uploadPdfToCloudinary(Bill $bill)
-    {
-        file_put_contents(storage_path('logs/debug.log'), 'uploadPdfToCloudinary called for bill: ' . $bill->id . PHP_EOL, FILE_APPEND);
-        \Illuminate\Support\Facades\Log::info('uploadPdfToCloudinary called for bill: ' . $bill->id);
-        
-        try {
-            // Usar el método del BillController para generar el PDF
-            $controller = app(\App\Http\Controllers\Admin\BillController::class);
-            $pdfBase64 = $controller->getBillBase64($bill->id);
-            
-            \Illuminate\Support\Facades\Log::info('PDF generated, size: ' . strlen($pdfBase64) . ' bytes');
-            
-            // Crear directorio temporal
-            $tempDir = storage_path('app/tmp');
-            if (!is_dir($tempDir)) {
-                mkdir($tempDir, 0775, true);
-            }
-            
-            $fileName = 'Factura_' . ($bill->number ?? $bill->id) . '.pdf';
-            $filePath = $tempDir . DIRECTORY_SEPARATOR . $fileName;
-            file_put_contents($filePath, base64_decode($pdfBase64));
-            
-            \Illuminate\Support\Facades\Log::info('PDF saved to: ' . $filePath);
-            
-            // Subir a Cloudinary
-            $cloudinary = app(\App\Services\CloudinaryService::class);
-            $upload = $cloudinary->uploadRaw($filePath, [
-                'folder' => config('cloudinary.folder', 'pos-images') . '/pdfs',
-                'public_id' => 'bill_' . ($bill->number ?? $bill->id) . '_' . time(),
-                'resource_type' => 'raw',
-            ]);
-            
-            // Limpiar archivo temporal
-            unlink($filePath);
-            
-            \Illuminate\Support\Facades\Log::info('Cloudinary upload result: ' . json_encode($upload));
-            
-            if ($upload['success']) {
-                $this->emit('success', 'PDF subido a Cloudinary: ' . ($upload['secure_url'] ?? $upload['url'] ?? 'URL no disponible'));
-            } else {
-                $this->emit('warning', 'Error al subir PDF a Cloudinary: ' . ($upload['error'] ?? 'Error desconocido'));
-            }
-
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Error subiendo PDF a Cloudinary: ' . $e->getMessage(), [
-                'bill_id' => $bill->id,
-                'trace' => $e->getTraceAsString()
-            ]);
-            $this->emit('warning', 'Error al subir PDF a Cloudinary: ' . $e->getMessage());
-        }
-    }
 }

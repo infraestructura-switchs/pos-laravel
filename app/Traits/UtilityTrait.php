@@ -16,6 +16,7 @@ use Mpdf\Mpdf;
 trait UtilityTrait {
 
     public function initMPdf(): Mpdf {
+        Log::info('Inicializando PDF initMPdf');
         $defaultConfig = (new ConfigVariables())->getDefaults();
         $fontDirs = $defaultConfig['fontDir'];
 
@@ -49,6 +50,7 @@ trait UtilityTrait {
     }
 
     protected function initMPdfTicket($height): Mpdf {
+        Log::info('Inicializando PDF de ticket initMPdfTicket', ['height' => $height]);
 
         // Tomar ancho desde sesión; si no existe (ruta directa) usar Company o un valor por defecto
         $width = optional(session('config'))->width_ticket

@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Services\Factus\ApiService;
+use Illuminate\Support\Facades\Log;
+use App\Models\Company;
 
 class CompanyService
 {
@@ -12,6 +14,14 @@ class CompanyService
 
     public static function companyData(): array
     {
+        
+        $company = [
+            'name' => session('config')->name,
+            'nit' => session('config')->nit,
+            'direction' => session('config')->direction,
+            'phone' => session('config')->phone,
+        ];
+            
         if (FactusConfigurationService::isApiEnabled()) {
             $companyData = ApiService::companyData();
 
@@ -20,16 +30,26 @@ class CompanyService
                 'name' => $companyData['graphic_representation_name'],
                 'direction' => (in_array($companyData['nit'], self::$companyPosNitWhiteList)? session('config')->direction : $companyData['address']),
                 'phone' => $companyData['phone'],
+
             ];
-        } else {
+        } 
+        
+        if (FactroConfigurationService::isApiEnabled()) {
+            $companyData = session('config') ?? Company::first();
+            Log::info('Company Data from Factro API companyData : ' ,[$companyData]);
+            Log::info('Company Data from Factro API invoiceProvider : ' ,[$companyData->invoiceProvider]);
 
             $company = [
-                'name' => session('config')->name,
-                'nit' => session('config')->nit,
-                'direction' => session('config')->direction,
-                'phone' => session('config')->phone,
+                'invoice_provider' => [
+                    'nit' => $companyData->invoiceProvider->nit,
+                    'name' => $companyData->invoiceProvider->name,
+                    'direction' => $companyData->invoiceProvider->direction,
+                    'phone' => $companyData->invoiceProvider->phone,
+                    'url' => $companyData->invoiceProvider->url,
+                ]
             ];
-        }
+        }    
+
 
         return $company;
     }
