@@ -12,3 +12,10 @@ php artisan route:cache
 
 echo "Running migrations..."
 php artisan migrate --force
+
+echo "Running NPM"
+npm install && npm run build
+
+
+echo "Running livewire..."
+php artisan livewire:publish --assets
