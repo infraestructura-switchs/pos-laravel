@@ -21,10 +21,10 @@ if (! function_exists('formatToCop')) {
         if (!is_numeric($value)) {
             $value = 0;
         }
-        
+
         // Convertir explícitamente a float para evitar problemas de tipo
         $value = (float) $value;
-        
+
         // Usar number_format con configuración explícita
         // Punto (.) para separador decimal, coma (,) para separador de miles
         return '$ ' . number_format($value, 0, '.', ',');
@@ -46,12 +46,12 @@ if (! function_exists('getTerminal')) {
     function getTerminal(): Terminal
     {
         $user = auth()->user();
-        
+
         // Si no hay usuario autenticado (como en comandos artisan)
         if (!$user) {
             return new Terminal();
         }
-        
+
         // Consulta directa más eficiente
         $terminal = Terminal::with('users')
             ->where('status', Terminal::ACTIVE)
@@ -64,12 +64,41 @@ if (! function_exists('getTerminal')) {
     }
 }
 
+if (! function_exists('getTerminalOpen')) {
+    function getTerminalOpen(): bool
+    {
+        $user = auth()->user();
+
+        // Si no hay usuario autenticado (como en comandos artisan)
+        if (!$user) {
+            return false;
+        }
+
+        // Consulta directa más eficiente
+        $terminal = Terminal::with('users')
+            ->where('status', Terminal::ACTIVE)
+            ->whereHas('users', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->first();
+
+        return $terminal->cashOpenings()->where('is_active', true)->first() ? true : false;
+    }
+}
+
 if (! function_exists('hasTerminal')) {
     function hasTerminal(): bool
     {
         $terminal = getTerminal();
 
         return $terminal->id ? true : false;
+    }
+}
+
+if (! function_exists('hasTerminalOpen')) {
+    function hasTerminalOpen(): bool
+    {
+        return getTerminalOpen() ? true : false;
     }
 }
 

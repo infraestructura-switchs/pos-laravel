@@ -4,17 +4,19 @@ namespace App\Http\Livewire\Admin\Bills;
 
 use App\Exceptions\CustomException;
 use App\Exports\BillsExport;
-use App\Http\Controllers\Log;
 use App\Models\Bill;
 use App\Models\Product;
 use App\Models\Terminal;
 use App\Services\BillService;
+use App\Services\FactroConfigurationService;
 use App\Services\FactusConfigurationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Log;
+
 
 class Index extends Component
 {
@@ -80,6 +82,7 @@ class Index extends Component
 
     public function cancelBill(Bill $bill)
     {
+        Log::info('Iniciando cancelación de factura', ['bill_id' => $bill->id, 'user_id' => auth()->id()]);
         if ($bill->status === '1') {
             return $this->emit('alert', 'La factura ya ha sido cancelada');
         }
@@ -88,8 +91,16 @@ class Index extends Component
             return $this->emit('alert', 'La factura no ha sido validada por la DIAN. No se puede anular');
         }
 
-        BillService::storeElectronicCreditNote($bill);
+        if (FactroConfigurationService::isApiEnabled() && $bill->electronicBill && !$bill->electronicBill->is_validated) {
+            return $this->emit('alert', 'La factura no ha sido validada por la DIAN. No se puede anular');
+        }
 
+        Log::info('Iniciando creación de nota crédito electrónica', ['bill_id' => $bill->id, 'user_id' => auth()->id()]);
+        BillService::storeElectronicCreditNote($bill);
+        Log::info('✅ BillController::cancelBill - Nota crédito electrónica creada correctamente', [
+            'electronicCreditNote' => $bill->electronicCreditNote,
+            'user_id' => auth()->id()
+        ]);
         $details = $bill->details;
 
         try {
@@ -114,8 +125,12 @@ class Index extends Component
                 }
             }
 
+            Log::info('Iniciando validación de nota crédito electrónica', ['bill_id' => $bill->id, 'user_id' => auth()->id()]);
             BillService::validateElectronicCreditNote($bill);
-
+            Log::info('✅ BillController::cancelBill - Nota crédito electrónica validada correctamente', [
+                'electronicCreditNote' => $bill->electronicCreditNote,
+                'user_id' => auth()->id()
+            ]);
             DB::commit();
         } catch (CustomException $ce) {
             DB::rollback();

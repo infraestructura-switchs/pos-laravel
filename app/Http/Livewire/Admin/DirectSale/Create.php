@@ -13,6 +13,7 @@ use App\Services\CloudinaryService;
 use App\Services\FactusConfigurationService;
 use App\Services\FactroConfigurationService;
 use App\Services\TerminalService;
+use App\Services\WhatsappPdfService;
 use App\Utilities\CalcItemValues;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
@@ -117,14 +118,20 @@ class Create extends Component
                 // NO RETORNAR, continuar con el proceso normal
             } else {
                 Log::info('✅ DirectSale::storeBill - Factura electrónica validada correctamente');
+                // IMPORTANTE: Refrescar el modelo para cargar la relación electronicBill
+                $bill = $bill->fresh(['electronicBill']);
+                Log::info('🔄 DirectSale::storeBill - Modelo refrescado con datos electrónicos', [
+                    'bill_id' => $bill->id,
+                    'has_electronic_bill' => $bill->electronicBill ? 'SI' : 'NO'
+                ]);
             }
         } else {
             Log::info('ℹ️ DirectSale::storeBill - Facturación electrónica NO habilitada');
         }
 
-        // Despachar job en segundo plano para evitar timeouts en la UI
-        Log::info('📤 DirectSale::storeBill - Despachando job para subir PDF a Cloudinary');
-        UploadBillPdfToCloudinary::dispatchAfterResponse($bill->id);
+        // Subir PDF a Cloudinary de forma SÍNCRONA para obtener el URL inmediatamente
+        Log::info('📤 DirectSale::storeBill - Subiendo PDF a Cloudinary de forma síncrona');
+        $pdfUrl = $this->uploadPdfToCloudinarySync($bill);
         
         // Mensaje de éxito con advertencia si falló la facturación electrónica
         if ($electronicValidationFailed) {
@@ -137,6 +144,12 @@ class Create extends Component
         // Pasar solo el id; el JS construye la URL con window.location.origin (evita mixed content)
         Log::info('📥 DirectSale::storeBill - Enviando evento para descarga de factura');
         $this->dispatchBrowserEvent('download-bill', ['id' => $bill->id]);
+        
+        // Emitir evento con el ID de la factura Y el PDF URL para el modal de WhatsApp
+        $this->dispatchBrowserEvent('bill-created', [
+            'billId' => $bill->id,
+            'pdfUrl' => $pdfUrl
+        ]);
         
         return 'success'; // IMPORTANTE: mantener esto para que resetee el carrito
     }
@@ -182,6 +195,133 @@ class Create extends Component
             Log::error($th->getMessage(), [], $th->getLine());
             // No mostrar error al usuario, continuar con factura normal
             return 'error';
+        }
+    }
+
+    /**
+     * Sube el PDF a Cloudinary de forma síncrona y retorna el URL
+     */
+    private function uploadPdfToCloudinarySync(Bill $bill): ?string
+    {
+        try {
+            Log::info('☁️ DirectSale::uploadPdfToCloudinarySync - Iniciando', ['bill_id' => $bill->id]);
+            
+            // Usar el método del BillController para generar el PDF
+            $billController = app(BillController::class);
+            
+            // Verificar si es factura electrónica para usar el PDF correcto
+            if ($bill->isElectronic && $bill->electronicBill) {
+                $pdfBase64 = $billController->getElectronicBillBase64($bill->id);
+            } else {
+                $pdfBase64 = $billController->getDirectSaleBillBase64($bill->id);
+            }
+            
+            // Crear directorio temporal
+            $tempDir = storage_path('app/tmp');
+            if (!is_dir($tempDir)) {
+                @mkdir($tempDir, 0775, true);
+            }
+            
+            $fileName = 'Factura_' . ($bill->number ?? $bill->id) . '.pdf';
+            $filePath = $tempDir . DIRECTORY_SEPARATOR . $fileName;
+            file_put_contents($filePath, base64_decode($pdfBase64));
+            
+            Log::info('📄 DirectSale::uploadPdfToCloudinarySync - PDF generado', ['file_path' => $filePath]);
+            
+            // Subir a Cloudinary
+            $cloudinary = app(CloudinaryService::class);
+            $upload = $cloudinary->uploadRaw($filePath, [
+                'folder' => config('cloudinary.folder', 'pos-images') . '/pdfs',
+                'public_id' => 'bill_' . ($bill->number ?? $bill->id) . '_' . time(),
+                'resource_type' => 'raw',
+            ]);
+            
+            // Limpiar archivo temporal
+            @unlink($filePath);
+            
+            Log::info('✅ DirectSale::uploadPdfToCloudinarySync - Resultado', [
+                'success' => $upload['success'] ?? false,
+                'url' => $upload['secure_url'] ?? $upload['url'] ?? 'N/A'
+            ]);
+            
+            $pdfUrl = $upload['secure_url'] ?? $upload['url'] ?? null;
+            
+            // Guardar el URL en la base de datos
+            if ($pdfUrl && ($upload['success'] ?? false)) {
+                $bill->pdf_url = $pdfUrl;
+                $bill->save();
+                
+                Log::info('💾 DirectSale::uploadPdfToCloudinarySync - URL guardado en BD', [
+                    'bill_id' => $bill->id,
+                    'pdf_url' => $pdfUrl
+                ]);
+            }
+            
+            return $pdfUrl;
+            
+        } catch (\Throwable $e) {
+            Log::error('❌ DirectSale::uploadPdfToCloudinarySync - Error', [
+                'bill_id' => $bill->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Envía el PDF de la factura por WhatsApp con número personalizado
+     */
+    public function sendBillViaWhatsapp($billId, $phoneNumber)
+    {
+        Log::info('📱 DirectSale::sendBillViaWhatsapp - MÉTODO LLAMADO', [
+            'bill_id' => $billId,
+            'phone' => $phoneNumber,
+            'timestamp' => now()->toISOString()
+        ]);
+        
+        try {
+            Log::info('📱 DirectSale::sendBillViaWhatsapp - Iniciando', [
+                'bill_id' => $billId,
+                'phone' => $phoneNumber
+            ]);
+
+            $bill = Bill::find($billId);
+            if (!$bill) {
+                Log::error('❌ DirectSale::sendBillViaWhatsapp - Factura no encontrada', ['bill_id' => $billId]);
+                $this->emit('error', 'Factura no encontrada');
+                return ['success' => false, 'message' => 'Factura no encontrada'];
+            }
+
+            $whatsappService = app(WhatsappPdfService::class);
+            $result = $whatsappService->sendBillPdfViaWhatsapp($bill, $phoneNumber);
+
+            if ($result['success']) {
+                Log::info('✅ DirectSale::sendBillViaWhatsapp - Enviado exitosamente', [
+                    'bill_id' => $billId,
+                    'phone' => $phoneNumber,
+                    'file_url' => $result['file_url'] ?? 'N/A'
+                ]);
+                $this->emit('success', $result['message']);
+                return ['success' => true, 'message' => $result['message']];
+            } else {
+                Log::warning('⚠️ DirectSale::sendBillViaWhatsapp - Error en envío', [
+                    'bill_id' => $billId,
+                    'error' => $result['message']
+                ]);
+                $this->emit('warning', $result['message']);
+                return ['success' => false, 'message' => $result['message']];
+            }
+
+        } catch (\Throwable $th) {
+            Log::error('❌ DirectSale::sendBillViaWhatsapp - Error inesperado', [
+                'bill_id' => $billId,
+                'error' => $th->getMessage(),
+                'line' => $th->getLine(),
+                'trace' => $th->getTraceAsString()
+            ]);
+            $this->emit('error', 'Error al enviar por WhatsApp: ' . $th->getMessage());
+            return ['success' => false, 'message' => 'Error: ' . $th->getMessage()];
         }
     }
 }

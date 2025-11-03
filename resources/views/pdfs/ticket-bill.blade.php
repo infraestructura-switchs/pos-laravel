@@ -161,8 +161,8 @@
 
     {{-- footer --}}
     <div class="text-xs mt-4">
-      <p class="text-center leading-4">Elaborado por: SWICHTS</p>
-      <p class="text-center leading-4">www.switchs.co NIT: 901.740.642-1</p>
+      <p class="text-center leading-4">Elaborado por: <span x-text="(company && company.invoice_provider) ? company.invoice_provider.name : ''"></span></p>
+      <p class="text-center leading-4"><span x-text="(company && company.invoice_provider) ? company.invoice_provider.url : ''"></span> NIT: <span x-text="(company && company.invoice_provider) ? company.invoice_provider.nit : ''"></span></p>
     </div>
 
   </div>

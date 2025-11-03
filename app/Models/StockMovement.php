@@ -14,6 +14,8 @@ class StockMovement extends Model
         'remission_id',
         'user_id',
         'stock_movements_date',
+        'movement_type',
+        'folio'
     ];
 
     protected $casts = [

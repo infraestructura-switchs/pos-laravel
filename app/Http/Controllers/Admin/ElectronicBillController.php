@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Bill;
 use App\Services\Factus\ElectronicBillService;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 
 class ElectronicBillController extends Controller
 {
@@ -14,13 +15,13 @@ class ElectronicBillController extends Controller
      */
     public function downloadPdf(Bill $bill)
     {
-        \Log::info('📥 ElectronicBillController::downloadPdf - Descargando PDF', [
+        Log::info('📥 ElectronicBillController::downloadPdf - Descargando PDF', [
             'bill_id' => $bill->id,
             'user_id' => auth()->id()
         ]);
 
         if (!$bill->electronicBill || !$bill->electronicBill->is_validated) {
-            \Log::warning('⚠️ ElectronicBillController::downloadPdf - Factura no electrónica', [
+            Log::warning('⚠️ ElectronicBillController::downloadPdf - Factura no electrónica', [
                 'bill_id' => $bill->id
             ]);
             
@@ -42,7 +43,7 @@ class ElectronicBillController extends Controller
 
             $fileName = "factura_electronica_{$bill->number}.pdf";
 
-            \Log::info('✅ ElectronicBillController::downloadPdf - PDF descargado exitosamente', [
+            Log::info('✅ ElectronicBillController::downloadPdf - PDF descargado exitosamente', [
                 'bill_id' => $bill->id,
                 'file_name' => $fileName
             ]);
@@ -52,7 +53,7 @@ class ElectronicBillController extends Controller
                 ->header('Content-Disposition', "attachment; filename=\"{$fileName}\"");
 
         } catch (\Exception $e) {
-            \Log::error('❌ ElectronicBillController::downloadPdf - Error', [
+            Log::error('❌ ElectronicBillController::downloadPdf - Error', [
                 'bill_id' => $bill->id,
                 'error' => $e->getMessage()
             ]);
@@ -69,13 +70,13 @@ class ElectronicBillController extends Controller
      */
     public function downloadXml(Bill $bill)
     {
-        \Log::info('📥 ElectronicBillController::downloadXml - Descargando XML', [
+        Log::info('📥 ElectronicBillController::downloadXml - Descargando XML', [
             'bill_id' => $bill->id,
             'user_id' => auth()->id()
         ]);
 
         if (!$bill->electronicBill || !$bill->electronicBill->is_validated) {
-            \Log::warning('⚠️ ElectronicBillController::downloadXml - Factura no electrónica', [
+            Log::warning('⚠️ ElectronicBillController::downloadXml - Factura no electrónica', [
                 'bill_id' => $bill->id
             ]);
             
@@ -97,7 +98,7 @@ class ElectronicBillController extends Controller
 
             $fileName = "factura_electronica_{$bill->number}.xml";
 
-            \Log::info('✅ ElectronicBillController::downloadXml - XML descargado exitosamente', [
+            Log::info('✅ ElectronicBillController::downloadXml - XML descargado exitosamente', [
                 'bill_id' => $bill->id,
                 'file_name' => $fileName
             ]);
@@ -107,7 +108,7 @@ class ElectronicBillController extends Controller
                 ->header('Content-Disposition', "attachment; filename=\"{$fileName}\"");
 
         } catch (\Exception $e) {
-            \Log::error('❌ ElectronicBillController::downloadXml - Error', [
+            Log::error('❌ ElectronicBillController::downloadXml - Error', [
                 'bill_id' => $bill->id,
                 'error' => $e->getMessage()
             ]);

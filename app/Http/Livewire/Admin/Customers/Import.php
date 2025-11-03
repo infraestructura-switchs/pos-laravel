@@ -51,6 +51,9 @@ class Import extends Component
             'no_identification' => '222222222222',
             'names' => 'Consumidor final',
             'top' => '0',
+            'direction' => 'N/A',
+            'phone' => '0000000000',
+            'email'=> 'notien@gmail.com',
         ]);
 
         Excel::import(new CustomersImport, $url);

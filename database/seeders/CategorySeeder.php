@@ -12,32 +12,17 @@ class CategorySeeder extends Seeder
     public function run()
     {
         $categories = [
-            "Electrónica",
-            "Ropa",
-            "Alimentos",
-            "Hogar",
-            "Juguetes",
-            "Automoción",
-            "Deportes",
-            "Belleza",
-            "Electrodomésticos",
-            "Libros",
-            "Muebles",
-            "Joyería",
-            "Electrónica de consumo",
-            "Productos para mascotas",
-            "Herramientas",
-            "Suministros para oficina",
-            "Arte y artesanía",
-            "Equipamiento para exteriores",
-            "Instrumentos musicales",
-            "Productos para bebés",
+            "Bebidas",
+            "Comidas Rápidas",
+            "Snacks",
+            "Licor",
         ];
 
         foreach ($categories as $key => $value) {
-            Category::create([
-                'name' => $value
-            ]);
+            Category::updateOrCreate(
+                ['name' => $value],
+                []
+            );
         }
 
     }

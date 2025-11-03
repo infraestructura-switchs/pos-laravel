@@ -10,6 +10,7 @@
       </div>
 
       {{-- Informacion de la empresa --}}
+      @if(session('config'))
       <ul class="flex flex-col items-center leading-4">
         <li class="font-semibold">
           {{ session('config')->name }}
@@ -24,6 +25,12 @@
           Celular: {{ session('config')->phone }}
         </li>
       </ul>
+      @else
+      <ul class="flex flex-col items-center leading-4">
+        <li class="font-semibold">Empresa</li>
+        <li>Sin configuración</li>
+      </ul>
+      @endif
 
       <hr class="my-3 border border-slate-400">
 
@@ -111,7 +118,7 @@
 
       {{-- footer --}}
       <div class="mt-8 text-xs">
-<p class="text-center leading-4">Elaborado por: SWICHTS</p>
+<p class="text-center leading-4">Elaborado por: SWICHTS </p>
       <p class="text-center leading-4">www.switchs.co NIT: 901.740.642-1</p>
       </div>
 

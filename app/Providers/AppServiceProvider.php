@@ -9,6 +9,7 @@ use App\Services\Contracts\ImageServiceInterface;
 use App\Services\CloudinaryService;
 use App\Services\ImageService;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Vite as ViteFacade;
 
 class AppServiceProvider extends ServiceProvider {
 
@@ -33,8 +34,31 @@ class AppServiceProvider extends ServiceProvider {
             return "<?php echo '$ ' . number_format((float)$value, 0, '.', ','); ?>";
         });
         
+        // Directiva personalizada para vite con soporte multi-tenant
+        Blade::directive('tenantVite', function ($expression) {
+            return "<?php echo app(\\Illuminate\\Foundation\\Vite::class)($expression); ?>";
+        });
+        
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
+        }
+        
+        // Forzar que los assets se carguen desde el dominio central
+        // Esto es crítico para multi-tenancy donde cada tenant tiene su propio subdominio
+        // pero los assets CSS/JS compilados solo existen en el dominio central
+        if (!$this->app->runningInConsole()) {
+            $centralDomain = 'switchs.test'; // Dominio central sin www
+            $currentHost = request()->getHost();
+            
+            // Si estamos en un subdominio de tenant, forzar assets desde el dominio central
+            if ($currentHost !== $centralDomain && $currentHost !== 'www.switchs.test' && str_contains($currentHost, '.switchs.test')) {
+                // Forzar el prefijo de assets al dominio central
+                $assetUrl = 'http://' . $centralDomain;
+                
+                // Configurar APP_URL para que todos los assets usen el dominio central
+                config(['app.url' => $assetUrl]);
+                config(['app.asset_url' => $assetUrl]);
+            }
         }
     }
 }

@@ -59,6 +59,7 @@ class Edit extends Component
             'product.cost' => 'required',
             'product.price' => 'required',
             'product.has_inventory' => 'required',
+            'product.stock' => 'required',
             'units' => 'required',
             'product.top' => 'required',
             'product.status' => 'required',

@@ -33,11 +33,13 @@ class RouteServiceProvider extends ServiceProvider
                 ->prefix('api')
                 ->group(base_path('routes/api.php'));
 
-                Route::middleware('web', 'auth')
-                    ->prefix('administrador')
-                    ->name('admin.')
-                    ->namespace($this->namespace)
-                    ->group(base_path('routes/admin.php'));
+            // Rutas admin (se cargan para ambos: central y tenants)
+            // El middleware InitializeTenancyByDomain se auto-aplica por TenancyServiceProvider
+            Route::middleware('web', 'auth')
+                ->prefix('administrador')
+                ->name('admin.')
+                ->namespace($this->namespace)
+                ->group(base_path('routes/admin.php'));
 
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));

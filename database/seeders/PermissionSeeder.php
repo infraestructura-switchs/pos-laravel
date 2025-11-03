@@ -24,6 +24,7 @@ class PermissionSeeder extends Seeder {
             'nomina',
             'egresos',
             'configuraciones',
+            'administrar empresas',
             'roles y permisos',
             'productos vendidos',
             'terminales',
@@ -32,12 +33,12 @@ class PermissionSeeder extends Seeder {
             'ventas rapidas',
             'reporte de ventas diarias',
             'impuestos',
-            'inventario','almacenes','remisiones','entrada-salidas',
+            'inventario','bodegas','remisiones','entrada-salidas',
             'vender'
         ];
 
         foreach ($permissions as $key => $value) {
-            Permission::create(['name' => $value]);
+            Permission::findOrCreate($value, 'web');
         }
     }
 }

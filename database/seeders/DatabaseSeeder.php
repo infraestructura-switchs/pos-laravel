@@ -37,20 +37,19 @@ class DatabaseSeeder extends Seeder {
             'no_identification' => '222222222222',
             'names' => 'Consumidor final',
             'top' => '0',
+            'direction' => 'N/A',
+            'phone' => '0000000000',
+            'email'=> 'notien@gmail.com',
         ]);
 
-        if (App::isLocal()) {
-            if (true) {
-                $this->call(CustomerSeeder::class);
-                $this->call(ProviderSeeder::class);
-                $this->call(CategorySeeder::class);
-                $this->call(ProductSeeder::class);
-                $this->call(ProductosConciertosSeeder::class);
-                $this->call(StaffSeeder::class);
-                $this->call(PayrollSeeder::class);
-                /* $this->call(OutputSeeder::class); */
-            }
-        }
+        $this->call(CustomerSeeder::class);
+        $this->call(ProviderSeeder::class);
+        $this->call(CategorySeeder::class);
+        $this->call(ProductSeeder::class);
+        $this->call(ProductosConciertosSeeder::class);
+        $this->call(StaffSeeder::class);
+        $this->call(PayrollSeeder::class);
+        /* $this->call(OutputSeeder::class); */
 
         $this->call(NumberingRangeSeeder::class);
         $this->call(PaymentMethodSeeder::class);

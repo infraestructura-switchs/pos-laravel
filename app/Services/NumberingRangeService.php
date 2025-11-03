@@ -25,7 +25,7 @@ class NumberingRangeService
 
         $range = $terminal->first()->numberingRange;
 
-        if ($range->status != 1) {
+        if ($range->status != 0) {
             throw new CustomException("El rango de numeración $range->prefix ($range->from - $range->to) se encuentra inactivo");
         }
 
@@ -34,9 +34,6 @@ class NumberingRangeService
         }
 
         return $range;
-
-        return $range->prefix.' - '.$range->current;
-
     }
 
     public static function incrementNumber(NumberingRange $range): void

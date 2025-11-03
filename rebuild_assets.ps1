@@ -13,6 +13,5 @@ Write-Host "`n=== 4. Verificando archivos generados ===" -ForegroundColor Magent
 Get-ChildItem public\build\assets\app-*.css | Select-Object Name
 Get-ChildItem public\build\assets\app-*.js | Select-Object Name
 
-Write-Host "`n✅ Proceso completado!" -ForegroundColor Green
-Write-Host "Recarga la página con Ctrl+F5 para limpiar el cache del navegador" -ForegroundColor Yellow
-
+Write-Host "`n[OK] Proceso completado!" -ForegroundColor Green
+Write-Host "Recarga la pagina con Ctrl+F5 para limpiar el cache del navegador" -ForegroundColor Yellow

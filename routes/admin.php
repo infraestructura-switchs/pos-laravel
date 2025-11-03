@@ -39,6 +39,7 @@ use App\Http\Livewire\Dashboard;
 use App\Http\Livewire\Admin\DirectSale\Create as DirectSaleCreate;
 use App\Http\Livewire\Admin\InventoryRemissions\Index as InventoryRemissionsIndex;
 use App\Http\Livewire\Admin\StockMovements\Index as StockMovementsIndex;
+use App\Http\Livewire\Admin\WarehouseTransfers\Index as WarehouseTransfers;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', Dashboard::class)->name('home');
@@ -55,6 +56,8 @@ Route::get('inventario-remisiones', InventoryRemissionsIndex::class)->middleware
 Route::get('remisiones', InventoryRemissionsIndex::class)->name('inventory-remissions.index');
 
 Route::get('entrada-salidas', StockMovementsIndex::class)->middleware('module:entrada-salidas')->name('stock_movements.index');
+
+Route::get('transferencias', WarehouseTransfers::class)->name('warehouse-transfers.index');
 
 
 Route::get('/pdf/remission/{id}', [RemissionController::class, 'download'])->name('pdf.remission');

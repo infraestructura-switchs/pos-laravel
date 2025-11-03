@@ -9,10 +9,12 @@
 
         <!-- Fonts -->
         <link rel="stylesheet" href="https://fonts.bunny.net/css2?family=Nunito:wght@400;600;700&display=swap">
-        <link rel="stylesheet" href="{{ asset('vendor/icomoon-v1.0/style.css') }}?v8">
+        <link rel="stylesheet" href="{{ url('vendor/icomoon-v1.0/style.css') }}?v8">
 
         <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        {{-- Cargar assets compilados directamente sin Vite --}}
+        <link rel="stylesheet" href="{{ url('build/assets/app-fd737ff0.css') }}">
+        <script src="{{ url('build/assets/app-f737933f.js') }}" defer></script>
     </head>
     <body>
         <div class="font-sans text-gray-900 antialiased">

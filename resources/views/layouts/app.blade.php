@@ -1,11 +1,14 @@
 @php
+  $sessionConfig = session('config');
+  $defaultCustomer = App\Models\Customer::default()->first();
+  
   $config = [
-      'customer' => App\Models\Customer::default()->toArray(),
-      'change' => session('config')->change == '0',
-      'print' => session('config')->print == '0',
-      'width_ticket' => session('config')->width_ticket,
-      'format_percentage_tip' => session('config')->format_percentage_tip,
-      'percentage_tip' => session('config')->percentage_tip,
+      'customer' => $defaultCustomer ? $defaultCustomer->toArray() : null,
+      'change' => $sessionConfig ? ($sessionConfig->change == '0') : false,
+      'print' => $sessionConfig ? ($sessionConfig->print == '0') : false,
+      'width_ticket' => $sessionConfig ? $sessionConfig->width_ticket : 80,
+      'format_percentage_tip' => $sessionConfig ? $sessionConfig->format_percentage_tip : 0,
+      'percentage_tip' => $sessionConfig ? $sessionConfig->percentage_tip : 0,
   ];
 @endphp
 
@@ -25,7 +28,11 @@
 
   <!-- Fonts and styles -->
   <link rel="stylesheet" href="https://fonts.bunny.net/css2?family=Nunito:wght@400;600;700&display=swap">
-  <link rel="stylesheet" href="{{ asset('vendor/icomoon-v1.0/style.css') }}?v9">
+  <link rel="stylesheet" href="{{ url('vendor/icomoon-v1.0/style.css') }}?v9">
+  
+  <!-- International Telephone Input -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
+  
   <style id="page-rule">
     @page {
       size: 80mm 178mm;
@@ -34,9 +41,11 @@
   </style>
 
   <!-- Scripts -->
-  <script src="{{ asset('ts/app.js') }}" defer></script>
+  <script src="{{ url('ts/app.js') }}" defer></script>
 
-  @vite(['resources/css/app.css', 'resources/js/app.js'])
+  {{-- Cargar assets compilados directamente sin Vite --}}
+  <link rel="stylesheet" href="{{ url('build/assets/app-fd737ff0.css') }}">
+  <script src="{{ url('build/assets/app-f737933f.js') }}" defer></script>
 
   @livewireStyles
 
@@ -66,6 +75,9 @@
   @stack('html')
 
   @stack('js')
+
+  <!-- International Telephone Input JS -->
+  <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/intlTelInput.min.js"></script>
 
   @livewireScripts
 </body>

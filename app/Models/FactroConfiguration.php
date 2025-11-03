@@ -15,19 +15,8 @@ class FactroConfiguration extends Model
     protected function api(): Attribute
     {
         return new Attribute(
-            get: fn($value) => json_decode($value, true),
+            get: fn($value) => $value ? json_decode($value, true) : [],
             set: fn($value) => json_encode($value)
         );
-    }
-
-    /**
-     * Get API configuration from cache or database
-     */
-    public static function apiConfiguration(): array
-    {
-        return cache()->remember('factro_api_configuration', 3600, function () {
-            $configuration = static::first();
-            return $configuration ? $configuration->api : [];
-        });
     }
 }

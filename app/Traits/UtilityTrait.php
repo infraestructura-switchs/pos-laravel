@@ -16,6 +16,7 @@ use Mpdf\Mpdf;
 trait UtilityTrait {
 
     public function initMPdf(): Mpdf {
+        Log::info('Inicializando PDF initMPdf');
         $defaultConfig = (new ConfigVariables())->getDefaults();
         $fontDirs = $defaultConfig['fontDir'];
 
@@ -49,6 +50,7 @@ trait UtilityTrait {
     }
 
     protected function initMPdfTicket($height): Mpdf {
+        Log::info('Inicializando PDF de ticket initMPdfTicket', ['height' => $height]);
 
         // Tomar ancho desde sesión; si no existe (ruta directa) usar Company o un valor por defecto
         $width = optional(session('config'))->width_ticket
@@ -164,16 +166,34 @@ trait UtilityTrait {
             $endpoint = config('services.n8n.whatsapp_webhook_url');
             $payload = [
                 'numberDestino' => (int) $digits,
-                'Fileurl' => $fileUrl,
+                'fileName' => $fileUrl,
             ];
+
+            Log::channel('whatsapp')->info('📤 UtilityTrait - Enviando a N8N', [
+                'endpoint' => $endpoint,
+                'payload' => $payload,
+                'phone' => $digits
+            ]);
 
             $response = Http::timeout((int) config('services.n8n.timeout', 10))
                 ->acceptJson()
                 ->asJson()
                 ->post($endpoint, $payload);
 
+            Log::channel('whatsapp')->info('📥 UtilityTrait - Respuesta de N8N', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+                'successful' => $response->successful(),
+                'headers' => $response->headers()
+            ]);
+
             if (!$response->successful()) {
-                Log::warning('N8N webhook error', ['status' => $response->status(), 'body' => $response->body()]);
+                Log::channel('whatsapp')->warning('⚠️ N8N webhook error', [
+                    'status' => $response->status(), 
+                    'body' => $response->body(),
+                    'endpoint' => $endpoint,
+                    'payload' => $payload
+                ]);
                 return [
                     'success' => false,
                     'message' => 'Error enviando a N8N: ' . $response->status(),

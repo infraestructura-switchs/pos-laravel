@@ -28,11 +28,11 @@ left: 15rem; /* 240px - Deja espacio para el sidebar más ancho */
 ### 2. **Menús Agrupados No Visibles** ✅ SOLUCIONADO
 
 #### Problema:
-Los menús agrupados "Facturación" e "Inventario" estaban configurados para mostrarse solo si el usuario tenía un permiso específico del padre (`'can' => 'almacenes'`). Esto causaba que los menús NO se mostraran incluso si el usuario tenía permiso para alguno de los hijos.
+Los menús agrupados "Facturación" e "Inventario" estaban configurados para mostrarse solo si el usuario tenía un permiso específico del padre (`'can' => 'bodegas'`). Esto causaba que los menús NO se mostraran incluso si el usuario tenía permiso para alguno de los hijos.
 
 **Ejemplo del problema:**
-- Menú "Facturación" requería permiso `almacenes`
-- Usuario tenía permiso para `facturas` y `vender` pero NO para `almacenes`
+- Menú "Facturación" requería permiso `bodegas`
+- Usuario tenía permiso para `facturas` y `vender` pero NO para `bodegas`
 - Resultado: El menú "Facturación" NO se mostraba
 
 #### Solución Aplicada:

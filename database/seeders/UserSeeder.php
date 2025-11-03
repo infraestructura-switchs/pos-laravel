@@ -32,9 +32,20 @@ class UserSeeder extends Seeder {
                 'password' => bcrypt('12345678'),
                 'remember_token' => Str::random(10),
             ]);
+
+            $user->assignRole('cajero');
+
+            $user = User::create([
+                'name' => 'Cajero  factro',
+                'email' => 'factro.user@gmail.com',
+                'phone' => '3133044553',
+                'email_verified_at' => now(),
+                'password' => bcrypt('12345678'),
+                'remember_token' => Str::random(10),
+            ]);
+
+             $user->assignRole('cajero');
         }
-            
-        $user->assignRole('cajero');
 
     }
 }

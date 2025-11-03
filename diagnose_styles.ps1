@@ -1,8 +1,8 @@
-Write-Host "=== DIAGNÓSTICO DE ESTILOS ===" -ForegroundColor Cyan
+Write-Host "=== DIAGNOSTICO DE ESTILOS ===" -ForegroundColor Cyan
 
 Write-Host "`n1. Verificando archivos compilados:" -ForegroundColor Yellow
 if (Test-Path "public\build\manifest.json") {
-    Write-Host "✅ manifest.json existe" -ForegroundColor Green
+    Write-Host "[OK] manifest.json existe" -ForegroundColor Green
     $manifest = Get-Content "public\build\manifest.json" | ConvertFrom-Json
     Write-Host "   CSS apunta a: $($manifest.'resources/css/app.css'.file)" -ForegroundColor White
     Write-Host "   JS apunta a: $($manifest.'resources/js/app.js'.file)" -ForegroundColor White
@@ -12,19 +12,19 @@ if (Test-Path "public\build\manifest.json") {
     
     if (Test-Path $cssFile) {
         $size = (Get-Item $cssFile).Length
-        Write-Host "   ✅ CSS existe ($size bytes)" -ForegroundColor Green
+        Write-Host "   [OK] CSS existe ($size bytes)" -ForegroundColor Green
     } else {
-        Write-Host "   ❌ CSS NO EXISTE: $cssFile" -ForegroundColor Red
+        Write-Host "   [ERROR] CSS NO EXISTE: $cssFile" -ForegroundColor Red
     }
     
     if (Test-Path $jsFile) {
         $size = (Get-Item $jsFile).Length
-        Write-Host "   ✅ JS existe ($size bytes)" -ForegroundColor Green
+        Write-Host "   [OK] JS existe ($size bytes)" -ForegroundColor Green
     } else {
-        Write-Host "   ❌ JS NO EXISTE: $jsFile" -ForegroundColor Red
+        Write-Host "   [ERROR] JS NO EXISTE: $jsFile" -ForegroundColor Red
     }
 } else {
-    Write-Host "❌ manifest.json NO existe" -ForegroundColor Red
+    Write-Host "[ERROR] manifest.json NO existe" -ForegroundColor Red
 }
 
 Write-Host "`n2. Verificando APP_ENV:" -ForegroundColor Yellow
@@ -36,16 +36,15 @@ $package = Get-Content package.json | ConvertFrom-Json
 Write-Host "   build: $($package.scripts.build)" -ForegroundColor White
 Write-Host "   dev: $($package.scripts.dev)" -ForegroundColor White
 
-Write-Host "`n4. ¿Vite dev server corriendo?" -ForegroundColor Yellow
+Write-Host "`n4. Vite dev server corriendo?" -ForegroundColor Yellow
 $viteRunning = Get-Process -Name node -ErrorAction SilentlyContinue | Where-Object {$_.CommandLine -like "*vite*"}
 if ($viteRunning) {
-    Write-Host "   ✅ Vite dev server está corriendo" -ForegroundColor Green
+    Write-Host "   [OK] Vite dev server esta corriendo" -ForegroundColor Green
 } else {
-    Write-Host "   ❌ Vite dev server NO está corriendo" -ForegroundColor Red
+    Write-Host "   [ERROR] Vite dev server NO esta corriendo" -ForegroundColor Red
 }
 
-Write-Host "`n=== SOLUCIÓN ===" -ForegroundColor Cyan
+Write-Host "`n=== SOLUCION ===" -ForegroundColor Cyan
 Write-Host "Ejecuta: npm run build" -ForegroundColor Yellow
 Write-Host "Luego: php artisan config:clear" -ForegroundColor Yellow
 Write-Host "Y recarga con Ctrl+F5" -ForegroundColor Yellow
-

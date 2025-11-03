@@ -10,18 +10,19 @@
             </div>
             <span class="ml-0.5">{{ $isApiEnabled ? 'Activado' : 'Desactivado' }}</span>
         </div>
-        <x-wireui.button icon="eart" wire:click="testConnection" text="Probar conexión" />
-        <x-wireui.button icon="api" wire:click="testFactroConnection" text="Probar conexión Factro" />
+
+        <div class="hidden" aria-hidden="true">
+                <x-wireui.button icon="eart" wire:click="testConnection" text="Probar conexión"/>
+        </div>        
     </x-commons.header>
 
-    <x-wireui.card title="Credenciales APIiiiii">
+    <x-wireui.card title="Credenciales API Factro ArquitecSoft S.A.S">
 
         <div class="space-y-4">
             <x-wireui.input label="URL" wire:model.defer="api.url" />
-            <x-wireui.input label="Client ID" wire:model.defer="api.client_id" />
-            <x-wireui.input label="Client Secret" wire:model.defer="api.client_secret" />
-            <x-wireui.input label="Email" wire:model.defer="api.email" />
-            <x-wireui.input label="Password" wire:model.defer="api.password" />
+            <x-wireui.input label="API Key ID" wire:model.defer="api.api_key_id" />
+            <x-wireui.input label="Company ID" wire:model.defer="api.company_id" />
+            <x-wireui.input label="Program" wire:model.defer="api.program" />            
         </div>
 
         <x-slot:footer>

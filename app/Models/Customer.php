@@ -62,7 +62,7 @@ class Customer extends Model
     // Scopes
     public function scopeDefault($query)
     {
-        return $query->select(['id', 'no_identification', 'names', 'phone'])->find(1);
+        return $query->select(['id', 'no_identification', 'names', 'phone'])->first();
     }
 
 }

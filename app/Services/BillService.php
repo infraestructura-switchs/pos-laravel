@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use GuzzleHttp\Exception\RequestException;
+use Illuminate\Http\Client\Response;
 
 class BillService
 {
@@ -196,9 +197,9 @@ class BillService
             Log::info('Iniciando validación FACTUS', ['bill_id' => $bill->id]);
             $response = ElectronicBillService::validate($bill);
             $responseData = $response->json();
-            
+
             ElectronicBillService::saveElectronicBill($responseData, $bill);
-            
+
             Log::info('✅ Factura electrónica FACTUS validada exitosamente', [
                 'bill_id' => $bill->id,
                 'cufe' => $bill->fresh()->electronicBill->cufe ?? 'N/A'
@@ -248,18 +249,31 @@ class BillService
 
     public static function storeElectronicCreditNote(Bill $bill): void
     {
+        Log::info('Iniciando creación nota crédito electrónica', ['bill_id' => $bill->id]);
         if (FactusConfigurationService::isApiEnabled() && $bill->electronicBill && ! $bill->electronicCreditNote) {
             ElectronicBillService::storeCreditNote($bill);
+        }
+
+        if (FactroConfigurationService::isApiEnabled() && $bill->electronicBill && ! $bill->electronicCreditNote) {
+            FactroElectronicBillService::storeCreditNote($bill);
         }
     }
 
     public static function validateElectronicCreditNote(Bill $bill): void
     {
+        Log::info('Iniciando validación para nota crédito', ['electronicCreditNote' => $bill->electronicCreditNote]);
         $bill->refresh();
         if (FactusConfigurationService::isApiEnabled() && $bill->electronicCreditNote) {
-            $response = FactroElectronicBillService::validate($bill);
+            $response = ElectronicBillService::validate($bill);
             $responseData = $response->json();
-            FactroElectronicBillService::saveElectronicBill($response, $responseData, $bill); // Pasa $response
+            ElectronicBillService::saveElectronicBill($responseData, $bill); // Pasa $response
+        }
+
+        if (FactroConfigurationService::isApiEnabled() && $bill->electronicCreditNote) {
+            Log::info('Iniciando validación FACTRO para nota crédito', ['electronicCreditNote' => $bill->electronicCreditNote]);
+            FactroElectronicBillService::validateCreditNote($bill);
+            $responseData = [];
+            FactroElectronicBillService::saveCreditNote($responseData, $bill); // Pasa $response
         }
     }
 

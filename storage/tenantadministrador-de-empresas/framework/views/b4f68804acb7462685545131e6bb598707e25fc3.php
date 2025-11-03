@@ -1,0 +1,2 @@
+<img <?php echo e($attributes->merge(['class' => 'object-cover object-center'])); ?> src="<?php echo e(asset('storage/images/system/logo-system.png')); ?>">
+<?php /**PATH C:\Users\USUARIO\Documents\proyecto-pos\app-pos-laravel\resources\views/components/application-logo.blade.php ENDPATH**/ ?>

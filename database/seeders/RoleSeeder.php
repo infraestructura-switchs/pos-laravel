@@ -13,10 +13,10 @@ class RoleSeeder extends Seeder {
 
         $permissions = Permission::all()->pluck('name');
 
-        $role = Role::create(['name' => 'Administrador']);
+        $role = Role::findOrCreate('Administrador', 'web');
         $role->syncPermissions($permissions);
 
-        $role = Role::create(['name' => 'Cajero']);
+        $role = Role::findOrCreate('Cajero', 'web');
         $role->syncPermissions(['facturas', 'financiaciones']);
 
     }

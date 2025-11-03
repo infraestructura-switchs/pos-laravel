@@ -78,6 +78,9 @@
           <th>
             Total
           </th>
+                    <th>
+            Totawsdasdasasdadal
+          </th>
           <th>
             Acciones
           </th>
@@ -148,11 +151,18 @@
             <td>
               @formatToCop($item->total)
             </td>
+            <td>
+             {{ $item->status   }}
+            </td>
             <td x-data actions>
               <x-buttons.download @click="$dispatch('print-ticket', {{ $item->id }})" href='#' title="Descargar" />
               <x-buttons.show href="{{ route('admin.bills.show', $item->id) }}" title="Visualizar" />
-              @if ($item->status === '0' && (!App\Services\FactusConfigurationService::isApiEnabled() || ($item->electronicBill && $item->electronicBill->is_validated)))
-                <x-buttons.ban wire:click="$emit('cancelBill', {{ $item->id }})" title="Anular" />
+              @if ($item->status === '0' && (App\Services\FactusConfigurationService::isApiEnabled() && ($item->electronicBill && $item->electronicBill->is_validated)))
+                <x-buttons.ban wire:click="$emit('cancelBill', {{ $item->id }})" title="Anular Factus" />
+              @endif
+
+              @if ($item->status === '0' && (App\Services\FactroConfigurationService::isApiEnabled() && ($item->electronicBill && $item->electronicBill->is_validated)))
+                <x-buttons.ban wire:click="$emit('cancelBill', {{ $item->id }})" title="Anular Factro" />
               @endif
             </td>
           </tr>

@@ -29,4 +29,14 @@ class Terminal extends Model
     {
         return $query->where('status', self::ACTIVE);
     }
+
+    public function cashOpenings()
+    {
+        return $this->hasMany(CashOpening::class);
+    }
+
+    public function cashClosings()
+    {
+        return $this->hasMany(CashClosing::class);
+    }
 }

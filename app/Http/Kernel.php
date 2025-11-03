@@ -32,10 +32,13 @@ class Kernel extends HttpKernel
         'web' => [
             \App\Http\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            // Inicializar tenancy ANTES de la sesión para aislar sesiones por tenant
+            \App\Http\Middleware\UniversalTenancy::class,
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            
         ],
 
         'api' => [
@@ -68,5 +71,6 @@ class Kernel extends HttpKernel
         'role' => \Spatie\Permission\Middlewares\RoleMiddleware::class,
         'module' => \App\Http\Middleware\HasModule::class,
         'check-payroll' => \App\Http\Middleware\CheckPayrollFactus::class,
+        'tenant.status' => \App\Http\Middleware\CheckTenantStatus::class,
     ];
 }

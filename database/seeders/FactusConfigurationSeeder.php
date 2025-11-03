@@ -11,8 +11,8 @@ class FactusConfigurationSeeder extends Seeder
     public function run()
     {
         $url = App::environment('production') ? 'https://api.factus.com.co/' : 'https://api-sandbox.factus.com.co/';
-        $clientId = App::environment('production') ? '' : '9f561c53-d9b7-459b-9ac6-af9333b471e5';
-        $clientSecret = App::environment('production') ? '' : 'WEN7SpeQc8G8qAzfYQpicvae3Ldn3rkmrzG7OjJA';
+        $clientId = App::environment('production') ? '' : 'a00f374d-c2d1-4136-a68a-154d9334fafd';
+        $clientSecret = App::environment('production') ? '' : 'dVxSpLsvYs9YI4UEnwfEbHKZuTeSp7HIDHHBcClY';
         $email = App::environment('production') ? '' : 'sandbox@factus.com.co';
         $password = App::environment('production') ? '' : 'sandbox2024%';
 
@@ -25,7 +25,7 @@ class FactusConfigurationSeeder extends Seeder
         ];
 
         FactusConfiguration::create([
-            'is_api_enabled' => true,
+            'is_api_enabled' => false,
             'api' => $configurations
         ]);
     }

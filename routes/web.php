@@ -2,10 +2,33 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Models\Order;
+use App\Http\Controllers\TenantRegistrationController;
+use App\Http\Controllers\Admin\TenantController;
 
+// ========================================
+// RUTAS DEL DOMINIO CENTRAL
+// ========================================
+
+// Landing Page Multi-Tenant
 Route::get('/', function () {
+    return view('welcome-multitenant');
+})->name('home');
+
+// Registro de Tenants (público)
+Route::get('/register-tenant', [TenantRegistrationController::class, 'showRegistrationForm'])->name('tenant.register.form');
+Route::post('/register-tenant', [TenantRegistrationController::class, 'register'])->name('tenant.register');
+
+// Dashboard Principal (para usuarios autenticados del dominio central)
+Route::get('/dashboard', function () {
     return view('welcome');
 })->middleware('HasLoggenIn')->name('dashboard');
+
+// Panel de Administración de Tenants (solo para SuperAdmin)
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('tenants', TenantController::class);
+    Route::post('tenants/{id}/suspend', [TenantController::class, 'suspend'])->name('tenants.suspend');
+    Route::post('tenants/{id}/activate', [TenantController::class, 'activate'])->name('tenants.activate');
+});
 
 // Ruta de prueba temporal para debug
 Route::get('/debug-mesas', function () {

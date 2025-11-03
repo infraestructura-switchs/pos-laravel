@@ -132,3 +132,14 @@ php artisan storage:link
 cp htaccess .htaccess
 chmod 775 -R storage/app/public
 ```
+
+## Documentación (Docs)
+
+- Guías: [`docs/guias/README.md`](docs/guias/README.md)
+- Despliegue: [`docs/deploy/README.md`](docs/deploy/README.md)
+- Soluciones Multi-tenant: [`docs/soluciones-multitenant/README.md`](docs/soluciones-multitenant/README.md)
+- Scripts PowerShell: [`docs/scripts/README.md`](docs/scripts/README.md)
+- API: [`docs/api/README.md`](docs/api/README.md)
+- WhatsApp: [`docs/whatsapp/README.md`](docs/whatsapp/README.md)
+- UI: [`docs/ui/README.md`](docs/ui/README.md)
+- Resúmenes: [`docs/resumen/README.md`](docs/resumen/README.md)

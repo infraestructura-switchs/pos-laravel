@@ -1,0 +1,18 @@
+<div class="">
+
+            <div class="flex mb-1">
+            <label class="block text-sm font-semibold text-gray-700" for="4e1566f0798fb3d6f350720cacd74446">
+Costo
+</label>
+        </div>
+    
+    <div class="relative rounded-md  shadow-sm ">
+        
+        <input type="text" autocomplete="off" class="placeholder-slate-400 border border-slate-300 focus:ring-cyan-400 focus:border-cyan-400 block w-full text-sm sm:text-tiny py-1 sm:py-2 rounded-md transition ease-in-out duration-100 focus:outline-none read-only:bg-slate-50 shadow-sm" wire:model.defer="cost" placeholder="Costo" name="cost" id="4e1566f0798fb3d6f350720cacd74446"
+             onkeypress='return onlyNumbers(event)'                      />
+
+            </div>
+
+    </div>
+
+<?php /**PATH C:\Users\USUARIO\Documents\proyecto-pos\app-pos-laravel\storage\tenantadministrador-de-empresas\framework\views/22bd0b32c4a3cca297d240642ff610cbc63b4cf4.blade.php ENDPATH**/ ?>

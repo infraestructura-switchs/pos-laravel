@@ -50,6 +50,15 @@ class ImageService implements ImageServiceInterface
         $product->cloudinary_public_id = $result['public_id'];
         $product->save();
 
+        // Limpia el archivo temporal generado por Livewire tras subirlo a Cloudinary
+        try {
+            if (is_string($path) && file_exists($path)) {
+                @unlink($path);
+            }
+        } catch (\Throwable $e) {
+            // No detener el flujo si falla el borrado del temporal
+        }
+
         return $result;
     }
 

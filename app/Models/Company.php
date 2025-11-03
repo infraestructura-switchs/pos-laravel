@@ -13,6 +13,28 @@ class Company extends Model
 
     protected $guarded = ['id'];
 
+    // Campos asignables en masa
+    protected $fillable = [
+        'nit',
+        'name',
+        'direction',
+        'phone',
+        'email',
+        'type_bill',
+        'barcode',
+        'print',
+        'change',
+        'tables',
+        'width_ticket',
+        'percentage_tip',
+        'department_id',
+        'city_id',
+        'currency_id',
+        'invoice_provider_id',
+    ];
+
+
+
     #accessor and mutator
     protected function percentageTip(): Attribute
     {
@@ -28,4 +50,10 @@ class Company extends Model
             get: fn () => $this->percentage_tip / 100
         );
     }
+
+    public function invoiceProvider()
+    {
+        return $this->belongsTo(InvoiceProvider::class, 'invoice_provider_id');
+    }
+    
 }

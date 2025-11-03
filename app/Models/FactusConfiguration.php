@@ -15,7 +15,7 @@ class FactusConfiguration extends Model
     protected function api(): Attribute
     {
         return new Attribute(
-            get: fn($value) => json_decode($value, true),
+            get: fn($value) => $value ? json_decode($value, true) : [],
             set: fn($value) => json_encode($value)
         );
     }

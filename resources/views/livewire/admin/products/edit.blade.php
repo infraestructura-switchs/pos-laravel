@@ -49,19 +49,19 @@
 
                           <x-buttons.switch label="Manejar presentaciones" wire:model="product.has_presentations" active="Sí" inactive="No" />
 
-                          <!--  
+                          
                           <div class="grid {{ $product->has_presentations ? 'grid-cols-1' : 'grid-cols-2' }} gap-6">
 
-                              <x-wireui.input onlyNumbers label="Stock" name="stock" wire:model.defer="product.stock" placeholder="Cantidad de stock"  />
+                              <x-wireui.input onlyNumbers label="Stock" name="stock" wire:model.defer="product.stock" placeholder="Cantidad de stock"  readonly/>
 
                               @if (!$product->has_presentations)
 
-                                  <x-wireui.input onlyNumbers label="Unidades" name="units" wire:model.defer="units" placeholder="Unidades"  />
+                                  <x-wireui.input onlyNumbers label="Unidades" name="units" wire:model.defer="units" placeholder="Unidades"  readonly />
 
                               @endif
 
                           </div>
-                          -->
+                          
 
                       @endif
 

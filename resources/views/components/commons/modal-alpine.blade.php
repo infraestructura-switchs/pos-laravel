@@ -1,4 +1,5 @@
 <div x-data="{ show: false }"
+  x-on:close-whatsapp-modal.window="show = false"
   {{ $attributes->merge(['class' => 'fixed inset-0 overflow-y-auto px-4 py-6 z-50']) }}
   x-show="show">
 

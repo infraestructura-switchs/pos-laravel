@@ -17,6 +17,9 @@
     text="Cargando..."
     class="z-[999] hidden" />
 
+  <!-- Panel de carga para facturación -->
+  <x-loads.panel-fixed text="Procesando factura..." class="no-print z-[999]" wire:loading wire:target='storeBill' />
+
   <livewire:admin.quick-sale.customers />
 
   <livewire:admin.customers.create />
@@ -28,6 +31,9 @@
   @include('pdfs.ticket-pre-bill')
 
   @include('pdfs.ticket-command-bill')
+
+  <!-- Modal de WhatsApp -->
+  <x-whatsapp-modal />
 
   <script>
     window.directSaleOrder = null;
@@ -57,6 +63,10 @@
       window.dispatchEvent(new CustomEvent('open-customers', { detail: true }));
     };
 
+    // Variable global para guardar el número de WhatsApp
+    window.directSaleWhatsappPhone = null;
+    window.directSaleWantsWhatsapp = false;
+
     window.addEventListener('set-change', (event) => {
       const alpineComponent = Alpine.$data(document.getElementById('direct-sale-root'));
       const selectedCustomer = alpineComponent && alpineComponent.order && alpineComponent.order.customer
@@ -84,6 +94,14 @@
 
     window.addEventListener('store-bill', ({ detail }) => {
       if (window.directSaleOrder) {
+        // Guardar parámetros
+        window.directSalePendingParams = {
+          cash: detail.cash,
+          tip: detail.tip,
+          paymentMethod: detail.paymentMethod
+        };
+        
+        // Ahora sí crear la factura (ya tenemos el número de WhatsApp si aplica)
         directSaleStoreBill(detail.cash, detail.tip, detail.paymentMethod);
       }
     });
@@ -127,6 +145,130 @@
           window.dispatchEvent(new CustomEvent('reset-cart'));
         }
       });
+    }
+
+    // Variable para almacenar el ID de la factura creada
+    window.directSaleLastBillId = null;
+
+    // Escuchar evento de factura creada con PDF URL listo
+    window.addEventListener('bill-created', (event) => {
+      if (event.detail && event.detail.billId) {
+        window.directSaleLastBillId = event.detail.billId;
+        const pdfUrl = event.detail.pdfUrl;
+        console.log('📝 Factura creada con ID:', window.directSaleLastBillId, 'PDF URL:', pdfUrl);
+        console.log('🔍 Estado de variables:', {
+          wantsWhatsapp: window.directSaleWantsWhatsapp,
+          hasPhone: !!window.directSaleWhatsappPhone,
+          phone: window.directSaleWhatsappPhone,
+          hasPdfUrl: !!pdfUrl
+        });
+        
+        // Si el usuario quiere WhatsApp Y tenemos el PDF URL listo, enviar ahora
+        if (window.directSaleWantsWhatsapp && window.directSaleWhatsappPhone && pdfUrl) {
+          console.log('📤 Enviando PDF por WhatsApp inmediatamente');
+          sendWhatsappNow(window.directSaleLastBillId, window.directSaleWhatsappPhone);
+        } else {
+          console.log('⏭️ No se enviará por WhatsApp:', {
+            reason: !window.directSaleWantsWhatsapp ? 'Usuario no quiere WhatsApp' :
+                    !window.directSaleWhatsappPhone ? 'No hay teléfono' :
+                    !pdfUrl ? 'No hay PDF URL' : 'Desconocido'
+          });
+          
+          // Si el usuario omitió WhatsApp, recargar después de un momento
+          if (!window.directSaleWantsWhatsapp) {
+            setTimeout(() => {
+              console.log('🔄 Recargando página después de omitir WhatsApp...');
+              window.location.reload();
+            }, 1500); // Dar tiempo para que se descargue el PDF
+          }
+        }
+      }
+    });
+
+    // Función NUEVA: Mostrar modal ANTES de todo el proceso
+    window.showWhatsappConfirmation = function() {
+      // Resetear variables
+      window.directSaleWantsWhatsapp = false;
+      window.directSaleWhatsappPhone = null;
+      
+      window.dispatchEvent(new CustomEvent('open-whatsapp-modal', {
+        detail: {
+          onConfirm: (phoneNumber) => {
+            console.log('📱 WhatsApp confirmado con número:', phoneNumber);
+            // Guardar el número para después
+            window.directSaleWantsWhatsapp = true;
+            window.directSaleWhatsappPhone = phoneNumber;
+            
+            // Ahora sí continuar con el flujo normal
+            // Disparar el evento que normalmente dispararía el botón Facturar
+            continuarConFacturacion();
+          },
+          onSkip: () => {
+            console.log('⏭️ WhatsApp omitido');
+            window.directSaleWantsWhatsapp = false;
+            window.directSaleWhatsappPhone = null;
+            
+            // Continuar con el flujo normal sin WhatsApp
+            continuarConFacturacion();
+          }
+        }
+      }));
+    };
+
+    // Función auxiliar para continuar con la facturación
+    function continuarConFacturacion() {
+      // Buscar el elemento del carrito
+      const cartElement = document.querySelector('[x-data="alpineCart"]');
+      if (!cartElement) {
+        console.error('No se encontró el componente del carrito');
+        return;
+      }
+
+      // Obtener el componente Alpine
+      const alpineCart = Alpine.$data(cartElement);
+      if (!alpineCart) {
+        console.error('No se pudo obtener los datos de Alpine del carrito');
+        return;
+      }
+
+      // Verificar que hay productos
+      if (!alpineCart.products || !alpineCart.products.length) {
+        Livewire.emit('alert', 'Agrega uno o mas productos');
+        return;
+      }
+
+      // Disparar el evento set-change manualmente
+      window.dispatchEvent(new CustomEvent('set-change', {
+        detail: {
+          products: JSON.parse(JSON.stringify(alpineCart.products)),
+          total: alpineCart.total
+        }
+      }));
+    }
+
+    // Función para enviar WhatsApp una vez que tenemos el PDF URL
+    async function sendWhatsappNow(billId, phoneNumber) {
+      try {
+        console.log('🚀 sendWhatsappNow - Llamando a Livewire', { billId, phoneNumber });
+        const result = await @this.call('sendBillViaWhatsapp', billId, phoneNumber);
+        console.log('✅ sendWhatsappNow - Respuesta de Livewire:', result);
+        // Limpiar variables
+        window.directSaleWantsWhatsapp = false;
+        window.directSaleWhatsappPhone = null;
+        
+        // Recargar página después de enviar WhatsApp
+        setTimeout(() => {
+          console.log('🔄 Recargando página después de enviar WhatsApp...');
+          window.location.reload();
+        }, 1500); // Dar tiempo para que el usuario vea el mensaje de éxito
+      } catch (error) {
+        console.error('❌ Error enviando WhatsApp:', error);
+        // Incluso si hay error, recargar la página
+        setTimeout(() => {
+          console.log('🔄 Recargando página después de error...');
+          window.location.reload();
+        }, 1500);
+      }
     }
   </script>
 

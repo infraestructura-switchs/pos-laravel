@@ -76,6 +76,11 @@ class ModuleSeeder extends Seeder
                 'is_functionality' => 0
             ],
             [
+                'name' => 'administrar empresas',
+                'is_enabled' => 1,
+                'is_functionality' => 0
+            ],
+            [
                 'name' => 'roles y permisos',
                 'is_enabled' => 1,
                 'is_functionality' => 0
@@ -131,14 +136,17 @@ class ModuleSeeder extends Seeder
                 'is_functionality' => 1
               ],
               [
-                'name' => 'almacenes',
+                'name' => 'bodegas',
                 'is_enabled' => 1,
                 'is_functionality' => 1
             ],
         ];
 
         foreach ($modules as $module) {
-            Module::create($module);
+            Module::updateOrCreate(
+                ['name' => $module['name']],
+                $module
+            );
         }
     }
 }

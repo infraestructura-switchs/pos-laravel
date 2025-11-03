@@ -30,18 +30,20 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request)
     {
-        if ($request->email === 'superadmin@gmail.com' && $request->password === '123456') {
-
-            Auth::login(User::find(1));
+        // Autenticar normalmente
+        $request->authenticate();
+        $request->session()->regenerate();
+        
+        // Si es el superadmin, marcar la sesión como root
+        if ($request->email === 'superadmin@gmail.com') {
             session()->put('root', true);
-
-        } else {
-
-            $request->authenticate();
-            $request->session()->regenerate();
         }
 
-        session()->put('config', Company::first());
+        // Guardar configuración de company si existe
+        $company = Company::first();
+        if ($company) {
+            session()->put('config', $company);
+        }
 
         return redirect()->intended(RouteServiceProvider::HOME);
     }

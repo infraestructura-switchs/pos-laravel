@@ -17,7 +17,7 @@ class FactroHttpService
     private static function resolveConfiguration(): void
     {
         $config = FactroConfigurationService::apiConfiguration();
-        if (empty($config['url']) || empty($config['api_key'])) {
+        if (empty($config['url']) || empty($config['api_key_id'])) {
             throw new CustomException('Configuración ARQFE incompleta en env');
         }
     }
@@ -27,22 +27,58 @@ class FactroHttpService
         $config = FactroConfigurationService::apiConfiguration();
         $baseUrl = rtrim($config['url'], '/');
         Log::info('Formateando endpoint FACTRO', ['baseUrl' => $baseUrl, 'endpoint' => $endpoint]);
-        return $baseUrl . '/' . ltrim($endpoint, '/');
+        $fullUrl = $baseUrl . '/' . ltrim($endpoint, '/');
+        Log::info('Endpoint formateado FACTRO', ['fullUrl' => $fullUrl]);
+        return $fullUrl;
     }
 
-    public static function apiHttp(): self
+    public static function apiHttp($timeOut = 100000): self
     {
+        Log::info('Inicializando HttpService FACTRO con timeout', ['timeout' => $timeOut]);
+
         $instance = new static;
         $config = FactroConfigurationService::apiConfiguration();
-        $instance::$http = Http::timeout(180) 
-            ->retry(3, 10000, function ($attempt) { 
-                return $attempt * 2;
+        Log::info('Configuración FACTRO', ['config[api_key_id]' => $config['api_key_id']]);
+
+
+
+        $instance::$http = Http::timeout($timeOut)
+            ->retry(3, 100000, function ($exception, $request) {
+                Log::error('Error en retry FACTRO', ['exception' => $exception->getMessage()]);
+
+                return true; // Si deseas una lógica más elaborada, ajusta esto
             })
             ->withHeaders([
-                'Accept' => 'application/json',
-                'api-key' => $config['api_key'],
+                'api-key' => $config['api_key_id'],
             ])
             ->asForm();
+
+            // You can access them directly:
+        $headers = $instance::$http->getOptions()['headers'] ?? [];
+
+        Log::info('Outgoing HTTP Headers', $headers);
+
+        Log::info('HttpService ARQFE inicializado', ['url' => $config['url']]);
+        return $instance;
+    }
+
+    public static function apiHttpWithOutTimeOut(): self
+    {
+        Log::info('Inicializando HttpService FACTRO con timeout');
+
+        $instance = new static;
+        $config = FactroConfigurationService::apiConfiguration();
+        Log::info('Configuración FACTRO', ['config[api_key_id]' => $config['api_key_id']]);
+
+        $instance::$http = Http::withHeaders([
+                'api-key' => $config['api_key_id'],
+            ])
+            ->asForm();
+
+            // You can access them directly:
+        $headers = $instance::$http->getOptions()['headers'] ?? [];
+
+        Log::info('Outgoing HTTP Headers', $headers);
 
         Log::info('HttpService ARQFE inicializado', ['url' => $config['url']]);
         return $instance;
@@ -56,7 +92,7 @@ class FactroHttpService
             'numero' => $data['documento']['numeroDocumento'] ?? '1',
             'jsonOriginal' => json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             'tipoData' => 'json',
-            'programa' => $config['programa'],
+            'programa' => $config['program'],
             'companyId' => $config['company_id'],
             'procesar' => 'true',
             'tipoFactura' => 'factura',
@@ -64,8 +100,9 @@ class FactroHttpService
 
         Log::info('Enviando a FACTRO', ['endpoint' => $endpoint, 'formData_keys' => array_keys($formData)]);
 
-        ini_set('max_execution_time', 300); 
-        Log::info('Max execution time extendido a 300s para FACTRO');
+        $maxExecutionTime = 10000;
+        ini_set('max_execution_time', $maxExecutionTime);
+        Log::info('Max execution time extendido a '.$maxExecutionTime.' s para FACTRO');
 
         $startTime = microtime(true);
 
@@ -90,6 +127,57 @@ class FactroHttpService
 
         $endTime = microtime(true);
         Log::info('Respuesta raw de FACTRO', [
+            'status' => $response->status(),
+            'duration_s' => round($endTime - $startTime, 2),
+            'body_preview' => substr($response->body(), 0, 500)
+        ]);
+
+        $this->checkResponseErrors($response);
+        return $response;
+    }
+
+    public function postCreditNote(string $endpoint, array $data = []): Response
+    {
+        $config = FactroConfigurationService::apiConfiguration();
+        $formData = [
+            'invoiceId' => $data['invoiceId'],
+            'razon' => $data['razon'] ?? ' ',
+            'companyId' => $config['company_id']
+        ];
+
+        Log::info('Enviando CreditNote a FACTRO', ['endpoint' => $endpoint, 'formData_keys' => array_keys($formData),
+            'invoiceId' => $formData['invoiceId'],
+            'razon' => $formData['razon'] ?? ' ',
+            'companyId' => $formData['companyId'],
+        ]);
+
+        //$maxExecutionTime = 100000;
+        //ini_set('max_execution_time', $maxExecutionTime);
+        //Log::info('Max execution time extendido a '.$maxExecutionTime.' s para FACTRO');
+
+        $startTime = microtime(true);
+
+        try {
+            $response = self::$http->post($this->formatEndpoint($endpoint), $formData);
+            Log::info('Respuesta CreditNote raw de FACTRO', [
+                'status' => $response->status(),
+                'body_preview' => substr($response->body(), 0, 500)
+            ]);
+        } catch (RequestException $e) {
+            $endTime = microtime(true);
+            Log::error('Excepción en request CreditNote FACTRO', [
+                'duration_s' => round($endTime - $startTime, 2),
+                'message' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
+            if ($e->getCode() === 0 || strpos($e->getMessage(), 'timeout') !== false) {
+                throw new CustomException('Timeout en validación FACTRO. Intenta más tarde o verifica conexión.');
+            }
+            throw $e;
+        }
+
+        $endTime = microtime(true);
+        Log::info('Respuesta raw de CreditNote FACTRO', [
             'status' => $response->status(),
             'duration_s' => round($endTime - $startTime, 2),
             'body_preview' => substr($response->body(), 0, 500)

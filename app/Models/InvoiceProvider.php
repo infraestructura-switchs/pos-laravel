@@ -13,6 +13,11 @@ class InvoiceProvider extends Model
     
     protected $fillable = [
         'name',
-        'status'
+        'status',
+        'nit',
+        'direction',
+        'phone',
+        'email',
+        'url',
     ];
 }

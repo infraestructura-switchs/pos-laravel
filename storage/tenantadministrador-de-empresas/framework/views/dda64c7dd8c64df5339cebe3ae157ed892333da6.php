@@ -1,0 +1,62 @@
+<?php
+    $hasError = !$errorless && $name && $errors->has($name);
+?>
+
+<div class="<?php if($disabled): ?> opacity-60 <?php endif; ?>">
+
+    <?php if($label): ?>
+        <div class="flex mb-1">
+            <?php if (isset($component)) { $__componentOriginal3bf0a20793be3eca9a779778cf74145887b021b9 = $component; } ?>
+<?php $component = Illuminate\View\DynamicComponent::resolve(['component' => 'wireui.label'] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
+<?php $component->withName('dynamic-component'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(Illuminate\View\DynamicComponent::class))->getConstructor()): ?>
+<?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['label' => $label,'has-error' => $hasError,'for' => $id]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal3bf0a20793be3eca9a779778cf74145887b021b9)): ?>
+<?php $component = $__componentOriginal3bf0a20793be3eca9a779778cf74145887b021b9; ?>
+<?php unset($__componentOriginal3bf0a20793be3eca9a779778cf74145887b021b9); ?>
+<?php endif; ?>
+        </div>
+    <?php endif; ?>
+
+    <div class="relative rounded-md <?php if (! ($shadowless)): ?> shadow-sm <?php endif; ?>">
+        <?php if($prefix || $icon): ?>
+            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none <?php echo e($hasError ? 'text-red-500' : 'text-slate-400'); ?>">
+                <?php if($icon): ?>
+                    <i class="<?php echo e($icon); ?>"></i>
+                <?php elseif($prefix): ?>
+                    <span class="pl-1 flex items-center self-center">
+                        <?php echo e($prefix); ?>
+
+                    </span>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
+
+        <input <?php echo e($attributes->class([ $getInputClasses($hasError), ])->merge([ 'type' => 'text', 'autocomplete' => 'off'])); ?>
+
+            <?php if($onlyNumbers): ?> onkeypress='return onlyNumbers(event)'  <?php endif; ?>
+            <?php if($readonly): ?> readonly <?php endif; ?>
+        />
+
+        <?php if($hasError): ?>
+            <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none <?php echo e($hasError ? 'text-red-500' : 'text-slate-400'); ?>">
+                <i class="ico icon-error"></i>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <?php if(!$hasError && $hint): ?>
+        <label <?php if($id): ?> for="<?php echo e($id); ?>" <?php endif; ?> class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            <?php echo e($hint); ?>
+
+        </label>
+    <?php endif; ?>
+</div>
+
+<?php /**PATH C:\Users\USUARIO\Documents\proyecto-pos\app-pos-laravel\resources\views/components/wireui/input.blade.php ENDPATH**/ ?>

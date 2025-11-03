@@ -15,13 +15,13 @@ class FactusConfigurationService
         }
 
         $configuration = FactusConfiguration::first();
-        
+
         if (!$configuration) {
             throw new CustomException('No se ha configurado la facturación electrónica. Por favor, configure primero la conexión con Factus.');
         }
 
         $api = $configuration->api;
-        
+
         if (!$api || !is_array($api)) {
             throw new CustomException('La configuración de la API de Factus es inválida.');
         }
@@ -46,13 +46,14 @@ class FactusConfigurationService
         }
 
         $configuration = FactusConfiguration::first();
-        
+
         if (!$configuration) {
             return false;
         }
 
         $apiEnabled = $configuration->is_api_enabled;
         Cache::forever('is_api_enabled', $apiEnabled);
+        Log::info('Factus API Enabled?', ['enabled' => $apiEnabled]);
 
         return (bool) $apiEnabled;
     }

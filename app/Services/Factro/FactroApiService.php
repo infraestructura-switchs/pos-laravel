@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 
 class FactroApiService
 {
-    public static function numberingRanges()
+    public static function numberingRangesBorrar()
     {
         $cacheKey = 'factro_numbering_ranges';
         $ranges = Cache::get($cacheKey);
@@ -28,6 +28,7 @@ class FactroApiService
             }
             Cache::put($cacheKey, $ranges, 3600);
         }
+
         if (empty($ranges)) {
             Log::warning('No rangos con expire, cargando todos activos');
             $allActive = NumberingRange::where('status', '1')
@@ -46,6 +47,7 @@ class FactroApiService
 
     public static function getNumberingRangeForBill($terminalId = null)
     {
+        Log::info('Buscando numberingRange para facturación electrónica', ['terminal_id' => $terminalId]);
         $range = null;
 
         if ($terminalId) {
@@ -57,7 +59,7 @@ class FactroApiService
 
         Log::info('Buscando terminal para numberingRange', ['numberingRange' => $terminal->numberingRange ? $terminal->numberingRange->toArray() : null
         ]);
-        
+
             $numberingRange = $terminal->numberingRange;
             ///$numberingRange = $terminal->numberingRange->findFirstWhere('expire', '>=', now());
             Log::info('Rango por terminal', ['numberingRange_id' => $numberingRange->id, 'numberingRange' => $numberingRange ? $numberingRange->toArray() : null]);
@@ -82,6 +84,5 @@ class FactroApiService
         Log::info('Rango de numeración obtenido', ['prefix' => $numberingRange->prefix ?? 'N/A', 'current' => $numberingRange->current ?? 0, 'expire' => $numberingRange->expire ?? 'N/A', 'status' => $numberingRange->status]);
         return $numberingRange;
     }
-
 
 }

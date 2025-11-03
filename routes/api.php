@@ -146,7 +146,16 @@ Route::get('/health', function () {
 Route::get('pdf-upload/bill/{bill}', function (Bill $bill) {
     try {
         $controller = app(AdminBillController::class);
-        $pdfBase64 = $controller->getBillBase64($bill->id);
+        
+        // Si es factura electrónica, usar el PDF completo con QR y CUFE
+        if ($bill->isElectronic && $bill->electronicBill) {
+            \Log::info('⚡ API pdf-upload - Generando PDF con QR y CUFE', ['bill_id' => $bill->id]);
+            $pdfBase64 = $controller->getElectronicBillBase64($bill->id);
+        } else {
+            \Log::info('📄 API pdf-upload - Generando PDF estándar', ['bill_id' => $bill->id]);
+            $pdfBase64 = $controller->getDirectSaleBillBase64($bill->id);
+        }
+        
         $pdfContent = base64_decode($pdfBase64);
 
         $dir = storage_path('app/pdfs');

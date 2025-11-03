@@ -19,24 +19,30 @@ class Connection extends Component
     {
         return [
             'api.url' => 'required|string|url|max:255',
-            'api.client_id' => 'required|string|max:255',
-            'api.client_secret' => 'required|string|max:255',
-            'api.email' => 'required|email|string|max:255',
-            'api.password' => 'required|string|max:255',
+            'api.api_key_id' => 'required|string|max:255',
+            'api.company_id' => 'required|string|max:255',
+            'api.program' => 'required|string|string|max:255',
         ];
     }
 
     public function mount()
     {
-        if (!isRoot()) abort(404);
+        // Permitir acceso al SuperAdmin o a usuarios con rol Administrador del tenant
+        if (!isRoot()) {
+            if (!auth()->check() || !auth()->user()->hasRole('Administrador')) {
+                abort(403, 'No tienes permisos para acceder a esta sección');
+            }
+        }
     }
 
     public function render()
     {
-        $this->api = FactroConfiguration::apiConfiguration();
+        $this->api = FactroConfigurationService::apiConfiguration();
         $this->isApiEnabled = FactroConfigurationService::isApiEnabled();
 
-        return view('livewire.admin.factro.connection');
+        return view('livewire.admin.factro.connection')
+            ->layout('layouts.app')
+            ->layoutData(['title' => 'Conexión Factro']);
     }
 
     public function testConnection()

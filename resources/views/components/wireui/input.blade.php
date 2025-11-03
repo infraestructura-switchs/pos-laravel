@@ -25,6 +25,7 @@
 
         <input {{ $attributes->class([ $getInputClasses($hasError), ])->merge([ 'type' => 'text', 'autocomplete' => 'off']) }}
             @if ($onlyNumbers) onkeypress='return onlyNumbers(event)'  @endif
+            @if ($readonly) readonly @endif
         />
 
         @if ($hasError)

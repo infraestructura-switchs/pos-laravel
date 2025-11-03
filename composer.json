@@ -18,7 +18,9 @@
         "mpdf/mpdf": "^8.1",
         "psr/simple-cache": "1.0",
         "rap2hpoutre/laravel-log-viewer": "^2.2",
-        "spatie/laravel-permission": "^5.5"
+        "simplesoftwareio/simple-qrcode": "^4.2",
+        "spatie/laravel-permission": "^5.5",
+        "stancl/tenancy": "^3.8"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.7",

@@ -18,6 +18,7 @@ class StockMovementDetail extends Model
         'type', 
         'unit_cost',
         'total_cost',
+        'movement_type'
     ];
 
     protected $casts = [

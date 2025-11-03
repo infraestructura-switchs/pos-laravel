@@ -28,7 +28,12 @@ class Connection extends Component
 
     public function mount()
     {
-        if (!isRoot()) abort(404);
+        // Permitir acceso al SuperAdmin o a usuarios con rol Administrador del tenant
+        if (!isRoot()) {
+            if (!auth()->check() || !auth()->user()->hasRole('Administrador')) {
+                abort(403, 'No tienes permisos para acceder a esta sección');
+            }
+        }
     }
 
     public function render()
@@ -36,7 +41,9 @@ class Connection extends Component
         $this->api = FactusConfigurationService::apiConfiguration();
         $this->isApiEnabled = FactusConfigurationService::isApiEnabled();
 
-        return view('livewire.admin.factus.connection');
+        return view('livewire.admin.factus.connection')
+            ->layout('layouts.app')
+            ->layoutData(['title' => 'Conexión Factus']);
     }
 
     public function testConnection()

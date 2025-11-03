@@ -10,6 +10,7 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use App\Services\FactroConfigurationService;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class FactroElectronicBillService
 {
@@ -271,13 +272,22 @@ class FactroElectronicBillService
         $qr = $electronicBill['qr'] ?? '';
         $cufe = $electronicBill['cufeOrCude'] ?? '';
 
+        // Nueva forma: Generar QR en base64 con simple-qrcode
+        if($electronicBill['qr'] ) {
+            $qrString = $electronicBill['qr'];
+            $qrBase64 = 'data:image/png;base64,' . base64_encode(
+                QrCode::format('png')->size(140)
+                ->generate($qrString)
+            );
+        }
+
         $billData = [
             'number' => $billNumberFull,
-            'qr_image' => $qr,
+            'qr_image' => $qrBase64,
             'cufe' => $cufe,
             'numbering_range' => $numberingRange ? json_encode($numberingRange) : null,
             'is_validated' => true,
-            'id_factura' => $electronicBill['idFactura'] ?? null,
+            'factro_bill' => $electronicBill['idFactura'] ?? null,
             'descripcion' => $electronicBill['descripcion'] ?? null,
             'ruta_factura' => $electronicBill['rutaFacturaContenedor'] ?? null,
             'valor_firma' => $electronicBill['valorFirma'] ?? null,
@@ -305,16 +315,55 @@ class FactroElectronicBillService
 
     public static function storeCreditNote(Bill $bill): void
     {
-        throw new \Exception('No implementado para FACTRO aún');
+        Log::info('Iniciando creación nota crédito electrónica FACTRO', ['bill_id' => $bill->id,
+        'number' => $bill->number,
+        'electronicBill' => $bill->electronicBill,
+        ]);
+
+        //$httpService = FactroHttpService::apiHttpWithOutTimeOut();
+        $httpService = FactroHttpService::apiHttp();
+        $data = [
+            'invoiceId' => $bill->electronicBill->factro_bill_id,
+            'razon' => 'Pruebas para asignación de la version de la factura ',
+        ];
+        $response = $httpService->postCreditNote('send-invoice-public-key/send-credit-note-no-referenciado', $data);
+        $responseData = $response->json();
+        Log::info('Respuesta de CreditNote FACTRO recibida', ['status' => $response->status(), 'bill_id' => $bill->id,
+        'response_keys' => array_keys($response->json()),
+        'responseData' => $responseData,
+        ]);
+
+
+        if($responseData['qr'] ?? null) {
+            $qrString = $responseData['qr'];
+            $qrBase64 = 'data:image/png;base64,' . base64_encode(
+                QrCode::format('png')->size(140)
+                ->generate($qrString)
+            );
+        }
+
+        $bill->electronicCreditNote()->create([
+            'number' => $responseData['idFactura'],
+            'qr_image' => $qrBase64,
+            'cude' => $responseData['cufeOCode'],
+            'is_validated' => true,
+        ]);
+
+
+        Log::info('✅ BillController::cancelBill - Nota crédito electrónica creada correctamente', [
+            'electronicCreditNote' => $bill->electronicCreditNote,
+            'user_id' => auth()->id()
+        ]);
     }
 
-    public static function validateCreditNote(Bill $bill): Response
+
+    public static function validateCreditNote(Bill $bill): void
     {
-        throw new \Exception('No implementado para FACTRO aún');
+
     }
 
-    public static function saveCreditNote(array $data, Bill $bill): void
+    public static function saveCreditNote( array $data, Bill $bill): void
     {
-        throw new \Exception('No implementado para FACTRO aún');
+
     }
 }

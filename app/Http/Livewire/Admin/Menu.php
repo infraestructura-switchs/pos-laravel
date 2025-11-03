@@ -31,16 +31,15 @@ class Menu extends Component
     {
         try {
             $token = AppService::getTokenFactus('/administrador/dashboard');
+            return $token;
         } catch (\Throwable $th) {
             if ($th instanceof CustomException) {
                 $this->emit('error', $th->getMessage());
             } else {
                 $this->emit('error', 'Ha ocurrido un error inesperado al abrir Factus');
-                return [];
             }
+            return [];
         }
-
-        return $token;
     }
 
     public function getTokenFactro(): array

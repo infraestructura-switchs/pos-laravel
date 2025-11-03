@@ -98,7 +98,7 @@
           'route' => route('admin.warehouses.index'),
           'active' => request()->routeIs('admin.warehouses.index'),
           'icon' => 'home text-xl',
-          'can' => 'almacenes',
+          'can' => 'bodegas',
       ],
             [
           'name' => 'Entradas/Salidas',
@@ -113,6 +113,13 @@
           'active' => request()->routeIs('admin.inventory-remissions.*'),
           'icon' => 'order-2 text-xl',
           'can' => 'inventario-remisiones',
+      ],
+      [
+          'name' => 'Transferencias',
+          'route' => route('admin.warehouse-transfers.index'),
+          'active' => request()->routeIs('admin.warehouse-transfers.index'),
+          'icon' => 'arrow-l text-xl',
+          'can' => 'entrada-salidas',
       ],
           ],
       ],
@@ -500,20 +507,25 @@
             Terminal: {{ getTerminal()->name }}
           </div>
 
-          <div class="flex h-full items-center" title="Abrir caja registradora">
-            <button wire:click='openCashRegister'>
-              <i class="ico icon-payment text-base md:text-lg lg:text-xl text-green-600"></i>
-            </button>
-          </div>
+          @if (!hasTerminalOpen())
+            <div class="flex h-full items-center" title="Abrir caja registradora">
+              <button wire:click='openCashRegister'>
+                <i class="ico icon-payment text-base md:text-lg lg:text-xl text-green-600"></i>
+              </button>
+            </div>
+          @endif
 
-          <div class="flex h-full items-center" title="Cierre de caja">
-            <button x-data @click="window.livewire.emitTo('admin.cash-closing.create', 'openCreate', {{ getTerminal()->id }})">
-              <i class="ico icon-payment text-base md:text-lg lg:text-xl text-red-600"></i>
-            </button>
-          </div>
+          @if (hasTerminalOpen())
+            <div class="flex h-full items-center" title="Cierre de caja">
+              <button x-data @click="window.livewire.emitTo('admin.cash-closing.create', 'openCreate', {{ getTerminal()->id }})">
+                <i class="ico icon-payment text-base md:text-lg lg:text-xl text-red-600"></i>
+              </button>
+            </div>
+          @endif
+
         @endif
 
-        @if (App\Services\FactusConfigurationService::isApiEnabled())
+        @if (App\Services\FactusConfigurationService::isApiEnabled() && isRoot())
           <div x-data="authenticatedFactus()">
             <button @click="openFactus()" class="flex h-full items-center" title="Abrir Factus">
               <x-icons.factus class="h-5 w-5 md:h-6 md:w-6 text-indigo-800" title="Factus activo" />
@@ -521,7 +533,7 @@
           </div>
         @endif
 
-        @if (App\Services\FactroConfigurationService::isApiEnabled())
+        @if (App\Services\FactroConfigurationService::isApiEnabled() && isRoot())
           <div x-data="authenticatedFactro()">
             <button @click="openFactro()" class="flex h-full items-center" title="Abrir Factro">
               <x-icons.factro class="h-6 w-6 text-indigo-800" title="Factro activo" />
@@ -550,8 +562,6 @@
             <span class="px-2 text-sm font-semibold text-gray-500">
               {{ Str::limit(Auth::user()->name, 20, '...') }}
             </span>
-            <form method="POST" action="{{ route('logout') }}">
-              @csrf
 
               @can('isEnabled', [App\Models\Module::class, 'roles y permisos'])
                 <x-dropdown-link :href="route('admin.roles.index')" class="flex items-center">
@@ -581,7 +591,11 @@
                 </x-dropdown-link>
               @endcan
 
-              @if (isRoot())
+              @if (isRoot() || auth()->user()->can('isEnabled', [App\Models\Module::class, 'administrar empresas']))
+                <x-dropdown-link :href="route('admin.tenants.index')" class="flex items-center">
+                  <i class="ti ti-building-store mr-2"></i>
+                  Administrar Empresas
+                </x-dropdown-link>
                 <x-dropdown-link :href="route('admin.modules.index')" class="flex items-center">
                   <i class="ti ti-layout-dashboard mr-2"></i>
                   Módulos
@@ -603,11 +617,13 @@
                 </x-dropdown-link>
               @endcan
 
-              <x-dropdown-link :href="route('logout')" onclick="event.preventDefault(); this.closest('form').submit();" class="flex items-center">
-                <i class="ico icon-logout mr-2"></i>
-                Cerrar sesión
-              </x-dropdown-link>
-            </form>
+              <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <x-dropdown-link :href="route('logout')" onclick="event.preventDefault(); this.closest('form').submit();" class="flex items-center">
+                  <i class="ico icon-logout mr-2"></i>
+                  Cerrar sesión
+                </x-dropdown-link>
+              </form>
           </x-slot>
         </x-dropdown>
       </div>
