@@ -19,11 +19,11 @@ class FixViteAssetsForTenants
         $response = $next($request);
 
         // Dominio central (sin www)
-        $centralDomain = 'switchs.test';
+        $centralDomain = 'dokploy.movete.cloud';
         $currentHost = $request->getHost();
 
         // Si no estamos en un tenant, no hacer nada
-        if ($currentHost === $centralDomain || $currentHost === 'www.switchs.test' || !str_contains($currentHost, '.switchs.test')) {
+        if ($currentHost === $centralDomain || $currentHost === 'www.dokploy.movete.cloud' || !str_contains($currentHost, '.dokploy.movete.cloud')) {
             return $response;
         }
 
@@ -42,15 +42,15 @@ class FixViteAssetsForTenants
         }
 
         // Reemplazar las URLs de assets relativos con URLs absolutas al dominio central
-        $assetUrl = 'http://' . $centralDomain;
-        
+        $assetUrl = 'https://' . $centralDomain;
+
         // Patrón 1: href="/build/assets/..." -> href="http://switchs.test/build/assets/..."
         $content = preg_replace(
             '/(href=["\'])(\/)?(build\/assets\/[^"\']+)/i',
             '$1' . $assetUrl . '/$3',
             $content
         );
-        
+
         // Patrón 2: src="/build/assets/..." -> src="http://switchs.test/build/assets/..."
         $content = preg_replace(
             '/(src=["\'])(\/)?(build\/assets\/[^"\']+)/i',
@@ -71,7 +71,7 @@ class FixViteAssetsForTenants
             '$1' . $assetUrl . '/$3',
             $content
         );
-        
+
         // Patrón 5: src="/ts/..." -> src="http://switchs.test/ts/..."
         $content = preg_replace(
             '/(src=["\'])(\/)?(ts\/[^"\']+)/i',

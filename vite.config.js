@@ -13,15 +13,15 @@ export default defineConfig({
     ],
     // Configuración para multi-tenancy
     // Los assets se sirven desde el dominio central
-    base: process.env.APP_ENV === 'production' 
-        ? '/build/' 
-        : 'http://switchs.test/build/',
+    base: process.env.APP_ENV === 'production'
+        ? '/build/'
+        : 'https://dokploy.movete.cloud/build/',
     server: {
-        host: 'switchs.test',
+        host: 'dokploy.movete.cloud',
         port: 5173,
         strictPort: false,
         hmr: {
-            host: 'switchs.test'
+            host: 'dokploy.movete.cloud'
         }
     }
 });

@@ -47,11 +47,11 @@ class AppServiceProvider extends ServiceProvider {
         // Esto es crítico para multi-tenancy donde cada tenant tiene su propio subdominio
         // pero los assets CSS/JS compilados solo existen en el dominio central
         if (!$this->app->runningInConsole()) {
-            $centralDomain = 'testlaravelserver.dokploy.movete.cloud'; // Dominio central sin www
+            $centralDomain = 'dokploy.movete.cloud'; // Dominio central sin www
             $currentHost = request()->getHost();
 
             // Si estamos en un subdominio de tenant, forzar assets desde el dominio central
-            if ($currentHost !== $centralDomain && $currentHost !== 'www.testlaravelserver.dokploy.movete.cloud' && str_contains($currentHost, '.testlaravelserver.dokploy.movete.cloud')) {
+            if ($currentHost !== $centralDomain && $currentHost !== 'www.dokploy.movete.cloud' && str_contains($currentHost, '.dokploy.movete.cloud')) {
                 // Forzar el prefijo de assets al dominio central
                 $assetUrl = 'https://' . $centralDomain;
 

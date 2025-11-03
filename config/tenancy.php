@@ -21,7 +21,7 @@ return [
         'localhost',
         'switchs.test',
         'www.switchs.test',
-        'testlaravelserver.dokploy.movete.cloud',
+        'dokploy.movete.cloud',
     ],
 
     /**

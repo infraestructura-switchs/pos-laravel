@@ -13,8 +13,8 @@ class CreateTenantCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'tenant:create 
-                            {id? : ID del tenant (slug)} 
+    protected $signature = 'tenant:create
+                            {id? : ID del tenant (slug)}
                             {--name= : Nombre del tenant}
                             {--email= : Email del administrador}
                             {--domain= : Dominio personalizado (opcional)}';
@@ -36,7 +36,7 @@ class CreateTenantCommand extends Command
 
         // Obtener ID del tenant
         $tenantId = $this->argument('id') ?? $this->ask('ID del tenant (slug, ej: empresa1)');
-        
+
         // Validar que no exista
         if (Tenant::find($tenantId)) {
             $this->error("❌ El tenant '{$tenantId}' ya existe");
@@ -62,7 +62,7 @@ class CreateTenantCommand extends Command
         }
 
         // Obtener dominio
-        $defaultDomain = $tenantId . '.switchs.test';
+        $defaultDomain = $tenantId . '.dokploy.movete.cloud';
         $domain = $this->option('domain') ?? $this->ask('Dominio', $defaultDomain);
 
         // Confirmación
@@ -109,7 +109,7 @@ class CreateTenantCommand extends Command
             $hostsPath = 'C:\Windows\System32\drivers\etc\hosts';
             if (file_exists($hostsPath)) {
                 $hostsContent = file_get_contents($hostsPath);
-                
+
                 if (strpos($hostsContent, $domain) === false && strpos($domain, '.test') !== false) {
                     $this->warn("⚠️  El dominio '{$domain}' NO está en el archivo hosts");
                     $this->line('');
