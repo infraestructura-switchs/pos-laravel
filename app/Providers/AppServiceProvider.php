@@ -53,7 +53,7 @@ class AppServiceProvider extends ServiceProvider {
             // Si estamos en un subdominio de tenant, forzar assets desde el dominio central
             if ($currentHost !== $centralDomain && $currentHost !== 'www.testlaravelserver.dokploy.movete.cloud' && str_contains($currentHost, '.testlaravelserver.dokploy.movete.cloud')) {
                 // Forzar el prefijo de assets al dominio central
-                $assetUrl = 'http://' . $centralDomain;
+                $assetUrl = 'https://' . $centralDomain;
 
                 // Configurar APP_URL para que todos los assets usen el dominio central
                 config(['app.url' => $assetUrl]);
