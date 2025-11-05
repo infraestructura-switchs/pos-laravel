@@ -179,7 +179,15 @@ tenantSubdomain(); // "empresa1" (si estamos en empresa1.tudominio.com)
 
 ## Documentación (Docs)
 
-- **🌐 Cambiar Dominio:** [`docs/CAMBIAR_DOMINIO.md`](docs/CAMBIAR_DOMINIO.md) ⭐ **NUEVO**
+### 🌟 Documentación Multi-Tenant (Nuevas)
+
+- **⚡ Resumen Rápido:** [`docs/RESUMEN_CAMBIO_DOMINIO.md`](docs/RESUMEN_CAMBIO_DOMINIO.md) - Cambio de dominio en 5 pasos
+- **🌐 Cambiar Dominio (Completo):** [`docs/CAMBIAR_DOMINIO.md`](docs/CAMBIAR_DOMINIO.md) - Guía detallada con ejemplos y FAQs
+- **🔧 Cómo Funciona Apache y Hosts:** [`docs/COMO_FUNCIONA_APACHE_HOSTS.md`](docs/COMO_FUNCIONA_APACHE_HOSTS.md) - Flujo completo desde navegador hasta BD
+- **📊 Diagrama de Flujo:** [`docs/DIAGRAMA_FLUJO_MULTITENANT.md`](docs/DIAGRAMA_FLUJO_MULTITENANT.md) - Visualización del sistema multi-tenant
+
+### 📚 Documentación General
+
 - Guías: [`docs/guias/README.md`](docs/guias/README.md)
 - Despliegue: [`docs/deploy/README.md`](docs/deploy/README.md)
 - Soluciones Multi-tenant: [`docs/soluciones-multitenant/README.md`](docs/soluciones-multitenant/README.md)
