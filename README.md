@@ -133,8 +133,53 @@ cp htaccess .htaccess
 chmod 775 -R storage/app/public
 ```
 
+## 🌐 Configuración Multi-Tenant
+
+Esta aplicación soporta **multi-tenancy** basado en subdominios. Cada empresa (tenant) tiene su propio subdominio y base de datos.
+
+### Cambiar el Dominio Central
+
+El sistema utiliza una **variable de entorno centralizada** para el dominio. Para cambiar de `dokploy.movete.cloud` a tu propio dominio:
+
+1. **Edita tu archivo `.env`:**
+   ```env
+   CENTRAL_DOMAIN=tudominio.com
+   APP_URL=http://tudominio.com
+   CENTRAL_DOMAINS=tudominio.com,www.tudominio.com
+   ```
+
+2. **Limpia las cachés:**
+   ```bash
+   php artisan config:clear
+   php artisan cache:clear
+   ```
+
+3. **Si usas Vite, reinicia el servidor:**
+   ```bash
+   npm run dev
+   ```
+
+**📖 Documentación completa:** [docs/CAMBIAR_DOMINIO.md](docs/CAMBIAR_DOMINIO.md)
+
+### Funciones Helper Disponibles
+
+```php
+// Obtener el dominio central
+centralDomain(); // "tudominio.com"
+centralDomain(withProtocol: true); // "http://tudominio.com"
+
+// Verificar si es un tenant
+isTenantDomain(); // true si estamos en empresa1.tudominio.com
+
+// Extraer subdominio del tenant
+tenantSubdomain(); // "empresa1" (si estamos en empresa1.tudominio.com)
+```
+
+---
+
 ## Documentación (Docs)
 
+- **🌐 Cambiar Dominio:** [`docs/CAMBIAR_DOMINIO.md`](docs/CAMBIAR_DOMINIO.md) ⭐ **NUEVO**
 - Guías: [`docs/guias/README.md`](docs/guias/README.md)
 - Despliegue: [`docs/deploy/README.md`](docs/deploy/README.md)
 - Soluciones Multi-tenant: [`docs/soluciones-multitenant/README.md`](docs/soluciones-multitenant/README.md)

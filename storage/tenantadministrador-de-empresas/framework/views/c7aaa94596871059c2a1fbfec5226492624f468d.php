@@ -1,1 +1,0 @@
-<?php /**PATH C:\Users\USUARIO\Documents\proyecto-pos\app-pos-laravel\resources\views/welcome.blade.php ENDPATH**/ ?>

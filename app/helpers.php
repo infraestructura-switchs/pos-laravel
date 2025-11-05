@@ -148,3 +148,73 @@ if(!function_exists('factusIsEnabled')){
         return config('services.factus.enabled', false);
     }
 }
+
+if(!function_exists('centralDomain')){
+    /**
+     * Obtiene el dominio central de la aplicación
+     * 
+     * @param bool $withWww Si se debe incluir el subdominio www
+     * @param bool $withProtocol Si se debe incluir el protocolo (http/https)
+     * @return string El dominio central
+     */
+    function centralDomain(bool $withWww = false, bool $withProtocol = false): string
+    {
+        $domain = config('app.central_domain', env('CENTRAL_DOMAIN', 'dokploy.movete.cloud'));
+        
+        if ($withWww) {
+            $domain = 'www.' . $domain;
+        }
+        
+        if ($withProtocol) {
+            $protocol = app()->environment('production') ? 'https' : 'http';
+            $domain = $protocol . '://' . $domain;
+        }
+        
+        return $domain;
+    }
+}
+
+if(!function_exists('isTenantDomain')){
+    /**
+     * Verifica si el dominio actual es un subdominio de tenant
+     * 
+     * @param string|null $host El host a verificar (por defecto el host actual)
+     * @return bool True si es un tenant, false si es el dominio central
+     */
+    function isTenantDomain(?string $host = null): bool
+    {
+        $host = $host ?? request()->getHost();
+        $centralDomain = centralDomain();
+        $centralDomainWww = centralDomain(withWww: true);
+        
+        // Si es el dominio central exacto o con www, no es tenant
+        if ($host === $centralDomain || $host === $centralDomainWww) {
+            return false;
+        }
+        
+        // Si contiene el dominio central como sufijo, es un subdominio (tenant)
+        return str_contains($host, '.' . $centralDomain);
+    }
+}
+
+if(!function_exists('tenantSubdomain')){
+    /**
+     * Extrae el subdominio del tenant desde el host actual
+     * 
+     * @param string|null $host El host a analizar (por defecto el host actual)
+     * @return string|null El subdominio del tenant o null si no es un tenant
+     */
+    function tenantSubdomain(?string $host = null): ?string
+    {
+        $host = $host ?? request()->getHost();
+        
+        if (!isTenantDomain($host)) {
+            return null;
+        }
+        
+        $centralDomain = centralDomain();
+        
+        // Extraer el subdominio removiendo el dominio central
+        return str_replace('.' . $centralDomain, '', $host);
+    }
+}

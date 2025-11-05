@@ -60,7 +60,7 @@ class Dashboard extends Component
     {
         return in_array(request()->getHost(), $this->enableDomains)
         || request()->getHost() === 'localhost' || request()->getHost() === '127.0.0.1'
-        || str_contains(request()->getHost(), 'switchs');
+        || str_contains(request()->getHost(), centralDomain());
     }
 
     /**

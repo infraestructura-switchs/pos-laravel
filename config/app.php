@@ -62,6 +62,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Central Domain
+    |--------------------------------------------------------------------------
+    |
+    | El dominio central de tu aplicación multi-tenant (sin protocolo, sin www).
+    | Todos los tenants serán subdominios de este dominio.
+    | Ejemplo: si es 'miapp.com', los tenants serán 'empresa1.miapp.com'
+    |
+    */
+
+    'central_domain' => env('CENTRAL_DOMAIN', 'dokploy.movete.cloud'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

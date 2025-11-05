@@ -47,7 +47,7 @@ class TenantRegistrationController extends Controller
 
             // Crear el dominio del tenant
             $tenant->domains()->create([
-                'domain' => $subdomain . '.dokploy.movete.cloud',
+                'domain' => $subdomain . '.' . centralDomain(),
             ]);
 
             // Ejecutar migraciones y seeders del tenant
@@ -55,7 +55,7 @@ class TenantRegistrationController extends Controller
 
             // Redirigir al login del tenant con mensaje de éxito
             return redirect()
-                ->away('http://' . $subdomain . '.dokploy.movete.cloud/login')
+                ->away(centralDomain(withProtocol: true) . '/login')
                 ->with('success', '¡Empresa creada exitosamente! Ahora puedes iniciar sesión.');
 
         } catch (\Exception $e) {
@@ -81,7 +81,7 @@ class TenantRegistrationController extends Controller
     {
         // Convertir el nombre a un slug válido
         $slug = Str::slug($companyName);
-
+        
         // Si el slug ya existe, agregar un número aleatorio
         $subdomain = $slug;
         $counter = 1;
@@ -122,7 +122,7 @@ class TenantRegistrationController extends Controller
             if (class_exists(\Spatie\Permission\Models\Role::class)) {
                 try {
                     $adminRole = \Spatie\Permission\Models\Role::where('name', 'Administrador')->first();
-
+                    
                     if ($adminRole) {
                         $user->assignRole($adminRole);
                         \Log::info("Rol Administrador asignado al usuario: " . $user->email);
@@ -181,14 +181,14 @@ class TenantRegistrationController extends Controller
                 \Database\Seeders\TaxRateSeeder::class,
                 \Database\Seeders\PaymentMethodSeeder::class,
                 \Database\Seeders\IdentificationDocumentSeeder::class,
-
+                
                 // 2. Permisos y Roles
                 \Database\Seeders\PermissionSeeder::class,
                 \Database\Seeders\RoleSeeder::class,
-
+                
                 // 3. Módulos
                 \Database\Seeders\ModuleSeeder::class,
-
+                
                 // 4. Configuraciones adicionales
                 \Database\Seeders\TerminalSeeder::class,
             ];
@@ -223,7 +223,7 @@ class TenantRegistrationController extends Controller
         try {
             if (class_exists(\Spatie\Permission\Models\Role::class)) {
                 $adminRole = \Spatie\Permission\Models\Role::where('name', 'Administrador')->first();
-
+                
                 if ($adminRole) {
                     $allPermissions = \Spatie\Permission\Models\Permission::all();
                     $adminRole->syncPermissions($allPermissions);

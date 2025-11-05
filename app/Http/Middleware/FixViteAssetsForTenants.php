@@ -18,12 +18,10 @@ class FixViteAssetsForTenants
     {
         $response = $next($request);
 
-        // Dominio central (sin www)
-        $centralDomain = 'dokploy.movete.cloud';
         $currentHost = $request->getHost();
 
         // Si no estamos en un tenant, no hacer nada
-        if ($currentHost === $centralDomain || $currentHost === 'www.dokploy.movete.cloud' || !str_contains($currentHost, '.dokploy.movete.cloud')) {
+        if (!isTenantDomain($currentHost)) {
             return $response;
         }
 
@@ -42,37 +40,37 @@ class FixViteAssetsForTenants
         }
 
         // Reemplazar las URLs de assets relativos con URLs absolutas al dominio central
-        $assetUrl = 'https://' . $centralDomain;
-
-        // Patrón 1: href="/build/assets/..." -> href="http://switchs.test/build/assets/..."
+        $assetUrl = centralDomain(withProtocol: true);
+        
+        // Patrón 1: href="/build/assets/..." -> href="http://dokploy.movete.cloud/build/assets/..."
         $content = preg_replace(
             '/(href=["\'])(\/)?(build\/assets\/[^"\']+)/i',
             '$1' . $assetUrl . '/$3',
             $content
         );
-
-        // Patrón 2: src="/build/assets/..." -> src="http://switchs.test/build/assets/..."
+        
+        // Patrón 2: src="/build/assets/..." -> src="http://dokploy.movete.cloud/build/assets/..."
         $content = preg_replace(
             '/(src=["\'])(\/)?(build\/assets\/[^"\']+)/i',
             '$1' . $assetUrl . '/$3',
             $content
         );
 
-        // Patrón 3: url(/build/assets/...) -> url(http://switchs.test/build/assets/...)
+        // Patrón 3: url(/build/assets/...) -> url(http://dokploy.movete.cloud/build/assets/...)
         $content = preg_replace(
             '/(url\(["\']?)(\/)?(build\/assets\/[^)"\']+)/i',
             '$1' . $assetUrl . '/$3',
             $content
         );
 
-        // Patrón 4: href="/vendor/..." -> href="http://switchs.test/vendor/..."
+        // Patrón 4: href="/vendor/..." -> href="http://dokploy.movete.cloud/vendor/..."
         $content = preg_replace(
             '/(href=["\'])(\/)?(vendor\/[^"\']+)/i',
             '$1' . $assetUrl . '/$3',
             $content
         );
-
-        // Patrón 5: src="/ts/..." -> src="http://switchs.test/ts/..."
+        
+        // Patrón 5: src="/ts/..." -> src="http://dokploy.movete.cloud/ts/..."
         $content = preg_replace(
             '/(src=["\'])(\/)?(ts\/[^"\']+)/i',
             '$1' . $assetUrl . '/$3',
