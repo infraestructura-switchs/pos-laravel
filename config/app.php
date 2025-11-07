@@ -71,7 +71,7 @@ return [
     |
     */
 
-    'central_domain' => env('CENTRAL_DOMAIN', 'postest.movete.cloud'),
+    'central_domain' => env('CENTRAL_DOMAIN', 'adminpos.dokploy.movete.cloud'),
 
     /*
     |--------------------------------------------------------------------------
