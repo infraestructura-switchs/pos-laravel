@@ -1,7 +1,7 @@
 @php
   $sessionConfig = session('config');
   $defaultCustomer = App\Models\Customer::default()->first();
-
+  
   $config = [
       'customer' => $defaultCustomer ? $defaultCustomer->toArray() : null,
       'change' => $sessionConfig ? ($sessionConfig->change == '0') : false,
@@ -29,10 +29,10 @@
   <!-- Fonts and styles -->
   <link rel="stylesheet" href="https://fonts.bunny.net/css2?family=Nunito:wght@400;600;700&display=swap">
   <link rel="stylesheet" href="{{ url('vendor/icomoon-v1.0/style.css') }}?v9">
-
+  
   <!-- International Telephone Input -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
-
+  
   <style id="page-rule">
     @page {
       size: 80mm 178mm;
@@ -45,10 +45,7 @@
 
   {{-- Cargar assets compilados directamente sin Vite --}}
   <link rel="stylesheet" href="{{ url('build/assets/app-fd737ff0.css') }}">
-  <link rel="stylesheet" href="{{ url('build/assets/app-b11c4747.css') }}">
   <script src="{{ url('build/assets/app-f737933f.js') }}" defer></script>
-   <script src="{{ url('build/assets/app-533acf65.js') }}" defer></script>
-
 
   @livewireStyles
 
