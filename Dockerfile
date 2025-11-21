@@ -35,11 +35,4 @@ RUN apk add --no-cache curl && \
 RUN npm install -g npm@11.6.2
 
 
-
-
 CMD ["/start.sh"]
-
-
-RUN chown -R www-data:www-data /var/www/html \
- && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
-  &&  chmod -R 775  /var/www/html/storage/logs/laravel.log

@@ -1,0 +1,44 @@
+[2025-11-19 14:49:39] local.INFO: 🚀 DirectSale::storeBill - Iniciando proceso de facturación {"order_id":"N/A","customer_id":1,"products_count":2} 
+[2025-11-19 14:49:39] local.INFO: 🔍 DirectSale::storeBill - Validando terminal e inventario  
+[2025-11-19 14:49:39] local.INFO: 💾 DirectSale::storeBill - Creando factura en BD  
+[2025-11-19 14:49:39] local.INFO: Iniciando el proceso de creación de una nueva factura. {"factus_enabled":false,"factro_enabled":false} 
+[2025-11-19 14:49:39] local.INFO: La API de Facturacion Electronica no está habilitada. Obteniendo el siguiente rango de numeración.  
+[2025-11-19 14:49:40] local.INFO: ✅ DirectSale::storeBill - Factura creada exitosamente {"bill_id":40} 
+[2025-11-19 14:49:40] local.INFO: 🔌 DirectSale::storeBill - Verificando facturación electrónica  
+[2025-11-19 14:49:40] local.INFO: ℹ️ DirectSale::storeBill - Facturación electrónica NO habilitada  
+[2025-11-19 14:49:40] local.INFO: 📤 DirectSale::storeBill - Subiendo PDF a Cloudinary de forma síncrona  
+[2025-11-19 14:49:40] local.INFO: ☁️ DirectSale::uploadPdfToCloudinarySync - Iniciando {"bill_id":40} 
+[2025-11-19 14:49:40] local.INFO: 📄 DirectSale::uploadPdfToCloudinarySync - PDF generado {"file_path":"/var/www/html/storage/app/tmp/Factura_POS - 40.pdf"} 
+[2025-11-19 14:49:43] local.INFO: ✅ DirectSale::uploadPdfToCloudinarySync - Resultado {"success":true,"url":"https://res.cloudinary.com/dxktixdby/raw/upload/v1763581781/pos-images/pdfs/bill_POS%20-%2040_1763581780.pdf"} 
+[2025-11-19 14:49:43] local.INFO: 💾 DirectSale::uploadPdfToCloudinarySync - URL guardado en BD {"bill_id":40,"pdf_url":"https://res.cloudinary.com/dxktixdby/raw/upload/v1763581781/pos-images/pdfs/bill_POS%20-%2040_1763581780.pdf"} 
+[2025-11-19 14:49:43] local.INFO: 📥 DirectSale::storeBill - Enviando evento para descarga de factura  
+[2025-11-19 14:49:44] local.INFO: Descargando factura download {"bill_id":40} 
+[2025-11-19 14:49:44] local.INFO: 📥 BillController::download - Iniciando descarga {"bill_id":40,"is_electronic":false} 
+[2025-11-19 14:49:44] local.INFO: 📄 BillController::download - Descargando factura estándar {"bill_id":40} 
+[2025-11-19 14:49:44] local.INFO: 📄 BillController::download - Descargando factura estándar company  {"company":{"App\\Models\\Company":{"id":3,"nit":"123456789-0","name":"Empresa Principal","direction":"Calle Principal","phone":"3001234567","email":"empresa@principal.com","type_bill":"1","barcode":"0","print":"0","change":"0","tables":"0","width_ticket":80,"percentage_tip":0,"created_at":"2025-11-13T22:07:07.000000Z","updated_at":"2025-11-13T22:07:07.000000Z","department_id":1,"city_id":1,"currency_id":1,"invoice_provider_id":1}}} 
+[2025-11-19 14:49:44] local.INFO: 📱 DirectSale::sendBillViaWhatsapp - MÉTODO LLAMADO {"bill_id":40,"phone":"+573154578347","timestamp":"2025-11-19T19:49:44.153621Z"} 
+[2025-11-19 14:49:44] local.INFO: 📱 DirectSale::sendBillViaWhatsapp - Iniciando {"bill_id":40,"phone":"+573154578347"} 
+[2025-11-19 14:49:44] local.INFO: ✅ WhatsappPdfService - Usando PDF ya subido desde BD {"bill_id":40,"pdf_url":"https://res.cloudinary.com/dxktixdby/raw/upload/v1763581781/pos-images/pdfs/bill_POS%20-%2040_1763581780.pdf"} 
+[2025-11-19 14:49:44] local.INFO: ✅ DirectSale::sendBillViaWhatsapp - Enviado exitosamente {"bill_id":40,"phone":"+573154578347","file_url":"https://res.cloudinary.com/dxktixdby/raw/upload/v1763581781/pos-images/pdfs/bill_POS%20-%2040_1763581780.pdf"} 
+[2025-11-19 16:18:02] local.INFO: 🚀 DirectSale::storeBill - Iniciando proceso de facturación {"order_id":"N/A","customer_id":1,"products_count":1} 
+[2025-11-19 16:18:02] local.INFO: 🔍 DirectSale::storeBill - Validando terminal e inventario  
+[2025-11-19 16:18:02] local.INFO: 💾 DirectSale::storeBill - Creando factura en BD  
+[2025-11-19 16:18:02] local.INFO: Iniciando el proceso de creación de una nueva factura. {"factus_enabled":false,"factro_enabled":false} 
+[2025-11-19 16:18:02] local.INFO: La API de Facturacion Electronica no está habilitada. Obteniendo el siguiente rango de numeración.  
+[2025-11-19 16:18:02] local.INFO: ✅ DirectSale::storeBill - Factura creada exitosamente {"bill_id":41} 
+[2025-11-19 16:18:02] local.INFO: 🔌 DirectSale::storeBill - Verificando facturación electrónica  
+[2025-11-19 16:18:02] local.INFO: ℹ️ DirectSale::storeBill - Facturación electrónica NO habilitada  
+[2025-11-19 16:18:02] local.INFO: 📤 DirectSale::storeBill - Subiendo PDF a Cloudinary de forma síncrona  
+[2025-11-19 16:18:02] local.INFO: ☁️ DirectSale::uploadPdfToCloudinarySync - Iniciando {"bill_id":41} 
+[2025-11-19 16:18:03] local.INFO: 📄 DirectSale::uploadPdfToCloudinarySync - PDF generado {"file_path":"/var/www/html/storage/app/tmp/Factura_POS - 41.pdf"} 
+[2025-11-19 16:18:04] local.INFO: ✅ DirectSale::uploadPdfToCloudinarySync - Resultado {"success":true,"url":"https://res.cloudinary.com/dxktixdby/raw/upload/v1763587084/pos-images/pdfs/bill_POS%20-%2041_1763587083.pdf"} 
+[2025-11-19 16:18:04] local.INFO: 💾 DirectSale::uploadPdfToCloudinarySync - URL guardado en BD {"bill_id":41,"pdf_url":"https://res.cloudinary.com/dxktixdby/raw/upload/v1763587084/pos-images/pdfs/bill_POS%20-%2041_1763587083.pdf"} 
+[2025-11-19 16:18:04] local.INFO: 📥 DirectSale::storeBill - Enviando evento para descarga de factura  
+[2025-11-19 16:18:05] local.INFO: Descargando factura download {"bill_id":41} 
+[2025-11-19 16:18:05] local.INFO: 📱 DirectSale::sendBillViaWhatsapp - MÉTODO LLAMADO {"bill_id":41,"phone":"+573154578347","timestamp":"2025-11-19T21:18:05.427146Z"} 
+[2025-11-19 16:18:05] local.INFO: 📱 DirectSale::sendBillViaWhatsapp - Iniciando {"bill_id":41,"phone":"+573154578347"} 
+[2025-11-19 16:18:05] local.INFO: 📥 BillController::download - Iniciando descarga {"bill_id":41,"is_electronic":false} 
+[2025-11-19 16:18:05] local.INFO: 📄 BillController::download - Descargando factura estándar {"bill_id":41} 
+[2025-11-19 16:18:05] local.INFO: 📄 BillController::download - Descargando factura estándar company  {"company":{"App\\Models\\Company":{"id":3,"nit":"123456789-0","name":"Empresa Principal","direction":"Calle Principal","phone":"3001234567","email":"empresa@principal.com","type_bill":"1","barcode":"0","print":"0","change":"0","tables":"0","width_ticket":80,"percentage_tip":0,"created_at":"2025-11-13T22:07:07.000000Z","updated_at":"2025-11-13T22:07:07.000000Z","department_id":1,"city_id":1,"currency_id":1,"invoice_provider_id":1}}} 
+[2025-11-19 16:18:05] local.INFO: ✅ WhatsappPdfService - Usando PDF ya subido desde BD {"bill_id":41,"pdf_url":"https://res.cloudinary.com/dxktixdby/raw/upload/v1763587084/pos-images/pdfs/bill_POS%20-%2041_1763587083.pdf"} 
+[2025-11-19 16:18:05] local.INFO: ✅ DirectSale::sendBillViaWhatsapp - Enviado exitosamente {"bill_id":41,"phone":"+573154578347","file_url":"https://res.cloudinary.com/dxktixdby/raw/upload/v1763587084/pos-images/pdfs/bill_POS%20-%2041_1763587083.pdf"} 

@@ -53,7 +53,8 @@ Route::get('productos', ProductsIndex::class)->middleware('module:productos')->n
 
 Route::get('inventario-remisiones', InventoryRemissionsIndex::class)->middleware('module:inventario-remisiones')->name('inventory-remissions.index');
 
-Route::get('remisiones', InventoryRemissionsIndex::class)->name('inventory-remissions.index');
+// Ruta alternativa para remisiones (sin nombre duplicado, redirecciona a la principal)
+Route::get('remisiones', InventoryRemissionsIndex::class)->middleware('module:inventario-remisiones');
 
 Route::get('entrada-salidas', StockMovementsIndex::class)->middleware('module:entrada-salidas')->name('stock_movements.index');
 

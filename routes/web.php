@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
 use App\Http\Controllers\TenantRegistrationController;
 use App\Http\Controllers\Admin\TenantController;
@@ -9,9 +10,26 @@ use App\Http\Controllers\Admin\TenantController;
 // RUTAS DEL DOMINIO CENTRAL
 // ========================================
 
-// Landing Page Multi-Tenant
+// Ruta manual para servir assets de Livewire (DEBE IR PRIMERO, SIN MIDDLEWARE)
+Route::get('/livewire/livewire.js', function () {
+    $path = public_path('vendor/livewire/livewire.js');
+    
+    if (!file_exists($path)) {
+        abort(404, 'Livewire assets not published');
+    }
+    
+    return response()->file($path, [
+        'Content-Type' => 'application/javascript',
+        'Cache-Control' => 'public, max-age=31536000',
+    ]);
+});
+
+// Redirigir a login si no está autenticado, o al dashboard si ya lo está
 Route::get('/', function () {
-    return view('welcome-multitenant');
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
 })->name('home');
 
 // Registro de Tenants (público)
@@ -161,4 +179,3 @@ Route::get('config/config-cache', function () {
     \Artisan::call('config:cache');
     return redirect()->back()->with('success', 'Config cacheada correctamente.');
 })->withoutMiddleware(\App\Http\Middleware\Authenticate::class)->name('config.cache');
-

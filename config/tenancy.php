@@ -19,8 +19,9 @@ return [
     'central_domains' => [
         '127.0.0.1',
         'localhost',
-        env('CENTRAL_DOMAIN', 'dokploy.movete.cloud'),
-        'www.' . env('CENTRAL_DOMAIN', 'dokploy.movete.cloud'),
+        env('CENTRAL_DOMAIN', 'adminpos.dokploy.movete.cloud'),
+        'www.' . env('CENTRAL_DOMAIN', 'adminpos.dokploy.movete.cloud'),
+        'adminpos.dokploy.movete.cloud', // Agregar explícitamente
     ],
 
     /**

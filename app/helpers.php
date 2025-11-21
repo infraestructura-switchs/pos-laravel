@@ -119,7 +119,17 @@ if (! function_exists('getDays')) {
 if (! function_exists('isRoot')) {
     function isRoot()
     {
-        return session()->exists('root');
+        // Verificar tanto por sesión como por la columna is_root del usuario
+        if (session()->exists('root')) {
+            return true;
+        }
+        
+        // Si el usuario está autenticado y tiene is_root = 1
+        if (auth()->check() && auth()->user()->is_root == 1) {
+            return true;
+        }
+        
+        return false;
     }
 }
 

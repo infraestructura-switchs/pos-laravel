@@ -11,9 +11,14 @@ class HasModule
 {
     public function handle(Request $request, Closure $next, $module)
     {
-        $result = ModuleService::exists($module);
-
         $user = auth()->user();
+
+        // Si es root (SuperAdmin), tiene acceso a TODO
+        if (isRoot() || ($user && $user->is_root == 1)) {
+            return $next($request);
+        }
+
+        $result = ModuleService::exists($module);
 
         if (!$result || !$user->hasPermissionTo($module)) {
             abort(404);

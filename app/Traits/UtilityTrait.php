@@ -22,25 +22,63 @@ trait UtilityTrait {
 
         $defaultFontConfig = (new FontVariables())->getDefaults();
         $fontData = $defaultFontConfig['fontdata'];
-        $pdf = new Mpdf([
-            'fontDir' => array_merge($fontDirs, [
-                base_path('public/fonts/roboto/'),
-            ]),
-            'fontdata' => $fontData + [
-                'roboto' => [
-                    'R' => 'Roboto-Regular.ttf',
-                    'B' => 'Roboto-Bold.ttf',
-                    'I' => 'Roboto-Italic.ttf',
-                ]
-            ],
-            'default_font' => 'roboto',
-            'margin_left' => 15,
-            'margin_right' => 15,
-            'margin_top' => 5,
-            'margin_bottom' => 5,
-            'margin_header' => 5,
-            'margin_footer' => 2
-        ]);
+        
+        // Configurar directorio de caché temporal para evitar problemas de permisos
+        $tempDir = storage_path('app/mpdf');
+        if (!is_dir($tempDir)) {
+            @mkdir($tempDir, 0775, true);
+        }
+        
+        // Desactivar completamente el error handler de Laravel durante mPDF
+        set_error_handler(function() { return true; });
+        
+        try {
+            $pdf = new Mpdf([
+                'mode' => 'utf-8',
+                'fontDir' => array_merge($fontDirs, [
+                    base_path('public/fonts/roboto/'),
+                ]),
+                'fontdata' => $fontData + [
+                    'roboto' => [
+                        'R' => 'Roboto-Regular.ttf',
+                        'B' => 'Roboto-Bold.ttf',
+                        'I' => 'Roboto-Italic.ttf',
+                    ]
+                ],
+                'default_font' => 'roboto',
+                'margin_left' => 15,
+                'margin_right' => 15,
+                'margin_top' => 5,
+                'margin_bottom' => 5,
+                'margin_header' => 5,
+                'margin_footer' => 2,
+                'tempDir' => $tempDir
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Error ignorado durante inicialización de mPDF', ['error' => $e->getMessage()]);
+            $pdf = new Mpdf([
+                'mode' => 'utf-8',
+                'fontDir' => array_merge($fontDirs, [
+                    base_path('public/fonts/roboto/'),
+                ]),
+                'fontdata' => $fontData + [
+                    'roboto' => [
+                        'R' => 'Roboto-Regular.ttf',
+                        'B' => 'Roboto-Bold.ttf',
+                        'I' => 'Roboto-Italic.ttf',
+                    ]
+                ],
+                'default_font' => 'roboto',
+                'margin_left' => 15,
+                'margin_right' => 15,
+                'margin_top' => 5,
+                'margin_bottom' => 5,
+                'margin_header' => 5,
+                'margin_footer' => 2
+            ]);
+        } finally {
+            restore_error_handler();
+        }
 
         $cssPath = base_path('resources/views/pdf/styles.css');
         if (is_file($cssPath)) {
@@ -61,28 +99,67 @@ trait UtilityTrait {
 
         $defaultFontConfig = (new FontVariables())->getDefaults();
         $fontData = $defaultFontConfig['fontdata'];
-        $pdf = new Mpdf([
-            'fontDir' => array_merge($fontDirs, [
-                base_path('public/fonts/roboto/'),
-            ]),
-            'fontdata' => $fontData + [
-                'roboto' => [
-                    'R' => 'Roboto-Regular.ttf',
-                    'B' => 'Roboto-Bold.ttf',
-                    'I' => 'Roboto-Italic.ttf',
-                ]
-            ],
-            'default_font' => 'roboto',
-            'margin_left' => 3,
-            'margin_right' => 3,
-            'margin_top' => 10,
-            'margin_bottom' => 20,
-            'margin_header' => 3,
-            'margin_footer' => 8,
-            'format' => [$width, $height],
-            'dpi' => 96
-
-        ]);
+        
+        // Configurar directorio de caché temporal para evitar problemas de permisos
+        $tempDir = storage_path('app/mpdf');
+        if (!is_dir($tempDir)) {
+            @mkdir($tempDir, 0775, true);
+        }
+        
+        // Desactivar completamente el error handler de Laravel durante mPDF
+        set_error_handler(function() { return true; });
+        
+        try {
+            $pdf = new Mpdf([
+                'mode' => 'utf-8',
+                'fontDir' => array_merge($fontDirs, [
+                    base_path('public/fonts/roboto/'),
+                ]),
+                'fontdata' => $fontData + [
+                    'roboto' => [
+                        'R' => 'Roboto-Regular.ttf',
+                        'B' => 'Roboto-Bold.ttf',
+                        'I' => 'Roboto-Italic.ttf',
+                    ]
+                ],
+                'default_font' => 'roboto',
+                'margin_left' => 3,
+                'margin_right' => 3,
+                'margin_top' => 10,
+                'margin_bottom' => 20,
+                'margin_header' => 3,
+                'margin_footer' => 8,
+                'format' => [$width, $height],
+                'dpi' => 96,
+                'tempDir' => $tempDir
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Error ignorado durante inicialización de mPDF', ['error' => $e->getMessage()]);
+            $pdf = new Mpdf([
+                'mode' => 'utf-8',
+                'fontDir' => array_merge($fontDirs, [
+                    base_path('public/fonts/roboto/'),
+                ]),
+                'fontdata' => $fontData + [
+                    'roboto' => [
+                        'R' => 'Roboto-Regular.ttf',
+                        'B' => 'Roboto-Bold.ttf',
+                        'I' => 'Roboto-Italic.ttf',
+                    ]
+                ],
+                'default_font' => 'roboto',
+                'margin_left' => 3,
+                'margin_right' => 3,
+                'margin_top' => 10,
+                'margin_bottom' => 20,
+                'margin_header' => 3,
+                'margin_footer' => 8,
+                'format' => [$width, $height],
+                'dpi' => 96
+            ]);
+        } finally {
+            restore_error_handler();
+        }
 
         $cssPath = base_path('resources/views/pdf/styles.css');
         if (is_file($cssPath)) {

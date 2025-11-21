@@ -3,8 +3,15 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
+use App\Http\Controllers\TenantRegistrationController;
+
+// NO cargar rutas de tenant si estamos en un dominio central
+if (in_array(request()->getHost(), config('tenancy.central_domains'))) {
+    return;
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -64,6 +71,20 @@ Route::middleware(['web'])->group(function () {
             'Cache-Control' => 'public, max-age=31536000',
         ]);
     })->where('file', '.*');
+    
+    // Ruta manual para servir assets de Livewire
+    Route::get('/livewire/livewire.js', function () {
+        $path = public_path('vendor/livewire/livewire.js');
+        
+        if (!file_exists($path)) {
+            abort(404, 'Livewire assets not published');
+        }
+        
+        return response()->file($path, [
+            'Content-Type' => 'application/javascript',
+            'Cache-Control' => 'public, max-age=31536000',
+        ]);
+    });
 });
 
 Route::middleware([
@@ -72,17 +93,27 @@ Route::middleware([
     PreventAccessFromCentralDomains::class,
     'tenant.status', // Verificar que el tenant esté activo
 ])->group(function () {
+    // Redirigir a login si no está autenticado, o al dashboard si ya lo está
     Route::get('/', function () {
-        $tenantData = [
-            'message' => '¡Bienvenido a tu aplicación Multi-Tenant!',
-            'tenant_id' => tenant('id'),
-            'tenant_name' => tenant('name'),
-            'tenant_email' => tenant('email'),
-            'database' => tenant()->database()->getName(),
-            'domain' => request()->getHost(),
-        ];
-        
-        return view('welcome', ['tenantData' => $tenantData]);
+        if (Auth::check()) {
+            return redirect()->route('admin.home'); // Redirigir al dashboard de admin
+        }
+        return redirect()->route('login');
+    })->name('home');
+    
+    // Incluir rutas de autenticación (login, register, password reset, etc.)
+    require __DIR__.'/auth.php';
+    
+    // Registro de sub-tenants (sucursales/franquicias)
+    Route::get('/register-tenant', [TenantRegistrationController::class, 'showRegistrationForm'])->name('tenant.register.form');
+    Route::post('/register-tenant', [TenantRegistrationController::class, 'register'])->name('tenant.register');
+    
+    // Rutas protegidas que requieren autenticación
+    Route::middleware(['auth', 'verified'])->group(function () {
+        // Rutas de administración del tenant (con prefijo /administrador)
+        Route::prefix('administrador')
+            ->name('admin.')
+            ->group(base_path('routes/admin.php'));
     });
     
     Route::get('/test', function () {

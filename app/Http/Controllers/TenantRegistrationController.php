@@ -37,6 +37,23 @@ class TenantRegistrationController extends Controller
             // Generar un subdominio único basado en el nombre de la empresa
             $subdomain = $this->generateSubdomain($validated['company_name']);
 
+            // Detectar si estamos en el dominio central o en un tenant
+            $currentHost = $request->getHost();
+            $baseDomain = centralDomain(); // dokploy.movete.cloud
+            
+            // Determinar el dominio completo del nuevo tenant
+            if ($this->isCentralDomain($currentHost)) {
+                // Escenario 1: Creación desde dominio central
+                // El nuevo tenant será un subdominio directo: empresa1.dokploy.movete.cloud
+                $newTenantDomain = $subdomain . '.' . $baseDomain;
+            } else {
+                // Escenario 2: Creación desde un tenant existente
+                // El nuevo tenant será un sub-subdominio: empresa1.testempresa.dokploy.movete.cloud
+                $newTenantDomain = $subdomain . '.' . $currentHost;
+            }
+
+            \Log::info("Creando tenant desde: {$currentHost} con dominio: {$newTenantDomain}");
+
             // Crear el tenant
             $tenant = Tenant::create([
                 'id' => $subdomain,
@@ -47,15 +64,20 @@ class TenantRegistrationController extends Controller
 
             // Crear el dominio del tenant
             $tenant->domains()->create([
-                'domain' => $subdomain . '.' . centralDomain(),
+                'domain' => $newTenantDomain,
             ]);
 
             // Ejecutar migraciones y seeders del tenant
             $this->setupTenantDatabase($tenant, $validated);
 
-            // Redirigir al login del tenant con mensaje de éxito
+            // Redirigir al login del NUEVO tenant recién creado
+            $protocol = $request->isSecure() ? 'https' : 'http';
+            $newTenantLoginUrl = $protocol . '://' . $newTenantDomain . '/login';
+            
+            \Log::info("Redirigiendo al login del nuevo tenant: {$newTenantLoginUrl}");
+
             return redirect()
-                ->away(centralDomain(withProtocol: true) . '/login')
+                ->away($newTenantLoginUrl)
                 ->with('success', '¡Empresa creada exitosamente! Ahora puedes iniciar sesión.');
 
         } catch (\Exception $e) {
@@ -72,6 +94,15 @@ class TenantRegistrationController extends Controller
                 ->withInput()
                 ->withErrors(['error' => 'Error al crear la empresa: ' . $e->getMessage()]);
         }
+    }
+
+    /**
+     * Verificar si el dominio actual es el dominio central.
+     */
+    private function isCentralDomain(string $host): bool
+    {
+        $centralDomains = config('tenancy.central_domains', []);
+        return in_array($host, $centralDomains);
     }
 
     /**

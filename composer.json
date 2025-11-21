@@ -55,7 +55,13 @@
             "@php artisan package:discover --ansi"
         ],
         "post-update-cmd": [
-            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
+            "@echo 'Aplicando parche a mPDF...'",
+            "bash scripts/patch-mpdf-chmod.sh || true"
+        ],
+        "post-install-cmd": [
+            "@echo 'Aplicando parche a mPDF...'",
+            "bash scripts/patch-mpdf-chmod.sh || true"
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""

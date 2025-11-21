@@ -14,12 +14,14 @@ class Customers extends Component
 
     public function render()
     {
-
-        $this->customers = Customer::where('status', '0')
-                        ->select(['id', 'no_identification', 'names', 'phone'])
-                        ->orderBy('top', 'ASC')
-                        ->get()
-                        ->toArray();
+        // Cachear clientes por 5 minutos para evitar consultas repetidas
+        $this->customers = \Cache::remember('customers_list_' . tenant('id'), 300, function() {
+            return Customer::where('status', '0')
+                ->select(['id', 'no_identification', 'names', 'phone'])
+                ->orderBy('top', 'ASC')
+                ->get()
+                ->toArray();
+        });
 
         return view('livewire.admin.quick-sale.customers');
     }

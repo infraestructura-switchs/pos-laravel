@@ -150,15 +150,44 @@ class BillController extends Controller
             $itemsCount = $bill->details()->count();
             $height = 170 + max(0, ($itemsCount - 7)) * 8; // aproximación segura
 
-            $pdf = new \Mpdf\Mpdf([
-                'format' => [$width, $height],
-                'margin_left' => 3,
-                'margin_right' => 3,
-                'margin_top' => 6,
-                'margin_bottom' => 12,
-                'dpi' => 96,
-                'default_font' => 'dejavusans'
-            ]);
+            // Configurar directorio de caché temporal para evitar problemas de permisos
+            $tempDir = storage_path('app/mpdf');
+            if (!is_dir($tempDir)) {
+                @mkdir($tempDir, 0775, true);
+            }
+
+            // Desactivar completamente el error handler de Laravel durante mPDF
+            set_error_handler(function() { return true; });
+            
+            try {
+                $pdf = new \Mpdf\Mpdf([
+                    'mode' => 'utf-8',
+                    'format' => [$width, $height],
+                    'margin_left' => 3,
+                    'margin_right' => 3,
+                    'margin_top' => 6,
+                    'margin_bottom' => 12,
+                    'dpi' => 96,
+                    'default_font' => 'dejavusans',
+                    'tempDir' => $tempDir
+                ]);
+            } catch (\Throwable $e) {
+                // Ignorar cualquier error durante la inicialización de mPDF
+                Log::warning('Error ignorado durante inicialización de mPDF', ['error' => $e->getMessage()]);
+                // Intentar crear sin tempDir personalizado
+                $pdf = new \Mpdf\Mpdf([
+                    'mode' => 'utf-8',
+                    'format' => [$width, $height],
+                    'margin_left' => 3,
+                    'margin_right' => 3,
+                    'margin_top' => 6,
+                    'margin_bottom' => 12,
+                    'dpi' => 96,
+                    'default_font' => 'dejavusans'
+                ]);
+            } finally {
+                restore_error_handler();
+            }
 
             $billNum = $bill->number ?: $bill->id;
             $created = $bill->created_at?->format('d/m/Y H:i') ?? now()->format('d/m/Y H:i');
@@ -319,15 +348,42 @@ class BillController extends Controller
         $itemsCount = $bill->details()->count();
         $height = 170 + max(0, ($itemsCount - 7)) * 8;
 
-        $pdf = new \Mpdf\Mpdf([
-            'format' => [$width, $height],
-            'margin_left' => 3,
-            'margin_right' => 3,
-            'margin_top' => 6,
-            'margin_bottom' => 12,
-            'dpi' => 96,
-            'default_font' => 'dejavusans'
-        ]);
+        // Configurar directorio de caché temporal para evitar problemas de permisos
+        $tempDir = storage_path('app/mpdf');
+        if (!is_dir($tempDir)) {
+            @mkdir($tempDir, 0775, true);
+        }
+
+        // Desactivar completamente el error handler de Laravel durante mPDF
+        set_error_handler(function() { return true; });
+        
+        try {
+            $pdf = new \Mpdf\Mpdf([
+                'mode' => 'utf-8',
+                'format' => [$width, $height],
+                'margin_left' => 3,
+                'margin_right' => 3,
+                'margin_top' => 6,
+                'margin_bottom' => 12,
+                'dpi' => 96,
+                'default_font' => 'dejavusans',
+                'tempDir' => $tempDir
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Error ignorado durante inicialización de mPDF', ['error' => $e->getMessage()]);
+            $pdf = new \Mpdf\Mpdf([
+                'mode' => 'utf-8',
+                'format' => [$width, $height],
+                'margin_left' => 3,
+                'margin_right' => 3,
+                'margin_top' => 6,
+                'margin_bottom' => 12,
+                'dpi' => 96,
+                'default_font' => 'dejavusans'
+            ]);
+        } finally {
+            restore_error_handler();
+        }
 
         $billNum = $bill->number ?: $bill->id;
         $created = $bill->created_at?->format('d/m/Y H:i') ?? now()->format('d/m/Y H:i');
@@ -436,15 +492,42 @@ class BillController extends Controller
         // Altura adicional para QR (aprox 50mm) + CUFE (aprox 30mm) + resolución (20mm)
         $height = 170 + max(0, ($itemsCount - 7)) * 8 + 100;
 
-        $pdf = new \Mpdf\Mpdf([
-            'format' => [$width, $height],
-            'margin_left' => 3,
-            'margin_right' => 3,
-            'margin_top' => 6,
-            'margin_bottom' => 12,
-            'dpi' => 96,
-            'default_font' => 'dejavusans'
-        ]);
+        // Configurar directorio de caché temporal para evitar problemas de permisos
+        $tempDir = storage_path('app/mpdf');
+        if (!is_dir($tempDir)) {
+            @mkdir($tempDir, 0775, true);
+        }
+
+        // Desactivar completamente el error handler de Laravel durante mPDF
+        set_error_handler(function() { return true; });
+        
+        try {
+            $pdf = new \Mpdf\Mpdf([
+                'mode' => 'utf-8',
+                'format' => [$width, $height],
+                'margin_left' => 3,
+                'margin_right' => 3,
+                'margin_top' => 6,
+                'margin_bottom' => 12,
+                'dpi' => 96,
+                'default_font' => 'dejavusans',
+                'tempDir' => $tempDir
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Error ignorado durante inicialización de mPDF', ['error' => $e->getMessage()]);
+            $pdf = new \Mpdf\Mpdf([
+                'mode' => 'utf-8',
+                'format' => [$width, $height],
+                'margin_left' => 3,
+                'margin_right' => 3,
+                'margin_top' => 6,
+                'margin_bottom' => 12,
+                'dpi' => 96,
+                'default_font' => 'dejavusans'
+            ]);
+        } finally {
+            restore_error_handler();
+        }
 
         $billNum = $bill->number;
         $created = $bill->created_at?->format('d/m/Y H:i') ?? now()->format('d/m/Y H:i');

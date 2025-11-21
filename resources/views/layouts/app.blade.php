@@ -1,6 +1,12 @@
 @php
+  // Usar caché para mejorar rendimiento - evitar consultas en cada request
   $sessionConfig = session('config');
-  $defaultCustomer = App\Models\Customer::default()->first();
+  
+  // Cachear el cliente por defecto por 1 hora
+  $defaultCustomer = Cache::remember('default_customer_' . tenant('id'), 3600, function() {
+      return App\Models\Customer::select(['id', 'no_identification', 'names', 'phone'])
+          ->first();
+  });
   
   $config = [
       'customer' => $defaultCustomer ? $defaultCustomer->toArray() : null,

@@ -1,198 +1,186 @@
-<p align="center">
-    <a href="https://aimeos.org/">
-        <img src="storage/app/public/images/system/logo-system.png" alt="Hallpos logo" title="Hallpos" height="180" />
-    </a>
-</p>
+# 🏪 Sistema POS Multi-Tenant
 
-[Hallpos](https://hallpos.com.co): Agiliza tus ventas, controla tu inventario y obtén informes al instante donde te encuentres. Nuestro sistema POS es fácil de usar y conectar con servicios de facturación electrónica.
+> Sistema de punto de venta multi-tenant desarrollado con Laravel, Livewire, Docker y Nginx.
 
-![dashboard](./public/dashboard.png)
+[![Laravel](https://img.shields.io/badge/Laravel-9.x-red.svg)](https://laravel.com)
+[![Livewire](https://img.shields.io/badge/Livewire-2.x-blue.svg)](https://laravel-livewire.com)
+[![Docker](https://img.shields.io/badge/Docker-Enabled-blue.svg)](https://www.docker.com)
 
-Visit [demo](https://test.hallpos.com.co/) page:
-- User: admin@gmail.com
-- Password: 12345678
+---
 
-## Table Of Content
+## 🚀 Inicio Rápido
 
-- [Installation](#installation)
-  - [Requirements](#requirements)
-  - [Steps](#steps)
-- [Deploy](#deploy)
-  - [Requirements](#requirements-1)
-  - [Steps](#steps-1)
+### Requisitos
 
-## Installation
+- Docker Desktop con WSL2
+- Windows 10/11
+- Git
 
-### Requirements
-
-| Technology   | Version   |
-|--------------|-----------|
-| <img src="https://www.php.net//images/logos/new-php-logo.svg" width="100" style="margin-top:10px"> <p align="center">php</p> | >= 8     |
-| <img src="https://getcomposer.org/img/logo-composer-transparent3.png" width="80" style="margin-left:10px;margin-top:10px"> <p align="center">Composer</p> | >= 2 (optional)    |
-
-### Steps
+### Instalación
 
 ```bash
-git clone git@github.com:Halltec/pos-laravel-v2.git
-```
+# 1. Clonar repositorio
+git clone <repository-url>
+cd app-pos-laravel
 
-To install the composer dependencies, execute this command:
+# 2. Iniciar Docker
+.\iniciar_docker_wsl.ps1
 
-```bash
-cd pos-laravel-v2
-
-composer install
-# or install from composer.phar file:
-php composer.phar install
-```
-
-Create .env file, execute this command:
-
-```bash
-cp .env-example .env
-```
-
-Set database credentials to the following environment variables:
-
-```env
-DB_DATABASE=pos-laravel-v2
-DB_USERNAME=example
-DB_PASSWORD=example
-```
-
-After, execute this command:
-
-```bash
+# 3. Configurar aplicación
+docker compose -f docker-compose.nginx.yml exec php bash
+bash crear_env.sh
 php artisan key:generate
 php artisan migrate
-php artisan migrate:fresh --seed
-```
+php artisan db:seed
+php artisan livewire:publish --assets
+exit
 
-## Deploy
+# 4. Configurar hosts (como administrador)
+# Editar: C:\Windows\System32\drivers\etc\hosts
+# Agregar: 127.0.0.1  adminpos.dokploy.movete.cloud
 
-### Requirements
-
-| Technology   | Version   |
-|--------------|-----------|
-| <img src="https://www.php.net//images/logos/new-php-logo.svg" width="100" style="margin-top:10px"> <p align="center">php</p> | >= 8     |
-| <img src="https://getcomposer.org/img/logo-composer-transparent3.png" width="80" style="margin-left:10px;margin-top:10px"> <p align="center">Composer</p> | >= 2 (optional)    |
-
-### Steps
-
-Create subdomain to new project:
-
-```bash
-example.hallpos.com.co
-```
-
-Create database, user and into folder created from subdomain, clone Hallpos repository:
-
-```bash
-cd <path_folder_subdomain>
-rm default.php
-git clone git@github.com:Halltec/pos-laravel-v2.git .
-```
-
-To install the composer dependencies, execute this command:
-
-```bash
-composer install
-# or install from composer.phar file:
-php composer.phar install
-```
-
-Create .env file, execute this command:
-
-```bash
-cp .env-example .env
-```
-
-Change the following environment variables:
-
-```env
-APP_ENV=production
-APP_DEBUG=false
-APP_URL=<subdomain>
-```
-
-Set database credentials to the following environment variables:
-
-```env
-DB_DATABASE=example
-DB_USERNAME=example
-DB_PASSWORD=example
-```
-
-After, execute this command:
-
-```bash
-php artisan key:generate
-php artisan migrate:fresh --seed
-php artisan storage:link
-cp htaccess .htaccess
-chmod 775 -R storage/app/public
-```
-
-## 🌐 Configuración Multi-Tenant
-
-Esta aplicación soporta **multi-tenancy** basado en subdominios. Cada empresa (tenant) tiene su propio subdominio y base de datos.
-
-### Cambiar el Dominio Central
-
-El sistema utiliza una **variable de entorno centralizada** para el dominio. Para cambiar de `dokploy.movete.cloud` a tu propio dominio:
-
-1. **Edita tu archivo `.env`:**
-   ```env
-   CENTRAL_DOMAIN=tudominio.com
-   APP_URL=http://tudominio.com
-   CENTRAL_DOMAINS=tudominio.com,www.tudominio.com
-   ```
-
-2. **Limpia las cachés:**
-   ```bash
-   php artisan config:clear
-   php artisan cache:clear
-   ```
-
-3. **Si usas Vite, reinicia el servidor:**
-   ```bash
-   npm run dev
-   ```
-
-**📖 Documentación completa:** [docs/CAMBIAR_DOMINIO.md](docs/CAMBIAR_DOMINIO.md)
-
-### Funciones Helper Disponibles
-
-```php
-// Obtener el dominio central
-centralDomain(); // "tudominio.com"
-centralDomain(withProtocol: true); // "http://tudominio.com"
-
-// Verificar si es un tenant
-isTenantDomain(); // true si estamos en empresa1.tudominio.com
-
-// Extraer subdominio del tenant
-tenantSubdomain(); // "empresa1" (si estamos en empresa1.tudominio.com)
+# 5. Acceder
+# URL: http://adminpos.dokploy.movete.cloud/login
+# Usuario: superadmin@gmail.com
+# Contraseña: 12345678
 ```
 
 ---
 
-## Documentación (Docs)
+## 📚 Documentación
 
-### 🌟 Documentación Multi-Tenant (Nuevas)
+Para documentación completa, ver:
 
-- **⚡ Resumen Rápido:** [`docs/RESUMEN_CAMBIO_DOMINIO.md`](docs/RESUMEN_CAMBIO_DOMINIO.md) - Cambio de dominio en 5 pasos
-- **🌐 Cambiar Dominio (Completo):** [`docs/CAMBIAR_DOMINIO.md`](docs/CAMBIAR_DOMINIO.md) - Guía detallada con ejemplos y FAQs
-- **🔧 Cómo Funciona Apache y Hosts:** [`docs/COMO_FUNCIONA_APACHE_HOSTS.md`](docs/COMO_FUNCIONA_APACHE_HOSTS.md) - Flujo completo desde navegador hasta BD
-- **📊 Diagrama de Flujo:** [`docs/DIAGRAMA_FLUJO_MULTITENANT.md`](docs/DIAGRAMA_FLUJO_MULTITENANT.md) - Visualización del sistema multi-tenant
+- **[DOCUMENTACION.md](./DOCUMENTACION.md)** - Guía completa de instalación, configuración y troubleshooting
+- **[ARQUITECTURA_MULTITENANT.md](./ARQUITECTURA_MULTITENANT.md)** - Detalles de arquitectura multi-tenant
 
-### 📚 Documentación General
+---
 
-- Guías: [`docs/guias/README.md`](docs/guias/README.md)
-- Despliegue: [`docs/deploy/README.md`](docs/deploy/README.md)
-- Soluciones Multi-tenant: [`docs/soluciones-multitenant/README.md`](docs/soluciones-multitenant/README.md)
-- Scripts PowerShell: [`docs/scripts/README.md`](docs/scripts/README.md)
-- API: [`docs/api/README.md`](docs/api/README.md)
-- WhatsApp: [`docs/whatsapp/README.md`](docs/whatsapp/README.md)
-- UI: [`docs/ui/README.md`](docs/ui/README.md)
-- Resúmenes: [`docs/resumen/README.md`](docs/resumen/README.md)
+## 🏗️ Arquitectura
+
+### Multi-Tenancy
+
+- **Dominio Central:** `adminpos.dokploy.movete.cloud` (Administración global)
+- **Tenants:** `empresa.dokploy.movete.cloud` (Empresas independientes)
+- **Sub-Tenants:** `sucursal.empresa.dokploy.movete.cloud` (Sucursales/franquicias)
+
+### Tecnologías
+
+- **Backend:** Laravel 9.x
+- **Frontend:** Livewire 2.x, TailwindCSS, AlpineJS
+- **Base de datos:** MySQL 8.0
+- **Caché:** Redis
+- **Web Server:** Nginx
+- **Containers:** Docker + Docker Compose
+
+---
+
+## 📋 Comandos Útiles
+
+```bash
+# Docker
+docker compose -f docker-compose.nginx.yml up -d        # Iniciar
+docker compose -f docker-compose.nginx.yml down         # Detener
+docker compose -f docker-compose.nginx.yml logs -f php  # Ver logs
+
+# Laravel
+docker compose -f docker-compose.nginx.yml exec php php artisan optimize:clear  # Limpiar cachés
+docker compose -f docker-compose.nginx.yml exec php php artisan tenants:list    # Ver tenants
+
+# Base de datos
+docker compose -f docker-compose.nginx.yml exec mysql mysql -uroot -proot_password pos_central
+```
+
+---
+
+## 🐛 Problemas Comunes
+
+### Error: Livewire no carga (404)
+
+```bash
+docker compose -f docker-compose.nginx.yml exec php php artisan livewire:publish --assets
+```
+
+### Error: Lentitud
+
+```bash
+# Verificar que SESSION_DRIVER=redis en .env
+# Limpiar logs grandes
+echo '' > storage/logs/laravel.log
+php artisan config:cache
+```
+
+### Error: Puerto 80 ocupado (Apache/XAMPP)
+
+```powershell
+.\detener_apache.ps1
+```
+
+Ver más soluciones en [DOCUMENTACION.md](./DOCUMENTACION.md)
+
+---
+
+## 📁 Estructura del Proyecto
+
+```
+app-pos-laravel/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   ├── Livewire/        # Componentes Livewire
+│   │   └── Middleware/
+│   ├── Models/
+│   └── Services/
+├── config/
+│   ├── tenancy.php          # Configuración multi-tenant
+│   └── livewire.php
+├── docker/
+│   ├── php/Dockerfile       # Imagen PHP customizada
+│   └── nginx/
+├── routes/
+│   ├── web.php              # Rutas dominio central
+│   ├── tenant.php           # Rutas para tenants
+│   └── admin.php
+├── docker-compose.nginx.yml
+└── .env
+```
+
+---
+
+## 🔐 Credenciales por Defecto
+
+### Super Admin (Dominio Central)
+- **Email:** `superadmin@gmail.com`
+- **Password:** `12345678`
+
+### Admin (Por Tenant)
+- **Email:** Email proporcionado al crear el tenant
+- **Password:** Password proporcionado al crear el tenant
+
+---
+
+## ⚡ Optimizaciones Aplicadas
+
+✅ Sesiones en Redis (5-10x más rápido)  
+✅ Opcache habilitado  
+✅ Precarga de permisos (evita N+1)  
+✅ Cache de configuración  
+✅ Assets de Livewire optimizados
+
+---
+
+## 📞 Soporte
+
+- Ver logs: `storage/logs/laravel.log`
+- Documentación completa: [DOCUMENTACION.md](./DOCUMENTACION.md)
+- Arquitectura: [ARQUITECTURA_MULTITENANT.md](./ARQUITECTURA_MULTITENANT.md)
+
+---
+
+## 📄 Licencia
+
+[MIT License](./LICENSE)
+
+---
+
+**Desarrollado con ❤️ usando Laravel, Livewire, Docker y Nginx**
