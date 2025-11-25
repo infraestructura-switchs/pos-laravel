@@ -34,5 +34,8 @@ RUN apk add --no-cache curl && \
 # Actualizar npm a la versión específica 11.6.2
 RUN npm install -g npm@11.6.2
 
+# Instalar extensión bcmath requerida
+RUN docker-php-ext-install bcmath
+
 
 CMD ["/start.sh"]
