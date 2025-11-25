@@ -27,4 +27,3 @@ else
     echo "❌ Error al aplicar el parche"
     exit 1
 fi
-
