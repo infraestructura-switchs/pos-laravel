@@ -17,10 +17,11 @@ export default defineConfig(({ mode }) => {
             }),
         ],
         // Configuración para multi-tenancy
-        // Los assets se sirven desde el dominio central
-        base: process.env.APP_ENV === 'production' 
-            ? '/build/' 
-            : `http://${centralDomain}/build/`,
+        // Usar ruta relativa por defecto para evitar problemas de CORS/Mixed Content
+        // Solo usar dominio central si estamos explícitamente en local
+        base: process.env.APP_ENV === 'local' 
+            ? `http://${centralDomain}/build/`
+            : '/build/',
         server: {
             host: centralDomain,
             port: 5173,
