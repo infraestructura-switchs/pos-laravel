@@ -49,9 +49,12 @@
   <!-- Scripts -->
   <script src="{{ url('ts/app.js') }}" defer></script>
 
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+
   {{-- Cargar assets compilados directamente sin Vite --}}
-  <link rel="stylesheet" href="{{ url('build/assets/app-fd737ff0.css') }}">
-  <script src="{{ url('build/assets/app-f737933f.js') }}" defer></script>
+  <!-- <link rel="stylesheet" href="{{ url('build/assets/app-fd737ff0.css') }}">
+  <script src="{{ url('build/assets/app-f737933f.js') }}" defer></script> -->
 
   @livewireStyles
 
