@@ -52,6 +52,13 @@ class FactusConfigurationService
         }
 
         $apiEnabled = $configuration->is_api_enabled;
+        $api = $configuration->api;
+
+        // Si está habilitado pero no tiene configuración válida, retornar false para evitar errores
+        if ($apiEnabled && (!$api || !is_array($api))) {
+            return false;
+        }
+
         Cache::forever('is_api_enabled', $apiEnabled);
         Log::info('Factus API Enabled?', ['enabled' => $apiEnabled]);
 
