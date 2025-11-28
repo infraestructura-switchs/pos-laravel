@@ -37,5 +37,9 @@ RUN npm install -g npm@11.6.2
 # Instalar extensión bcmath requerida
 RUN docker-php-ext-install bcmath
 
+# DEBUG: Crear archivo de prueba y listar contenido
+RUN echo "Nginx routing is working (generated in Dockerfile)" > /var/www/html/public/test.txt && \
+    ls -la /var/www/html/public
+
 
 CMD ["/start.sh"]
