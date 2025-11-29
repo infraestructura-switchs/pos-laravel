@@ -1,20 +1,20 @@
 @php
   // Usar caché para mejorar rendimiento - evitar consultas en cada request
   $sessionConfig = session('config');
-  
+
   // Cachear el cliente por defecto por 1 hora
-  $defaultCustomer = Cache::remember('default_customer_' . tenant('id'), 3600, function() {
-      return App\Models\Customer::select(['id', 'no_identification', 'names', 'phone'])
-          ->first();
+  $defaultCustomer = Cache::remember('default_customer_' . tenant('id'), 3600, function () {
+    return App\Models\Customer::select(['id', 'no_identification', 'names', 'phone'])
+      ->first();
   });
-  
+
   $config = [
-      'customer' => $defaultCustomer ? $defaultCustomer->toArray() : null,
-      'change' => $sessionConfig ? ($sessionConfig->change == '0') : false,
-      'print' => $sessionConfig ? ($sessionConfig->print == '0') : false,
-      'width_ticket' => $sessionConfig ? $sessionConfig->width_ticket : 80,
-      'format_percentage_tip' => $sessionConfig ? $sessionConfig->format_percentage_tip : 0,
-      'percentage_tip' => $sessionConfig ? $sessionConfig->percentage_tip : 0,
+    'customer' => $defaultCustomer ? $defaultCustomer->toArray() : null,
+    'change' => $sessionConfig ? ($sessionConfig->change == '0') : false,
+    'print' => $sessionConfig ? ($sessionConfig->print == '0') : false,
+    'width_ticket' => $sessionConfig ? $sessionConfig->width_ticket : 80,
+    'format_percentage_tip' => $sessionConfig ? $sessionConfig->format_percentage_tip : 0,
+    'percentage_tip' => $sessionConfig ? $sessionConfig->percentage_tip : 0,
   ];
 @endphp
 
@@ -34,11 +34,11 @@
 
   <!-- Fonts and styles -->
   <link rel="stylesheet" href="https://fonts.bunny.net/css2?family=Nunito:wght@400;600;700&display=swap">
-  <link rel="stylesheet" href="{{ url('vendor/icomoon-v1.0/style.css') }}?v9">
-  
+  <link rel="stylesheet" href="{{ asset('vendor/icomoon-v1.0/style.css') }}?v9">
+
   <!-- International Telephone Input -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
-  
+
   <style id="page-rule">
     @page {
       size: 80mm 178mm;
@@ -47,7 +47,7 @@
   </style>
 
   <!-- Scripts -->
-  <script src="{{ url('ts/app.js') }}" defer></script>
+  <script src="{{ asset('ts/app.js') }}" defer></script>
 
   @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -70,9 +70,10 @@
 
     <livewire:admin.menu>
 
-    <livewire:admin.cash-opening.create />
+      <livewire:admin.cash-opening.create />
 
-      <main class="pt-12 md:pt-14 min-h-screen {{ request()->routeIs('admin.quick-sales.create') || request()->routeIs('admin.direct-sale.create') ? 'md:pl-14' : 'md:pl-52 lg:pl-60' }}">
+      <main
+        class="pt-12 md:pt-14 min-h-screen {{ request()->routeIs('admin.quick-sales.create') || request()->routeIs('admin.direct-sale.create') ? 'md:pl-14' : 'md:pl-52 lg:pl-60' }}">
         {{ $slot }}
       </main>
 

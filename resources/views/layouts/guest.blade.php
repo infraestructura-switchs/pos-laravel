@@ -10,7 +10,7 @@
 
     <!-- Fonts -->
     <link rel="stylesheet" href="https://fonts.bunny.net/css2?family=Nunito:wght@400;600;700&display=swap">
-    <link rel="stylesheet" href="{{ url('vendor/icomoon-v1.0/style.css') }}?v8">
+    <link rel="stylesheet" href="{{ asset('vendor/icomoon-v1.0/style.css') }}?v8">
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
