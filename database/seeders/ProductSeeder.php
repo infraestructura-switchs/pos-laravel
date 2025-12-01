@@ -12,16 +12,16 @@ class ProductSeeder extends Seeder
 
     public function run()
     {
-        $products = Product::factory(50)->create();
+        // $products = Product::factory(50)->create();
 
-        foreach ($products as $product => $value) {
-            $id = TaxRate::all()->random()->id;
-            if ($id === 7 || $id === 8) {
-                $value->taxRates()->attach($id, ['value' => fake()->randomElement([200, 300, 400])]);
-            }else{
-                $value->taxRates()->attach($id);
-            }
-        }
+        // foreach ($products as $product => $value) {
+        //     $id = TaxRate::all()->random()->id;
+        //     if ($id === 7 || $id === 8) {
+        //         $value->taxRates()->attach($id, ['value' => fake()->randomElement([200, 300, 400])]);
+        //     }else{
+        //         $value->taxRates()->attach($id);
+        //     }
+        // }
 
         $product = Product::create([
             'barcode' => 12345,
