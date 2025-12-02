@@ -4,7 +4,6 @@ COPY . .
 #COPY conf/nginx/nginx-site.conf /var/www/html/index.html
 
 # Image config
-ENV SKIP_COMPOSER 1
 ENV WEBROOT /var/www/html/public
 ENV PHP_ERRORS_STDERR 1
 ENV RUN_SCRIPTS 1
@@ -21,7 +20,10 @@ ENV COMPOSER_ALLOW_SUPERUSER 1
 
 RUN chown -R www-data:www-data /var/www/html \
  && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
-  &&  chmod -R 775  /var/www/html/storage/logs/laravel.log
+ && chmod -R 775 /var/www/html/storage/logs/laravel.log
+
+# Instalar dependencias de Composer durante el build
+RUN composer install --no-dev --optimize-autoloader --working-dir=/var/www/html
 
 # Instalar dependencias del sistema y Node.js
 RUN apk add --no-cache curl && \
