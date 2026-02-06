@@ -1,6 +1,7 @@
 # 🎉 Tenant Principal Creado Exitosamente
 
 
+
 ## ✅ Datos del Tenant
 
 - **ID**: `principal`
