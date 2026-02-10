@@ -25,12 +25,15 @@ RUN chown -R www-data:www-data /var/www/html \
     &&  chmod -R 775  /var/www/html/storage/logs/laravel.log
 
 # Instalar dependencias del sistema y Node.js
-RUN apk add --no-cache curl && \
-    curl -fsSL https://unofficial-builds.nodejs.org/download/release/v20.19.0/node-v20.19.0-linux-x64-musl.tar.gz -o node.tar.gz && \
-    tar -xzf node.tar.gz -C /usr/local --strip-components=1 && \
-    rm node.tar.gz && \
-    ln -sf /usr/local/bin/node /usr/bin/node && \
-    ln -sf /usr/local/bin/npm /usr/bin/
+##RUN apk add --no-cache curl && \
+##    curl -fsSL https://unofficial-builds.nodejs.org/download/release/v20.19.0/node-v20.19.0-linux-x64-musl.tar.gz -o node.tar.gz && \
+##    tar -xzf node.tar.gz -C /usr/local --strip-components=1 && \
+##    rm node.tar.gz && \
+##    ln -sf /usr/local/bin/node /usr/bin/node && \
+##    ln -sf /usr/local/bin/npm /usr/bin/
+RUN apk add --no-cache \
+    nodejs \
+    npm
 
 # Actualizar npm a la versión específica 11.6.2
 RUN npm install -g npm@11.6.2
