@@ -1,4 +1,5 @@
 FROM richarvey/nginx-php-fpm:3.1.6
+FROM php:8.3-fpm-alpine3.19
 
 COPY . .
 #COPY conf/nginx/nginx-site.conf /var/www/html/index.html
