@@ -621,7 +621,7 @@ files = /etc/supervisor/conf.d/*.conf
 EOF
 
 # Add Scripts
-COPY start.sh /start.sh
+COPY scripts/start.sh /start.sh
 
 
 EXPOSE 443 80 8080
