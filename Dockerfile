@@ -618,6 +618,9 @@ stopsignal=QUIT
 files = /etc/supervisor/conf.d/*.conf
 EOF
 
+# Add Scripts
+ADD scripts/start.sh /start.sh
+
 EXPOSE 8080
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+CMD ["/start.sh", "/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
