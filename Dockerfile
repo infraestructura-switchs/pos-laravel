@@ -1,6 +1,6 @@
 FROM node:25.2.1-alpine3.23 AS nodejs
 
-FROM tangramor/nginx-php8-fpm:php8.5.1_withoutNodejs
+FROM tangramor/nginx-php8-fpm:php8.4.16_withoutNodejs
 
 # Instalar Nginx y dependencias del sistema
 RUN apk add --no-cache \
@@ -58,7 +58,7 @@ RUN chown -R www-data:www-data /var/www/html \
 
 
 # Copiar .env.example a .env si no existe
-RUN cp -n .env.example .env || true
+##RUN cp -n .env.example .env || true
 
 # Instalar dependencias de Composer
 RUN composer install --no-dev --optimize-autoloader --no-interaction
