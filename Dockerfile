@@ -620,7 +620,9 @@ EOF
 
 # Add Scripts
 ADD scripts/start.sh /start.sh
+RUN chmod 755 /start.sh
 
-EXPOSE 8080
+
+EXPOSE 443 80 8080
 
 CMD ["/start.sh", "/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
