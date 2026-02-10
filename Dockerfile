@@ -304,6 +304,277 @@ server {
 }
 EOF
 
+
+RUN mkdir -p /etc/nginx/sites-available
+COPY <<'EOF' /etc/nginx/sites-available/default-ssl.conf
+server {
+	listen 443 ssl http2;
+        listen [::]:443 ssl http2 ipv6only=on; ## listen for ipv6
+
+	root /var/www/html;
+	index index.php index.html index.htm;
+
+	# Make site accessible from http://localhost/
+        server_name _;
+        ssl_certificate     /etc/letsencrypt/live/##DOMAIN##/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/##DOMAIN##/privkey.pem;
+        ssl_protocols       TLSv1 TLSv1.1 TLSv1.2;
+        ssl_ciphers         HIGH:!aNULL:!MD5;
+
+	# Make site accessible from http://localhost/
+	server_name _;
+	
+	# Disable sendfile as per https://docs.vagrantup.com/v2/synced-folders/virtualbox.html
+	sendfile off;
+
+	# Add stdout logging
+	error_log /dev/stdout info;
+	access_log /dev/stdout;
+
+        # Add option for x-forward-for (real ip when behind elb)
+        #real_ip_header X-Forwarded-For;
+        #set_real_ip_from 172.16.0.0/12;
+
+	# block access to sensitive information about git
+	location /.git {
+           deny all;
+           return 403;
+        }
+
+	location / {
+		# First attempt to serve request as file, then
+		# as directory, then fall back to index.html
+		try_files $uri $uri/ =404;
+	}
+
+	error_page 404 /404.html;
+        location = /404.html {
+                root /var/www/errors;
+                internal;
+        }
+
+        location ^~ /ngd-style.css {
+            alias /var/www/errors/style.css;
+            access_log off;
+        }
+
+        location ^~ /ngd-sad.svg {
+            alias /var/www/errors/sad.svg;
+            access_log off;
+        }
+
+	# pass the PHP scripts to FastCGI server listening on socket
+	#
+	location ~ \.php$ {
+                try_files $uri =404;
+		fastcgi_split_path_info ^(.+\.php)(/.+)$;
+		fastcgi_pass unix:/var/run/php-fpm.sock;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    		fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+		fastcgi_index index.php;
+#        fastcgi_param GEOIP2_LONGITUDE $geoip2_data_longitude;
+#        fastcgi_param GEOIP2_LATITUDE $geoip2_data_latitude;
+#        fastcgi_param GEOIP2_CONTINENT_CODE $geoip2_data_continent_code;
+#        fastcgi_param GEOIP2_CONTINENT_NAME $geoip2_data_continent_name;
+#        fastcgi_param GEOIP2_COUNTRY_CODE $geoip2_data_country_code;
+#        fastcgi_param GEOIP2_COUNTRY_NAME $geoip2_data_country_name;
+#        fastcgi_param GEOIP2_STATE_CODE $geoip2_data_state_code;
+#        fastcgi_param GEOIP2_STATE_NAME $geoip2_data_state_name;
+#        fastcgi_param GEOIP2_CITY_NAME $geoip2_data_city_name;
+#        fastcgi_param GEOIP2_POSTAL_CODE $geoip2_data_postal_code;
+		include fastcgi_params;
+	}
+
+        location ~* \.(jpg|jpeg|gif|png|css|js|ico|webp|tiff|ttf|svg)$ {
+                expires           5d;
+        }
+
+	# deny access to . files, for security
+	#
+	location ~ /\. {
+    		log_not_found off; 
+    		deny all;
+	}
+        
+	location ^~ /.well-known {
+                allow all;
+                auth_basic off;
+        }
+
+}
+EOF
+
+RUN mkdir -p /etc/nginx/sites-available
+COPY <<'EOF' /etc/nginx/sites-available/nginx-site.conf
+server {
+	listen   80; ## listen for ipv4; this line is default and implied
+	listen   [::]:80 default ipv6only=on; ## listen for ipv6
+
+	root /var/www/html;
+	index index.php index.html index.htm;
+
+	# Make site accessible from http://localhost/
+	server_name _;
+	
+	# Disable sendfile as per https://docs.vagrantup.com/v2/synced-folders/virtualbox.html
+	sendfile off;
+
+	# Add stdout logging
+	error_log /dev/stdout info;
+	access_log /dev/stdout;
+
+        # Add option for x-forward-for (real ip when behind elb)
+        #real_ip_header X-Forwarded-For;
+        #set_real_ip_from 172.16.0.0/12;
+
+	# block access to sensitive information about git
+	location /.git {
+           deny all;
+           return 403;
+        }
+
+	location / {
+		# First attempt to serve request as file, then
+		# as directory, then fall back to index.html
+		try_files $uri $uri/ =404;
+	}
+
+	error_page 404 /404.html;
+        location = /404.html {
+                root /var/www/errors;
+                internal;
+        }
+
+        location ^~ /sad.svg {
+            alias /var/www/errors/sad.svg;
+            access_log off;
+        }
+        location ^~ /twitter.svg {
+            alias /var/www/errors/twitter.svg;
+            access_log off;
+        }
+        location ^~ /github.svg {
+            alias /var/www/errors/github.svg;
+            access_log off;
+        }
+
+	# pass the PHP scripts to FastCGI server listening on socket
+	#
+	location ~ \.php$ {
+                try_files $uri =404;
+		fastcgi_split_path_info ^(.+\.php)(/.+)$;
+		fastcgi_pass unix:/var/run/php-fpm.sock;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    		fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+		fastcgi_index index.php;
+#        fastcgi_param GEOIP2_LONGITUDE $geoip2_data_longitude;
+#        fastcgi_param GEOIP2_LATITUDE $geoip2_data_latitude;
+#        fastcgi_param GEOIP2_CONTINENT_CODE $geoip2_data_continent_code;
+#        fastcgi_param GEOIP2_CONTINENT_NAME $geoip2_data_continent_name;
+#        fastcgi_param GEOIP2_COUNTRY_CODE $geoip2_data_country_code;
+#        fastcgi_param GEOIP2_COUNTRY_NAME $geoip2_data_country_name;
+#        fastcgi_param GEOIP2_STATE_CODE $geoip2_data_state_code;
+#        fastcgi_param GEOIP2_STATE_NAME $geoip2_data_state_name;
+#        fastcgi_param GEOIP2_CITY_NAME $geoip2_data_city_name;
+#        fastcgi_param GEOIP2_POSTAL_CODE $geoip2_data_postal_code;
+		include fastcgi_params;
+	}
+
+        location ~* \.(jpg|jpeg|gif|png|css|js|ico|webp|tiff|ttf|svg)$ {
+                expires           5d;
+        }
+
+	# deny access to . files, for security
+	#
+	location ~ /\. {
+    		log_not_found off; 
+    		deny all;
+	}
+        
+	location ^~ /.well-known {
+                allow all;
+                auth_basic off;
+        }
+
+}
+EOF
+
+
+COPY <<'EOF' /etc/nginx/nginx.conf
+#user  nobody;
+worker_processes auto;
+
+#error_log  logs/error.log;
+#error_log  logs/error.log  notice;
+#error_log  logs/error.log  info;
+
+#pid        run/nginx.pid;
+
+
+events {
+    worker_connections  1024;
+}
+
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+    #                  '$status $body_bytes_sent "$http_referer" '
+    #                  '"$http_user_agent" "$http_x_forwarded_for"';
+
+    #access_log  logs/access.log  main;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    #keepalive_timeout  0;
+    keepalive_timeout 2;
+	client_max_body_size 100m;
+
+    server_tokens off;
+    #gzip  on;
+
+# Disabled due to license
+#    geoip2 /etc/nginx/GeoLite2-Country.mmdb {
+#        auto_reload 1h;
+#
+#        $geoip2_metadata_country_build metadata build_epoch;
+#
+#        # populate the country
+#        $geoip2_data_country_code source=$remote_addr country iso_code;
+#        $geoip2_data_country_name source=$remote_addr country names en;
+#
+#        # populate the continent
+#        $geoip2_data_continent_code source=$remote_addr continent code;
+#        $geoip2_data_continent_name source=$remote_addr continent names en;
+#    }
+#
+#    geoip2 /etc/nginx/GeoLite2-City.mmdb {
+#        auto_reload 1h;
+#
+#        # City name itself
+#        $geoip2_data_city_name source=$remote_addr city names en;
+#
+#        # Postal code will be an approximation, probably the first one in the list that covers an area
+#        $geoip2_data_postal_code source=$remote_addr postal code;
+#
+#        # State in code and long form
+#        $geoip2_data_state_code source=$remote_addr subdivisions 0 iso_code;
+#        $geoip2_data_state_name source=$remote_addr subdivisions 0 names en;
+#
+#        # Lat and Lng
+#        $geoip2_data_latitude source=$remote_addr location latitude;
+#        $geoip2_data_longitude source=$remote_addr location longitude;
+#    }
+
+    include /etc/nginx/sites-enabled/*;
+}
+#daemon off;
+EOF
+
+
 # Configurar supervisor
 COPY <<'EOF' /etc/supervisord.conf
 [supervisord]
@@ -328,8 +599,61 @@ stdout_logfile_maxbytes=0
 stderr_logfile=/dev/stderr
 stderr_logfile_maxbytes=0
 autorestart=true
+
+
+[unix_http_server]
+file=/dev/shm/supervisor.sock   ; (the path to the socket file)
+
+[supervisord]
+logfile=/tmp/supervisord.log ; (main log file;default $CWD/supervisord.log)
+logfile_maxbytes=50MB        ; (max main logfile bytes b4 rotation;default 50MB)
+logfile_backups=10           ; (num of main logfile rotation backups;default 10)
+loglevel=info                ; (log level;default info; others: debug,warn,trace)
+pidfile=/tmp/supervisord.pid ; (supervisord pidfile;default supervisord.pid)
+nodaemon=false               ; (start in foreground if true;default false)
+minfds=1024                  ; (min. avail startup file descriptors;default 1024)
+minprocs=200                 ; (min. avail process descriptors;default 200)
+user=root		     ;
+
+; the below section must remain in the config file for RPC
+; (supervisorctl/web interface) to work, additional interfaces may be
+; added by defining them in separate rpcinterface: sections
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
+
+[supervisorctl]
+serverurl=unix:///dev/shm/supervisor.sock ; use a unix:// URL  for a unix socket
+
+[program:php-fpm]
+command = /usr/local/sbin/php-fpm --force-stderr --nodaemonize --fpm-config /usr/local/etc/php-fpm.d/www.conf
+autostart=true
+autorestart=true
+priority=5
+stdout_events_enabled=true
+stderr_events_enabled=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+stopsignal=QUIT
+
+[program:nginx]
+command=/usr/sbin/nginx -g "daemon off; error_log /dev/stderr info;"
+autostart=true
+autorestart=true
+priority=10
+stdout_events_enabled=true
+stderr_events_enabled=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+stopsignal=QUIT
+
+[include]
+files = /etc/supervisor/conf.d/*.conf
 EOF
 
-EXPOSE 80
+EXPOSE 8080
 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
