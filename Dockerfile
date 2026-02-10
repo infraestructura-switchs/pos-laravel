@@ -612,7 +612,7 @@ stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
 stderr_logfile=/dev/stderr
 stderr_logfile_maxbytes=0
-stopsignal=query_string
+stopsignal=QUIT
 
 [include]
 files = /etc/supervisor/conf.d/*.conf
