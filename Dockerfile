@@ -36,7 +36,7 @@ RUN apk add --no-cache \
     npm
 
 # Actualizar npm a la versión específica 11.6.2
-RUN npm install -g npm@11.6.2
+##RUN npm install -g npm@11.6.2
 
 
 CMD ["/start.sh"]
