@@ -1,29 +1,31 @@
-FROM php:8.3-fpm-alpine
+FROM node:25.2.1-alpine3.23 AS nodejs
+
+FROM tangramor/nginx-php8-fpm:php8.5.1_withoutNodejs
 
 # Instalar Nginx y dependencias del sistema
 RUN apk add --no-cache \
-    nginx \
-    git \
-    curl \
-    libpng-dev \
-    libxml2-dev \
-    libzip-dev \
-    zip \
-    unzip \
-    oniguruma-dev \
-    supervisor
+  nginx \
+  git \
+  curl \
+  libpng-dev \
+  libxml2-dev \
+  libzip-dev \
+  zip \
+  unzip \
+  oniguruma-dev \
+  supervisor
 
 # Instalar extensiones de PHP
 RUN docker-php-ext-install \
-    pdo \
-    pdo_mysql \
-    mysqli \
-    mbstring \
-    exif \
-    pcntl \
-    bcmath \
-    gd \
-    zip
+  pdo \
+  pdo_mysql \
+  mysqli \
+  mbstring \
+  exif \
+  pcntl \
+  bcmath \
+  gd \
+  zip
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -51,8 +53,8 @@ ENV LOG_CHANNEL stderr
 ENV COMPOSER_ALLOW_SUPERUSER 1
 
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
-    &&  chmod -R 775  /var/www/html/storage/logs/laravel.log
+  && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
+  &&  chmod -R 775  /var/www/html/storage/logs/laravel.log
 
 
 # Copiar .env.example a .env si no existe
@@ -65,12 +67,12 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction
 RUN php artisan key:generate --force || true
 
 RUN apk add --no-cache \
-    nodejs \
-    npm
+  nodejs \
+  npm
 
 # Dar permisos
 RUN chown -R nobody:nobody /var/www/html/storage /var/www/html/bootstrap/cache && \
-    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+  chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Configurar Nginx
 RUN mkdir -p /etc/nginx/http.d
@@ -859,7 +861,9 @@ exec /usr/bin/supervisord -n -c /etc/supervisord.conf
 EOF
 RUN chmod 755 /start.sh
 
+COPY start.sh /start.sh
+
 
 EXPOSE 443 80 8080
 
-CMD ["/start.sh", "/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+CMD ["/start.sh"]
