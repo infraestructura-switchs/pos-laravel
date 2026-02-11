@@ -18,12 +18,22 @@ ENV LOG_CHANNEL stderr
 # Allow composer to run as root
 ENV COMPOSER_ALLOW_SUPERUSER 1
 
+
+RUN ls -la /var/www/html/storage/logs
+
 RUN chown -R www-data:www-data /var/www/html \
- && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
- && chmod -R 775 /var/www/html/storage/logs/laravel.log
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Attempt to chmod log file only if it exists, or just create it
+RUN touch /var/www/html/storage/logs/laravel.log && chmod -R 775 /var/www/html/storage/logs/laravel.log
 
 # Instalar dependencias de Composer durante el build
-RUN composer install --no-dev --optimize-autoloader --working-dir=/var/www/html
+
+# Instalar extensión bcmath requerida
+RUN docker-php-ext-install bcmath
+
+# Instalar dependencias de Composer durante el build
+RUN composer install --no-dev --optimize-autoloader --no-scripts --working-dir=/var/www/html
 
 # Instalar dependencias del sistema y Node.js
 RUN apk add --no-cache curl && \
@@ -37,11 +47,12 @@ RUN apk add --no-cache curl && \
 RUN npm install -g npm@11.6.2
 
 # Instalar extensión bcmath requerida
-RUN docker-php-ext-install bcmath
+
 
 # DEBUG: Crear archivo de prueba y listar contenido
 RUN echo "Nginx routing is working (generated in Dockerfile)" > /var/www/html/public/test.txt && \
     ls -la /var/www/html/public
 
+EXPOSE 80 8080 443 
 
 CMD ["/start.sh"]
