@@ -24,7 +24,7 @@ NC='\033[0m' # No Color
 # Variables
 PROJECT_DIR="/var/www/html"
 NGINX_CONFIG="/etc/nginx/sites-available/laravel-multitenant"
-PHP_VERSION="8.2"
+PHP_VERSION="8.3"
 
 # ============================================
 # Funciones
