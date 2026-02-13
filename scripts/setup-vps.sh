@@ -34,7 +34,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # Variables
-PHP_VERSION="8.3"
+PHP_VERSION="8.2"
 MYSQL_ROOT_PASSWORD=""
 PROJECT_DIR="/var/www/html"
 REPO_URL=""
