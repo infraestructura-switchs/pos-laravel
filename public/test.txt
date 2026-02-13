@@ -1,1 +1,0 @@
-Nginx routing is working!

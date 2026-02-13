@@ -6,12 +6,6 @@
 *.md diff=markdown
 *.php diff=php
 
-# Scripts de shell siempre con LF (Linux/WSL)
-*.sh text eol=lf
-
-# Scripts de PowerShell pueden usar CRLF (Windows)
-*.ps1 text eol=crlf
-
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
