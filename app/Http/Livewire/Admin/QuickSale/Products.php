@@ -28,25 +28,34 @@ class Products extends Component
 
     public function refreshProducts()
     {
-        $this->categories = Category::orderBy('name', 'ASC')
-            ->get()
-            ->pluck('name', 'id');
+        // Cachear categorías por 10 minutos
+        $this->categories = \Cache::remember('categories_list_' . tenant('id'), 600, function() {
+            return Category::orderBy('name', 'ASC')
+                ->get()
+                ->pluck('name', 'id');
+        });
 
-        $this->products = Product::select(['id', 'reference', 'category_id', 'name', 'price', 'cloudinary_public_id', DB::raw('CASE WHEN stock > 0 || units > 0 || has_inventory = "1" THEN 1 ELSE 0 END AS has_stock')])
-            ->where('status', '0')
-            ->orderBy('top', 'ASC')
-            ->orderBy('name', 'ASC')
-            ->get()
-            ->map(function($product) {
-                $productArray = $product->toArray();
-                $productArray['image_url'] = $product->image_url; // Agregar la URL de imagen
-                return $productArray;
-            })
-            ->toArray();
+        // Cachear productos por 2 minutos (se actualiza stock frecuentemente)
+        $this->products = \Cache::remember('products_list_' . tenant('id'), 120, function() {
+            return Product::select(['id', 'reference', 'category_id', 'name', 'price', 'cloudinary_public_id', DB::raw('CASE WHEN stock > 0 || units > 0 || has_inventory = "1" THEN 1 ELSE 0 END AS has_stock')])
+                ->where('status', '0')
+                ->orderBy('top', 'ASC')
+                ->orderBy('name', 'ASC')
+                ->get()
+                ->map(function($product) {
+                    $productArray = $product->toArray();
+                    $productArray['image_url'] = $product->image_url; // Agregar la URL de imagen
+                    return $productArray;
+                })
+                ->toArray();
+        });
 
-        $this->presentations = Presentation::select('id', 'name', 'price', 'product_id')
-            ->where('status', '0')
-            ->get()
-            ->toArray();
+        // Cachear presentaciones por 5 minutos
+        $this->presentations = \Cache::remember('presentations_list_' . tenant('id'), 300, function() {
+            return Presentation::select('id', 'name', 'price', 'product_id')
+                ->where('status', '0')
+                ->get()
+                ->toArray();
+        });
     }
 }
