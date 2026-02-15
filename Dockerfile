@@ -34,5 +34,8 @@ RUN apk add --no-cache curl && \
 # Actualizar npm a la versión específica 11.6.2
 RUN npm install -g npm@11.6.2
 
+RUN apk update
+RUN apk add mysql-client
+
 
 CMD ["/start.sh"]
