@@ -36,3 +36,5 @@ Set-Content -Path $CacheFile -Value $content -NoNewline
 
 Write-Host "✅ Parche aplicado exitosamente" -ForegroundColor Green
 
+
+
