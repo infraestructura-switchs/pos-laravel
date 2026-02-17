@@ -28,18 +28,19 @@ class Connection extends Component
 
     public function mount()
     {
-        // Permitir acceso al SuperAdmin o a usuarios con rol Administrador del tenant
+        // Permitir acceso SOLO al SuperAdmin
         if (!isRoot()) {
-            if (!auth()->check() || !auth()->user()->hasRole('Administrador')) {
-                abort(403, 'No tienes permisos para acceder a esta sección');
-            }
+            abort(403, 'No tienes permisos para acceder a esta sección. Solo Super Admin.');
         }
     }
+    
 
     public function render()
     {
-        $this->api = FactusConfigurationService::apiConfiguration();
-        $this->isApiEnabled = FactusConfigurationService::isApiEnabled();
+        // Obtener configuración directamente del modelo para evitar excepciones si es inválida
+        $configuration = FactusConfiguration::first();
+        $this->api = $configuration ? $configuration->api : [];
+        $this->isApiEnabled = $configuration ? $configuration->is_api_enabled : false;
 
         return view('livewire.admin.factus.connection')
             ->layout('layouts.app')
