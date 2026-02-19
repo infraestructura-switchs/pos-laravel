@@ -36,6 +36,7 @@ RUN npm install -g npm@11.6.2
 
 RUN apk update
 RUN apk add mysql-client
+RUN apk add php-bcmath
 
 
 CMD ["/start.sh"]
