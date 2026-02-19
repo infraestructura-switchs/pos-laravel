@@ -42,7 +42,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         if ($this->app->environment('production')) {
-            // URL::forceScheme('https');
+            URL::forceScheme('https');
         }
 
         // Forzar que los assets se carguen desde el dominio central
