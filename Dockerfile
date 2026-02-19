@@ -36,7 +36,22 @@ RUN npm install -g npm@11.6.2
 
 RUN apk update
 RUN apk add mysql-client
-RUN apk add php-bcmath
+
+# Instalar dependencias del sistema
+RUN apk add --no-cache \
+    bash \
+    git \
+    unzip \
+    libzip-dev \
+    oniguruma-dev \
+    $PHPIZE_DEPS
+
+# Instalar extensiones PHP necesarias para Laravel
+RUN docker-php-ext-install \
+    pdo \
+    pdo_mysql \
+    zip \
+    bcmath
 
 
 CMD ["/start.sh"]
