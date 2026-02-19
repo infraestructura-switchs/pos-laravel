@@ -4,7 +4,12 @@
         <x-slot:header>
             <div x-data class="px-4 py-1 flex justify-between items-center border-b">
                 <h3 class="font-semibold whitespace-normal text-lg">Módulos</h3>
-                <x-wireui.button x-on:click="$wire.emit('enableAllModules')" text="Habilitar todos los módulos" sm />
+                <div class="flex items-center space-x-2">
+                    @if (isRoot() || auth()->user()->can('isEnabled', [\App\Models\Module::class, 'administrar empresas']))
+                        <x-wireui.button href="{{ route('admin.tenants.index') }}" icon="office-building" text="Administrar Empresas" sm secondary />
+                    @endif
+                    <x-wireui.button x-on:click="$wire.emit('enableAllModules')" text="Habilitar todos los módulos" sm />
+                </div>
             </div>
         </x-slot:header>
 

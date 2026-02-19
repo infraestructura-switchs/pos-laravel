@@ -19,7 +19,9 @@ class Index extends Component
 
     public function mount()
     {
-        if (!isRoot()) abort(404);
+        if (!isRoot() && !auth()->user()->can('isEnabled', [Module::class, 'administrar empresas'])) {
+            abort(404);
+        }
         $this->getModules();
         $this->getFunctionalities();
     }
