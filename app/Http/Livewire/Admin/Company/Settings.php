@@ -47,8 +47,8 @@ class Settings extends Component {
     public function getUrlLogo(){
         if ($this->logo) {
             return $this->logo->temporaryUrl();
-        }else if (Storage::exists('public/images/logos/logo.png')) {
-            return Storage::url('images/logos/logo.png');
+        }else if ($this->company->logo && Storage::disk('public')->exists($this->company->logo)) {
+            return Storage::disk('public')->url($this->company->logo);
         }else{
             return Storage::url('images/system/logo-default.png');
         }
@@ -59,7 +59,7 @@ class Settings extends Component {
     }
 
     public function logoExists(){
-        return Storage::exists('public/images/logos/logo.png');
+        return $this->company->logo && Storage::disk('public')->exists($this->company->logo);
     }
 
     public function store(){
@@ -82,7 +82,8 @@ class Settings extends Component {
         unset($data['logo']);
 
         if ($this->logo) {
-            $this->logo->storeAs('public/images/logos', 'logo.png');
+            $path = $this->logo->store('logos', 'public');
+            $data['logo'] = $path;
         }
 
         $this->company = Company::create($data);
@@ -100,7 +101,13 @@ class Settings extends Component {
         $this->validate();
 
         if ($this->logo) {
-            $this->logo->storeAs('public/images/logos', 'logo.png');
+            // Eliminar logo anterior si existe
+            if ($this->company->logo) {
+                Storage::disk('public')->delete($this->company->logo);
+            }
+
+            $path = $this->logo->store('logos', 'public');
+            $this->company->logo = $path;
         }
 
         $this->company->save();

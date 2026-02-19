@@ -20,6 +20,7 @@ class Company extends Model
         'direction',
         'phone',
         'email',
+        'logo',
         'type_bill',
         'barcode',
         'print',
