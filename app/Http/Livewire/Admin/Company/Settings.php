@@ -64,7 +64,7 @@ class Settings extends Component {
 
     public function store(){
         $rules = [
-            'logo' => 'nullable|image|mimes:png|max:512|dimensions:max_width=500,max_height=250',
+            'logo' => 'nullable|image|mimes:png|max:1000|dimensions:max_width=1000,max_height=500',
             'nit' => 'required|string|max:15',
             'name' => 'required|string|max:150',
             'direction' => 'nullable|string|max:150',
