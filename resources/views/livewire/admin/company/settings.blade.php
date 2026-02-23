@@ -7,7 +7,7 @@
         <div class="grid sm:grid-cols-2 gap-6">
             
             <div class="flex-1 col-span-full">
-                <span class="mt-2 text-xs block">Tamaño máximo de la imagen debe ser de 500KB y con unas dimensiones que no superen (500px x 250px) </span>
+                <span class="mt-2 text-xs block">Tamaño máximo de la imagen debe ser de 1MB y con unas dimensiones que no superen (1000px x 500px) </span>
             </div>
             <div class="col-span-full flex flex-col justify-center items-center">
                 <div class="outline outline-offset-4 rounded outline-1 outline-slate-400 flex justify-center items-center w-full h-full overflow-hidden" style="max-width: 300px; max-height: 150px">
