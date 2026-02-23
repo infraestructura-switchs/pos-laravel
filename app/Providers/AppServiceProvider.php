@@ -45,19 +45,17 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
-        // Forzar que los assets se carguen desde el dominio central
-        // Esto es crítico para multi-tenancy donde cada tenant tiene su propio subdominio
-        // pero los assets CSS/JS compilados solo existen en el dominio central
+        // Configurar assets para que se carguen desde el dominio central en entornos multi-tenant
         if (!$this->app->runningInConsole()) {
             $currentHost = request()->getHost();
 
-            // Si estamos en un subdominio de tenant, forzar assets desde el dominio central
+            // Si estamos en un subdominio de tenant, asegurar que los assets apunten al central
             if (isTenantDomain($currentHost)) {
-                // Forzar el prefijo de assets al dominio central
+                // Forzar el prefijo de assets al dominio central para que CSS/JS carguen bien
                 $assetUrl = centralDomain(withProtocol: true);
-
-                // Configurar APP_URL para que todos los assets usen el dominio central
-                config(['app.url' => $assetUrl]);
+                
+                // IMPORTANTE: NO sobreescribir config(['app.url' => $assetUrl]) ya que esto rompe 
+                // la validación de firmas de Livewire (genera 401 en uploads)
                 config(['app.asset_url' => $assetUrl]);
             }
         }
