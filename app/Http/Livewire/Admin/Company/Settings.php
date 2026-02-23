@@ -26,7 +26,7 @@ class Settings extends Component {
 
     protected function rules(){
         return [
-            'logo' => 'nullable|image|mimes:png|max:512|dimensions:max_width=500,max_height=250',
+            'logo' => 'nullable|image|mimes:png|max:1000|dimensions:max_width=1000,max_height=500',
             'company.nit' => 'required|string|max:15',
             'company.name' => 'required|string|max:150',
             'company.direction' => 'nullable|string|max:150',
