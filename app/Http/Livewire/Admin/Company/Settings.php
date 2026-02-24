@@ -40,7 +40,7 @@ class Settings extends Component {
     }
 
     public function updatedPreLogo($value){
-        $this->validate(['preLogo' => 'required|image|mimes:jpg,jpeg,png,svg,webp|max:1024|dimensions:max_width=1000,max_height=500']);
+        $this->validate(['preLogo' => 'required|image|mimes:jpg,jpeg,png,svg,webp|max:2024|dimensions:max_width=1000,max_height=1000']);
         $this->logo = $value;
     }
 
@@ -64,7 +64,7 @@ class Settings extends Component {
 
     public function store(){
         $rules = [
-            'logo' => 'nullable|image|mimes:jpg,jpeg,png,svg,webp|max:1024|dimensions:max_width=1000,max_height=500',
+            'logo' => 'nullable|image|mimes:jpg,jpeg,png,svg,webp|max:2024|dimensions:max_width=1000,max_height=1000',
             'nit' => 'required|string|max:15',
             'name' => 'required|string|max:150',
             'direction' => 'nullable|string|max:150',
