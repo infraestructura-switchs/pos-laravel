@@ -35,6 +35,7 @@
   <!-- Fonts and styles -->
   <link rel="stylesheet" href="https://fonts.bunny.net/css2?family=Nunito:wght@400;600;700&display=swap">
   <link rel="stylesheet" href="{{ asset('vendor/icomoon-v1.0/style.css') }}?v9">
+  <link rel="icon" type="image/png" href="/favicon.png">
 
   <!-- International Telephone Input -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">

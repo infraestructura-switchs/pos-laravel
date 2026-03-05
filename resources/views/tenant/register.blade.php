@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrar mi Empresa - {{ config('app.name') }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center">
     <div class="w-full max-w-md px-4">
@@ -12,7 +13,7 @@
             <!-- Logo -->
             <div class="flex justify-center">
                 <a href="{{ url('/') }}">
-                    <h1 class="text-4xl font-bold text-indigo-600">Switchs POS</h1>
+                    <h1 class="text-4xl font-bold text-indigo-600">movete</h1>
                 </a>
             </div>
             <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config('app.name') }} - Sistema POS Multi-Tenant</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
     <!-- Navbar -->
@@ -12,7 +13,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <h1 class="text-2xl font-bold text-indigo-600">Switchs POS</h1>
+                    <h1 class="text-2xl font-bold text-indigo-600">movete</h1>
                 </div>
                 <div class="flex items-center space-x-4">
                     <a href="{{ route('tenant.register.form') }}" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
@@ -54,7 +55,7 @@
     <div id="features" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div class="text-center mb-16">
             <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                ¿Por qué elegir Switchs POS?
+                ¿Por qué elegir movete?
             </h2>
             <p class="mt-4 text-lg text-gray-500">
                 Todo lo que necesitas para administrar tu negocio en un solo lugar
@@ -154,7 +155,7 @@
     <footer class="bg-white border-t border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="text-center text-gray-500 text-sm">
-                <p>&copy; {{ date('Y') }} Switchs POS. Todos los derechos reservados.</p>
+                <p>&copy; {{ date('Y') }} movete. Todos los derechos reservados.</p>
             </div>
         </div>
     </footer>
