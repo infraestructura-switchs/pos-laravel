@@ -10,7 +10,7 @@
     <div class="min-h-screen w-full flex items-center justify-center bg-[#980046] px-4 font-outfit">
         <div class="text-center select-none w-full">
             <div class="flex items-center justify-center gap-2 mb-3">
-                <img src="/storage/images/system/logo-movete-high.png" alt="logo" class="h-7 w-auto" style="filter: brightness(0) invert(1);">
+                <img src="/storage/images/system/logo-movete.png" alt="logo" class="h-7 w-auto" style="filter: brightness(0) invert(1);">
                 <span class="font-extrabold text-5xl text-white tracking-wide">movete</span>
             </div>
 
