@@ -591,7 +591,7 @@
                 </x-dropdown-link>
               @endcan
 
-              @if (isRoot() || auth()->user()->can('isEnabled', [App\Models\Module::class, 'administrar empresas']))
+              @if (isRoot() && auth()->user()->can('isEnabled', [App\Models\Module::class, 'administrar empresas']))
                 <x-dropdown-link :href="route('admin.tenants.index')" class="flex items-center">
                   <i class="ti ti-building-store mr-2"></i>
                   Administrar Empresas
