@@ -1,7 +1,7 @@
 <x-guest-layout>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;400;700;900&display=swap');
-        
+
         .font-outfit {
             font-family: 'Outfit', sans-serif !important;
         }
@@ -13,10 +13,10 @@
                 <img src="/storage/images/system/logo-movete-high.png" alt="logo" class="h-7 w-auto" style="filter: brightness(0) invert(1);">
                 <span class="font-extrabold text-5xl text-white tracking-wide">movete</span>
             </div>
-            
+
             <h2 class="text-white font-semibold text-xl">¡Bienvenido nuevamente!</h2>
             <p class="text-white/85 text-[13px] leading-snug mt-1">Ingresa tu usuario y tu contraseña para acceder a tu cuenta</p>
-            
+
             <div class="mt-6">
                 <div class="bg-white rounded-3xl shadow-xl ring-1 ring-black/5 mx-auto p-6 w-[600px] md:w-[400px]">
                     <div class="mb-4">
@@ -24,7 +24,7 @@
                             <a href="{{ route('login') }}" class="flex-1 text-center rounded-full py-2.5 text-sm transition font-medium bg-white shadow text-[#980046] block">
                                 Inicio Sesión
                             </a>
-                            <a href="{{ route('tenant.register.form') }}" class="flex-1 text-center rounded-full py-2.5 text-sm transition font-medium text-[#980046]/70 hover:text-[#980046] block">
+                            <a href="#" class="flex-1 text-center rounded-full py-2.5 text-sm transition font-medium text-[#980046]/70 hover:text-[#980046] block">
                                 Registro
                             </a>
                         </div>
@@ -48,12 +48,12 @@
                                                 <circle cx="12" cy="7" r="4"></circle>
                                             </svg>
                                         </span>
-                                        <input id="email" type="email" name="email" placeholder="Usuario" 
-                                            class="w-full bg-[#F4F4F4] rounded-full pl-10 pr-10 h-11 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-[#E5393A]/30 border-none" 
+                                        <input id="email" type="email" name="email" placeholder="Usuario"
+                                            class="w-full bg-[#F4F4F4] rounded-full pl-10 pr-10 h-11 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-[#E5393A]/30 border-none"
                                             value="{{ old('email') }}" required autofocus>
                                     </div>
                                 </label>
-                                
+
                                 <label class="block">
                                     <div class="relative flex items-center">
                                         <span class="absolute left-3 text-[#980046]">
@@ -62,10 +62,10 @@
                                                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                                             </svg>
                                         </span>
-                                        <input id="password" type="password" name="password" placeholder="Contraseña" 
-                                            class="w-full bg-[#F4F4F4] rounded-full pl-10 pr-10 h-11 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-[#E5393A]/30 border-none" 
+                                        <input id="password" type="password" name="password" placeholder="Contraseña"
+                                            class="w-full bg-[#F4F4F4] rounded-full pl-10 pr-10 h-11 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-[#E5393A]/30 border-none"
                                             required autocomplete="current-password">
-                                        
+
                                         <button type="button" class="absolute right-3 text-[#980046] focus:outline-none" aria-label="Mostrar contraseña" id="togglePassword">
                                             <svg id="eyeIconOpen" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -79,13 +79,13 @@
                                     </div>
                                 </label>
                             </div>
-                            
+
                             @if (Route::has('password.request'))
                             <div class="text-right">
                                 <a href="{{ route('password.request') }}" class="text-[11px] text-[#E5393A] hover:underline">¿Olvidaste tu contraseña?</a>
                             </div>
                             @endif
-                            
+
                             <button type="submit" class="w-full rounded-full py-3 text-white text-sm font-semibold shadow mt-2" style="background-color: #E5393A;">
                                 Iniciar Sesión
                             </button>
@@ -101,7 +101,7 @@
             const passwordInput = document.getElementById('password');
             const eyeIconOpen = document.getElementById('eyeIconOpen');
             const eyeIconClosed = document.getElementById('eyeIconClosed');
-            
+
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 eyeIconOpen.style.display = 'none';
