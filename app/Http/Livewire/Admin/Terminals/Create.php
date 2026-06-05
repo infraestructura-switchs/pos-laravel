@@ -69,10 +69,17 @@ class Create extends Component
         }
 
         $this->factusRanges = collect(ApiService::numberingRanges())->transform(function ($item) {
+            $id = data_get($item, 'id');
+            $prefix = data_get($item, 'prefix', '');
+            $from = data_get($item, 'from', '');
+            $to = data_get($item, 'to', '');
+
             return [
-                'id' => $item['id'],
-                'name' => $item['prefix'].'('.$item['from'].'-'.$item['to'].')',
+                'id' => $id,
+                'name' => $prefix.'('.$from.'-'.$to.')',
             ];
+        })->filter(function ($value) {
+            return ! is_null($value['id']);
         })->pluck('name', 'id');
     }
 

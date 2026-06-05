@@ -22,7 +22,13 @@ class ApiService
             throw new Exception('Ha ocurrido un error inesperado al consultar los rangos de numeración');
         }
 
-        return $response->json()['data'];
+        $payload = $response->json('data', []);
+
+        if (is_array($payload) && array_key_exists('data', $payload) && is_array($payload['data'])) {
+            return $payload['data'];
+        }
+
+        return is_array($payload) ? $payload : [];
     }
 
     public static function payrollIsEnabled()
