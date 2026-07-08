@@ -21,7 +21,7 @@ class Bill extends Component {
     protected function rules(){
         return [
             'company.barcode' => 'required|integer|min:0|max:1',
-            'company.type_bill' => 'required|integer|min:0|max:1',
+            'company.type_bill' => 'required|integer|min:0|max:9',
             'company.width_ticket' => 'required|integer|min:70|max:110',
             'company.percentage_tip' => 'required|integer|min:0|max:20',
         ];

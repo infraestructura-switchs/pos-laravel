@@ -6,6 +6,7 @@ use App\Http\Controllers\Log;
 use App\Models\Category;
 use App\Models\Presentation;
 use App\Models\Product;
+use App\Models\UnitMeasure;
 use App\Services\Contracts\ImageServiceInterface;
 use App\Services\ModuleService;
 use App\Traits\LivewireTrait;
@@ -20,13 +21,13 @@ class Edit extends Component
 {
     use LivewireTrait, WithFileUploads;
 
-    protected $listeners = ['openEdit', 'setPresentation', 'refreshCategories', 'setTaxRates'];
+    protected $listeners = ['openEdit', 'setPresentation', 'refreshCategories', 'refreshUnitMeasures', 'setTaxRates'];
 
     public $product, $openEdit = false;
 
     public $category_id = '';
 
-    public $presentations, $units, $categories;
+    public $presentations, $units, $categories, $unitMeasures;
 
     public Collection $tax_rates;
 
@@ -39,6 +40,7 @@ class Edit extends Component
     public function mount()
     {
         $this->refreshCategories();
+        $this->refreshUnitMeasures();
         $this->product = new Product();
         $this->presentations = collect();
         $this->tax_rates = collect();
@@ -55,6 +57,7 @@ class Edit extends Component
             'product.barcode' => 'required',
             'product.reference' => 'required',
             'product.category_id' => 'nullable',
+            'product.unit_measure_id' => 'required',
             'product.name' => 'required',
             'product.cost' => 'required',
             'product.price' => 'required',
@@ -89,6 +92,14 @@ class Edit extends Component
         $this->categories = Category::orderBy('name', 'ASC')->get()->pluck('name', 'id');
     }
 
+    public function refreshUnitMeasures()
+    {
+        $this->unitMeasures = UnitMeasure::where('status', UnitMeasure::ACTIVE)
+            ->orderBy('description', 'ASC')
+            ->get()
+            ->mapWithKeys(fn ($item) => [$item->id => $item->code . ' - ' . $item->description]);
+    }
+
     public function setTaxRates($taxRates)
     {
         $this->tax_rates = collect($taxRates);
@@ -99,6 +110,7 @@ class Edit extends Component
         $this->resetValidation();
         $this->presentations = collect();
         $this->product = $product;
+        $this->product->unit_measure_id = $this->product->unit_measure_id ?? '';
         $this->category_id = $product->category_id == null ? '' : $product->category_id;
 
         if (!intval($product->has_presentations)) {
@@ -171,7 +183,7 @@ class Edit extends Component
 
     protected function formatData(): array
     {
-        $arrayProperties = ['product.barcode', 'product.reference', 'product.category_id', 'product.name', 'tax_rates', 'product.cost', 'product.price', 'product.has_inventory', 'product.stock', 'units', 'product.quantity', 'product.has_presentations', 'presentations', 'product.top', 'product.status'];
+        $arrayProperties = ['product.barcode', 'product.reference', 'product.category_id', 'product.unit_measure_id', 'product.name', 'tax_rates', 'product.cost', 'product.price', 'product.has_inventory', 'product.stock', 'units', 'product.quantity', 'product.has_presentations', 'presentations', 'product.top', 'product.status'];
 
         $this->applyTrim($arrayProperties);
 
@@ -197,6 +209,7 @@ class Edit extends Component
         }
 
         $data['category_id'] = $data['category_id'] === '' ? null : $data['category_id'];
+        $data['unit_measure_id'] = $data['unit_measure_id'] === '' ? null : $data['unit_measure_id'];
         $data['presentations'] = $data['presentations']->toArray();
 
         $data['tax_rates'] = $this->tax_rates->map(fn ($item) => collect($item)->only('id', 'value'))->toArray();
@@ -212,6 +225,7 @@ class Edit extends Component
             'barcode' => 'required|string|unique:products,barcode,' . $this->product->id,
             'reference' => 'required|string|unique:products,reference,' . $this->product->id,
             'category_id' => 'nullable|exists:categories,id',
+            'unit_measure_id' => 'required|exists:unit_measures,id',
             'name' => 'required|string|min:3|max:250',
             'cost' => 'required|integer|max:99999999',
             'price' => 'required|integer|max:99999999',
@@ -230,6 +244,7 @@ class Edit extends Component
 
         $attributes = [
             'name' => 'nombre',
+            'unit_measure_id' => 'unidad de medida',
             'units' => 'unidades',
             'quantity' => 'unidades x producto',
             'presentations' => 'presentaciones',
@@ -280,7 +295,7 @@ class Edit extends Component
             return $this->emit('error', 'Ha ocurrido un error inesperado al actualizar el producto. Vuelve a intentarlo');
         }
 
-        $this->resetExcept('tax_rates', 'categories');
+        $this->resetExcept('tax_rates', 'categories', 'unitMeasures');
         $this->tax_rates = collect();
         $this->resetValidation();
         $this->presentations = collect();

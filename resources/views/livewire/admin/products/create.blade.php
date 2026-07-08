@@ -21,10 +21,11 @@
 
                 </div>
 
-                <div class="grid grid-cols-2 gap-6 mt-6">
+                <div class="grid grid-cols-3 gap-6 mt-6">
 
                     <x-wireui.input label="Código de barras" wire:model.defer="barcode" placeholder="Código de barras"  />
                     <x-wireui.input label="N° Referencia" wire:model.defer="reference" placeholder="Número de referencia"  />
+                    <x-wireui.native-select label="Unidad de medida" placeholder="Selecciona una unidad" wire:model.defer="unit_measure_id" optionKeyValue :options="$unitMeasures" class="min-w-full" />
 
                 </div>
 

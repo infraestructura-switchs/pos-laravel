@@ -27,7 +27,7 @@
     {{-- Informacion de la factura --}}
     <div class="overflow-hidden">
       <p x-show="!isElectronic" class="font-bold text-right">Venta: <span x-text="bill.number"></span></p>
-      <p x-show="isElectronic" class="font-bold text-right">Factura de electrónica de venta: <span x-text="bill.number"></span></p>
+      <p x-show="isElectronic" class="font-bold text-right">Factura electrónica de venta: <span x-text="bill.number"></span></p>
       <ul class="leading-4 whitespace-nowrap">
         <li>
           <span class="w-14 inline-block">Fecha</span>
@@ -161,8 +161,8 @@
 
     {{-- footer --}}
     <div class="text-xs mt-4">
-      <p class="text-center leading-4">Elaborado por: <span x-text="(company && company.invoice_provider) ? company.invoice_provider.name : ''"></span></p>
-      <p class="text-center leading-4"><span x-text="(company && company.invoice_provider) ? company.invoice_provider.url : ''"></span> NIT: <span x-text="(company && company.invoice_provider) ? company.invoice_provider.nit : ''"></span></p>
+      <p class="text-center leading-4">Elaborado por: <span x-text="(company && company.invoice_provider && company.invoice_provider.name) ? company.invoice_provider.name : (company?.name || 'Sistema POS')"></span></p>
+      <p class="text-center leading-4"><span x-text="(company && company.invoice_provider && company.invoice_provider.url) ? company.invoice_provider.url : window.location.origin"></span> NIT: <span x-text="(company && company.invoice_provider && company.invoice_provider.nit) ? company.invoice_provider.nit : (company?.nit || 'N/D')"></span></p>
     </div>
 
   </div>

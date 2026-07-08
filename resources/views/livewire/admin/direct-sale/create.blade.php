@@ -325,9 +325,23 @@
 <script>
 window.addEventListener('download-bill', async event => {
   try {
+    const payload = event?.detail && typeof event.detail === 'object'
+      ? (Object.values(event.detail).length === 1 && typeof Object.values(event.detail)[0] === 'object'
+          ? Object.values(event.detail)[0]
+          : event.detail)
+      : event?.detail
+
+    const billId = payload?.id ?? payload?.bill_id
+    if (!billId) {
+      console.error('Descarga fallida: no se recibió billId válido', event?.detail)
+      return
+    }
+
     // Construir URL con el mismo esquema/host del navegador para evitar mixed content
     const base = window.location.origin.replace(/\/$/, '');
-    const url = `${base}/administrador/vender/facturas-download/${event.detail.id}`;
+    const url = (typeof payload?.download_url === 'string' && payload.download_url.length > 0)
+      ? payload.download_url
+      : `${base}/administrador/vender/facturas-download/${billId}`;
 
     const res = await fetch(url, {
       method: 'GET',
@@ -353,7 +367,7 @@ window.addEventListener('download-bill', async event => {
     const objectUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = objectUrl;
-    a.download = `Factura-${event.detail.id}.pdf`;
+    a.download = `Factura-${billId}.pdf`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

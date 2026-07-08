@@ -20,7 +20,7 @@ class Company extends Controller {
             'company.direction' => 'nullable|string|max:150',
             'company.phone' => 'nullable|string|max:150',
             'company.email' => 'nullable|string|email|max:150',
-            'company.type_bill' => 'required|min:0|max:1',
+            'company.type_bill' => 'required|min:0|max:9',
             'company.barcode' => 'required|min:0|max:1',
         ];
 

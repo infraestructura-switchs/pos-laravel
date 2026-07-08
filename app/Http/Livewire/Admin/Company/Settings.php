@@ -14,7 +14,7 @@ class Settings extends Component {
 
     public $company;
 
-    public $preLogo, $logo, $nit, $name, $direction, $phone, $email;
+    public $preLogo, $logo, $nit, $name, $direction, $phone, $email, $type_bill = 1, $barcode = 0;
 
     public function mount(){
         if ($this->updateOrCreate()) {
@@ -70,6 +70,8 @@ class Settings extends Component {
             'direction' => 'nullable|string|max:150',
             'phone' => 'nullable|string|max:150',
             'email' => 'nullable|string|email|max:150',
+            'type_bill' => 'required|integer|min:0|max:9',
+            'barcode' => 'required|integer|min:0|max:1',
         ];
 
         $rules2 = $rules;

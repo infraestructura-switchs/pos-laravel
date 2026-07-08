@@ -37,18 +37,22 @@ class CompanyService
         if (FactroConfigurationService::isApiEnabled()) {
             $companyData = session('config') ?? Company::first();
             Log::info('Company Data from Factro API companyData : ' ,[$companyData]);
-            Log::info('Company Data from Factro API invoiceProvider : ' ,[$companyData->invoiceProvider]);
+            Log::info('Company Data from Factro API invoiceProvider : ' ,[optional($companyData)->invoiceProvider]);
 
             $company = [
+                'nit' => $companyData->nit,
+                'name' => $companyData->name,
+                'direction' => $companyData->direction,
+                'phone' => $companyData->phone,
                 'invoice_provider' => [
-                    'nit' => $companyData->invoiceProvider->nit,
-                    'name' => $companyData->invoiceProvider->name,
-                    'direction' => $companyData->invoiceProvider->direction,
-                    'phone' => $companyData->invoiceProvider->phone,
-                    'url' => $companyData->invoiceProvider->url,
+                    'nit' => optional($companyData->invoiceProvider)->nit ?? $companyData->nit,
+                    'name' => optional($companyData->invoiceProvider)->name ?? $companyData->name,
+                    'direction' => optional($companyData->invoiceProvider)->direction ?? $companyData->direction,
+                    'phone' => optional($companyData->invoiceProvider)->phone ?? $companyData->phone,
+                    'url' => optional($companyData->invoiceProvider)->url ?? config('app.url'),
                 ]
             ];
-        }    
+        }
 
 
         return $company;

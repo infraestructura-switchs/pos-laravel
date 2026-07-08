@@ -1,5 +1,212 @@
+const downloadsInFlight = new Set()
+
+function showToast(icon, title) {
+  if (window.Swal) {
+    window.Swal.mixin({
+      toast: true,
+      position: 'bottom-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      customClass: 'no-print',
+      didOpen: (toast) => {
+        toast.addEventListener('mouseenter', window.Swal.stopTimer)
+        toast.addEventListener('mouseleave', window.Swal.resumeTimer)
+      },
+    }).fire({ icon, title })
+  } else if (window.Livewire) {
+    window.Livewire.emit('alert', title)
+  }
+}
+
+function normalizeDetail(detail) {
+  if (!detail || typeof detail !== 'object') {
+    return detail
+  }
+
+  const values = Object.values(detail)
+  if (values.length === 1 && values[0] && typeof values[0] === 'object') {
+    return values[0]
+  }
+
+  return detail
+}
+
+function resolveBillId(detail) {
+  detail = normalizeDetail(detail)
+
+  if (typeof detail === 'number' || typeof detail === 'string') {
+    return String(detail)
+  }
+
+  if (detail && typeof detail === 'object') {
+    if (detail.bill_id !== undefined && detail.bill_id !== null) {
+      return String(detail.bill_id)
+    }
+
+    if (detail.id !== undefined && detail.id !== null) {
+      return String(detail.id)
+    }
+  }
+
+  return null
+}
+
+function resolveDownloadUrl(detail, billId) {
+  detail = normalizeDetail(detail)
+
+  if (detail && typeof detail === 'object' && typeof detail.download_url === 'string' && detail.download_url.length > 0) {
+    return detail.download_url
+  }
+
+  if (window.location.pathname.includes('/vender/')) {
+    return `/vender/facturas-download/${billId}`
+  }
+
+  return `/administrador/facturas-download/${billId}`
+}
+
+function downloadBillFile(detail) {
+  const billId = resolveBillId(detail)
+
+  if (!billId) {
+    console.error('[ticket-bill] No se pudo resolver billId para descarga', detail)
+    showToast('error', 'No se pudo descargar la factura. Intenta nuevamente.')
+    return
+  }
+
+  if (downloadsInFlight.has(billId)) {
+    console.info('[ticket-bill] Descarga ya en curso, omitiendo duplicado', { billId })
+    return
+  }
+
+  downloadsInFlight.add(billId)
+  showToast('info', 'Generando PDF, descarga iniciará en breve...')
+
+  const downloadUrl = resolveDownloadUrl(detail, billId)
+
+  console.info('[ticket-bill] Iniciando descarga', {
+    billId,
+    downloadUrl,
+    rawDetail: detail,
+  })
+
+  fetch(downloadUrl, { credentials: 'same-origin' })
+    .then(async (response) => {
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text || `Error de red: ${response.status}`)
+      }
+
+      const disposition = response.headers.get('Content-Disposition') || ''
+      const match = disposition.match(/filename="?([^"]+)"?/i)
+      const filename = match?.[1] || `Factura-${billId}.pdf`
+
+        const blob = await response.blob()
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = filename
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        URL.revokeObjectURL(url)
+        showToast('success', 'Factura descargada correctamente')
+      })
+    .catch((error) => {
+      console.error('[ticket-bill] Error en descarga', error)
+      showToast('error', 'No se pudo descargar la factura. Intenta nuevamente.')
+    })
+    .finally(() => {
+      downloadsInFlight.delete(billId)
+    })
+}
+
+function getTicketBillComponent() {
+  const root = document.querySelector('.print[x-data]') || document.querySelector('.print')
+
+  if (!root || typeof Alpine === 'undefined' || typeof Alpine.$data !== 'function') {
+    return null
+  }
+
+  return Alpine.$data(root)
+}
+
+function registerTicketBillListenersOnce() {
+  if (window.__ticketBillListenersReady) {
+    return
+  }
+
+  window.__ticketBillListenersReady = true
+
+  window.addEventListener('direct-sale-download-ticket', (event) => {
+    downloadBillFile(event.detail)
+  })
+
+  window.addEventListener('download-bill', (event) => {
+    downloadBillFile(event.detail)
+  })
+
+  window.addEventListener('quick-sale-print-ticket', (event) => {
+    const component = getTicketBillComponent()
+    if (!component || !component.$store?.config?.print) return
+
+    component.show = true
+    component.getBill(`/administrador/facturas/informacion/${event.detail}`).then(() => {
+      console.info('[ticket-bill] quick-sale-print-ticket', {
+        billId: event.detail,
+        typeBill: component.typeBill,
+        isElectronic: component.isElectronic,
+      })
+
+      if (String(component.typeBill) !== '1') {
+        component.show = false
+        downloadBillFile(event.detail)
+        return
+      }
+
+      component.$nextTick(() => {
+        component.setHeight()
+        window.print()
+        component.products = {}
+        component.show = false
+      })
+    })
+  })
+
+  window.addEventListener('print-ticket', (event) => {
+    const component = getTicketBillComponent()
+    if (!component) return
+
+    component.show = true
+    component.getBill(`/administrador/facturas/informacion/${event.detail}`).then(() => {
+      console.info('[ticket-bill] print-ticket', {
+        billId: event.detail,
+        typeBill: component.typeBill,
+        isElectronic: component.isElectronic,
+      })
+
+      if (String(component.typeBill) !== '1') {
+        component.show = false
+        downloadBillFile(event.detail)
+        return
+      }
+
+      component.$nextTick(() => {
+        component.setHeight()
+        window.print()
+        component.products = {}
+        component.show = false
+      })
+    })
+  })
+}
+
+registerTicketBillListenersOnce()
+
 export default () => ({
   show: false,
+  typeBill: '1',
   company: {},
   customer: {},
   bill: {},
@@ -10,58 +217,15 @@ export default () => ({
   isElectronic: false,
 
   init() {
-    // NUEVO: Descarga automática para DirectSale (Vender)
-    window.addEventListener('direct-sale-download-ticket', (event) => {
-      this.downloadBill(event.detail)
-    })
-
-    // Mantener impresión para QuickSale (Ventas Rápidas)
-    window.addEventListener('quick-sale-print-ticket', (event) => {
-      if (!this.$store.config.print) return
-      this.show = true
-      this.getBill(`/administrador/facturas/informacion/${event.detail}`).then(() => {
-        this.$nextTick(() => {
-          this.setHeight()
-          window.print()
-          this.products = {}
-          this.show = false
-        })
-      })
-    })
-
-    window.addEventListener('print-ticket', (event) => {
-      this.show = true
-      this.getBill(`/administrador/facturas/informacion/${event.detail}`).then(() => {
-        this.$nextTick(() => {
-          this.setHeight()
-          window.print()
-          this.products = {}
-          this.show = false
-        })
-      })
-    })
+    registerTicketBillListenersOnce()
   },
 
-  // NUEVO: Método para descargar automáticamente
-  downloadBill(billId) {
-    // Mostrar feedback visual (opcional)
-    if (window.Livewire) {
-      window.Livewire.emit('alert', 'Descargando factura...')
-    }
+  normalizeDetail,
+  resolveBillId,
+  resolveDownloadUrl,
 
-    // Método 1: Simple y compatible con todos los navegadores
-    const link = document.createElement('a')
-    link.href = `/administrador/facturas-download/${billId}`
-    link.download = `factura-${billId}.pdf`
-    link.style.display = 'none'
-    
-    document.body.appendChild(link)
-    link.click()
-    
-    // Limpiar
-    setTimeout(() => {
-      document.body.removeChild(link)
-    }, 100)
+  downloadBill(detail) {
+    downloadBillFile(detail)
   },
 
   getBill(url) {
@@ -74,6 +238,7 @@ export default () => ({
       })
       .then((data) => {
         this.company = data.data.company
+        this.typeBill = String(data.data.type_bill ?? '1')
         this.customer = data.data.customer
         this.bill = data.data.bill
         this.range = data.data.range

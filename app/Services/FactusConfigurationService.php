@@ -11,10 +11,16 @@ class FactusConfigurationService
     public static function apiConfiguration()
     {
         if (Cache::has('api_configuration')) {
+            Log::info('FactusConfigurationService::apiConfiguration - fuente=cache', [
+                'cache_key' => 'api_configuration',
+            ]);
             return Cache::get('api_configuration');
         }
 
         $configuration = FactusConfiguration::first();
+        Log::info('FactusConfigurationService::apiConfiguration - fuente=database', [
+            'configuration_id' => optional($configuration)->id,
+        ]);
 
         if (!$configuration) {
             throw new CustomException('No se ha configurado la facturación electrónica. Por favor, configure primero la conexión con Factus.');
@@ -35,6 +41,9 @@ class FactusConfigurationService
         }
 
         Cache::forever('api_configuration', $api);
+        Log::info('FactusConfigurationService::apiConfiguration - cache actualizado', [
+            'cache_key' => 'api_configuration',
+        ]);
 
         return $api;
     }
@@ -42,10 +51,18 @@ class FactusConfigurationService
     public static function isApiEnabled()
     {
         if (Cache::has('is_api_enabled')) {
-            return (bool) Cache::get('is_api_enabled');
+            $cachedValue = (bool) Cache::get('is_api_enabled');
+            Log::info('FactusConfigurationService::isApiEnabled - fuente=cache', [
+                'cache_key' => 'is_api_enabled',
+                'enabled' => $cachedValue,
+            ]);
+            return $cachedValue;
         }
 
         $configuration = FactusConfiguration::first();
+        Log::info('FactusConfigurationService::isApiEnabled - fuente=database', [
+            'configuration_id' => optional($configuration)->id,
+        ]);
 
         if (!$configuration) {
             return false;
@@ -60,7 +77,10 @@ class FactusConfigurationService
         }
 
         Cache::forever('is_api_enabled', $apiEnabled);
-        Log::info('Factus API Enabled?', ['enabled' => $apiEnabled]);
+        Log::info('FactusConfigurationService::isApiEnabled - cache actualizado', [
+            'cache_key' => 'is_api_enabled',
+            'enabled' => (bool) $apiEnabled,
+        ]);
 
         return (bool) $apiEnabled;
     }

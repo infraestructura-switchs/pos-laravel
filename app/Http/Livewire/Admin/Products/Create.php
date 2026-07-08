@@ -6,6 +6,7 @@ use App\Http\Controllers\Log;
 use App\Models\Category;
 use App\Models\Presentation;
 use App\Models\Product;
+use App\Models\UnitMeasure;
 use App\Services\ModuleService;
 use App\Traits\LivewireTrait;
 use Illuminate\Support\Collection;
@@ -22,19 +23,20 @@ class Create extends Component
 
     public $openCreate = false;
 
-    public $barcode, $reference, $category_id = "", $name, $cost, $price, $has_inventory = '1', $stock, $units = 0, $quantity;
+    public $barcode, $reference, $category_id = "", $unit_measure_id = "", $name, $cost, $price, $has_inventory = '1', $stock, $units = 0, $quantity;
 
     public $has_presentations = '1';
 
     public Collection $tax_rates;
 
-    public $categories, $presentations;
+    public $categories, $unitMeasures, $presentations;
 
     public $is_inventory_enabled = false;
 
     public function mount()
     {
         $this->refreshCategories();
+        $this->refreshUnitMeasures();
         $this->presentations = collect();
         $this->tax_rates = collect();
         $this->is_inventory_enabled = ModuleService::isEnabled('inventario');
@@ -79,6 +81,14 @@ class Create extends Component
         $this->categories = Category::orderBy('name', 'ASC')->get()->pluck('name', 'id');
     }
 
+    public function refreshUnitMeasures()
+    {
+        $this->unitMeasures = UnitMeasure::where('status', UnitMeasure::ACTIVE)
+            ->orderBy('description', 'ASC')
+            ->get()
+            ->mapWithKeys(fn ($item) => [$item->id => $item->code . ' - ' . $item->description]);
+    }
+
     public function editPresentation($index)
     {
         $this->emitTo('admin.products.presentations', 'openPresentations', $this->getName(), $this->presentations->get($index), $index);
@@ -108,7 +118,7 @@ class Create extends Component
 
     protected function formatData()
     {
-        $arrayProperties = ['barcode', 'reference', 'category_id', 'name', 'cost', 'price', 'has_inventory', 'stock', 'units', 'quantity', 'has_presentations', 'presentations'];
+        $arrayProperties = ['barcode', 'reference', 'category_id', 'unit_measure_id', 'name', 'cost', 'price', 'has_inventory', 'stock', 'units', 'quantity', 'has_presentations', 'presentations'];
 
         $this->applyTrim($arrayProperties);
 
@@ -129,6 +139,7 @@ class Create extends Component
         }
 
         $data['category_id'] = $data['category_id'] === '' ? null : $data['category_id'];
+        $data['unit_measure_id'] = $data['unit_measure_id'] === '' ? null : $data['unit_measure_id'];
         $data['presentations'] = $data['presentations']->toArray();
 
         $data['tax_rates'] = $this->tax_rates->map(fn ($item) => collect($item)->only('id', 'value'))->toArray();
@@ -144,6 +155,7 @@ class Create extends Component
             'barcode' => 'required|string|unique:products',
             'reference' => 'required|string|unique:products',
             'category_id' => 'nullable|exists:categories,id',
+            'unit_measure_id' => 'required|exists:unit_measures,id',
             'name' => 'required|string|min:3|max:250',
             'cost' => 'required|integer|min:0|max:99999999',
             'price' => 'required|integer|min:0|max:99999999',
@@ -160,6 +172,7 @@ class Create extends Component
 
         $attributes = [
             'name' => 'nombre',
+            'unit_measure_id' => 'unidad de medida',
             'quantity' => 'unidades x producto',
             'presentations' => 'presentaciones',
             'tax_rates' => 'impuestos',
@@ -207,7 +220,7 @@ class Create extends Component
             Log::error($th->getMessage(), ['product' => $data, 'presentation' => $this->presentations]);
         }
 
-        $this->resetExcept('tax_rates', 'categories');
+        $this->resetExcept('tax_rates', 'categories', 'unitMeasures');
         $this->tax_rates = collect();
         $this->resetValidation();
         $this->presentations = collect();

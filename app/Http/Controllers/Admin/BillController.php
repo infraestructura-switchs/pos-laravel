@@ -16,6 +16,215 @@ class BillController extends Controller
 {
     use UtilityTrait;
 
+    private function normalizeDataUriBase64(?string $value): ?string
+    {
+        if (!$value || !is_string($value)) {
+            return $value;
+        }
+
+        if (!str_starts_with($value, 'data:image')) {
+            return $value;
+        }
+
+        if (!str_contains($value, 'base64,')) {
+            return $value;
+        }
+
+        [$meta, $payload] = explode('base64,', $value, 2);
+        $payload = preg_replace('/\s+/', '', $payload ?? '');
+
+        return $meta . 'base64,' . $payload;
+    }
+
+    private function shouldEmbedQrImage(?string $value): bool
+    {
+        if (!$value || !str_starts_with($value, 'data:image') || !str_contains($value, 'base64,')) {
+            return false;
+        }
+
+        [, $payload] = explode('base64,', $value, 2);
+        $payload = (string) ($payload ?? '');
+
+        // Evita bloqueos de mPDF con imágenes embebidas demasiado grandes.
+        if (strlen($payload) > 400000) {
+            return false;
+        }
+
+        return base64_decode($payload, true) !== false;
+    }
+
+    private function sanitizeHtmlForPdf(string $html): string
+    {
+        $utf8Html = @iconv('UTF-8', 'UTF-8//IGNORE', $html);
+        if ($utf8Html === false) {
+            $utf8Html = $html;
+        }
+
+        return (string) preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $utf8Html);
+    }
+
+    private function prepareBillForPdf(Bill $bill): Bill
+    {
+        $bill->loadMissing([
+            'details.product.unitMeasure',
+            'details.documentTaxes.taxRates',
+            'customer',
+            'user',
+            'paymentMethod',
+            'documentTaxes.taxRates',
+            'electronicBill',
+            'finance',
+            'numberingRange',
+        ]);
+
+        return $bill;
+    }
+
+    private function pdfDownloadResponse(\Mpdf\Mpdf $pdf, string $filename)
+    {
+        $content = $pdf->Output('', 'S');
+
+        return response($content, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Length' => strlen($content),
+            'Cache-Control' => 'private, max-age=0, must-revalidate',
+            'Pragma' => 'public',
+        ]);
+    }
+
+    protected function buildPdfByType($company, Bill $bill, $range)
+    {
+        $dbTypeBillValue = Company::query()->value('type_bill');
+        $dbTypeBill = (string) ($dbTypeBillValue ?? 'null');
+        $typeBill = (string) ($company->type_bill ?? '1');
+
+        if ($company instanceof Company && $company->id) {
+            $persistedTypeBill = Company::query()->whereKey($company->id)->value('type_bill');
+            if ($persistedTypeBill !== null) {
+                $typeBill = (string) $persistedTypeBill;
+            }
+        }
+
+        Log::info('BillController::buildPdfByType - Resolviendo formato de factura', [
+            'bill_id' => $bill->id,
+            'type_bill_session_or_company' => $typeBill,
+            'type_bill_db' => $dbTypeBill,
+            'is_electronic' => (bool) $bill->isElectronic,
+            'has_electronic_bill' => (bool) $bill->electronicBill,
+        ]);
+
+        if ($typeBill === '0') {
+            Log::info('BillController::buildPdfByType - Formato seleccionado: pdf.bill (normal)', [
+                'bill_id' => $bill->id,
+                'type_bill' => $typeBill,
+            ]);
+            $pdf = $this->initMPdf();
+            $pdf->setFooter('{PAGENO}');
+            $pdf->SetHTMLFooter(View::make('pdf.bill.footer', compact('company', 'bill', 'range')));
+            $pdf->WriteHTML(View::make('pdf.bill.template', compact('company', 'bill', 'range')), HTMLParserMode::HTML_BODY);
+
+            return $pdf;
+        }
+
+        if ($typeBill === '1') {
+            Log::info('BillController::buildPdfByType - Formato seleccionado: pdf.ticket (ticket)', [
+                'bill_id' => $bill->id,
+                'type_bill' => $typeBill,
+            ]);
+            $height = $this->getHeigth($bill->details, $range);
+            $pdf = $this->initMPdfTicket($height);
+            $pdf->SetHTMLFooter(View::make('pdf.ticket.footer', compact('company', 'bill', 'range')));
+            $pdf->WriteHTML(View::make('pdf.ticket.template', compact('company', 'bill', 'range')), HTMLParserMode::HTML_BODY);
+
+            return $pdf;
+        }
+
+        Log::info('BillController::buildPdfByType - Formato seleccionado: pdf.bill-v2 (nuevo)', [
+            'bill_id' => $bill->id,
+            'type_bill' => $typeBill,
+        ]);
+
+        if ($bill->electronicBill && !empty($bill->electronicBill->qr_image)) {
+            $originalQr = (string) $bill->electronicBill->qr_image;
+            $normalizedQr = $this->normalizeDataUriBase64($originalQr);
+            $canEmbedQr = $this->shouldEmbedQrImage($normalizedQr);
+            $bill->electronicBill->qr_image = $canEmbedQr ? $normalizedQr : null;
+
+            Log::info('BillController::buildPdfByType - QR normalizado para bill-v2', [
+                'bill_id' => $bill->id,
+                'is_data_uri' => str_starts_with($normalizedQr ?? '', 'data:image'),
+                'qr_length' => strlen((string) $normalizedQr),
+                'can_embed_qr' => $canEmbedQr,
+            ]);
+
+            if (!$canEmbedQr) {
+                Log::warning('BillController::buildPdfByType - QR omitido para evitar bloqueo de render', [
+                    'bill_id' => $bill->id,
+                    'qr_length' => strlen((string) $normalizedQr),
+                ]);
+            }
+        }
+
+        try {
+            $pdf = $this->initMPdf();
+            $pdf->setFooter('{PAGENO}');
+
+            Log::info('BillController::buildPdfByType - Render footer bill-v2 (inicio)', [
+                'bill_id' => $bill->id,
+            ]);
+
+            $footerHtml = View::make('pdf.bill-v2.footer', compact('company', 'bill', 'range'))->render();
+            $footerHtml = $this->sanitizeHtmlForPdf($footerHtml);
+            $pdf->SetHTMLFooter($footerHtml);
+
+            Log::info('BillController::buildPdfByType - Render footer bill-v2 (fin)', [
+                'bill_id' => $bill->id,
+                'footer_mode' => 'html',
+                'footer_length' => strlen($footerHtml),
+            ]);
+
+            Log::info('BillController::buildPdfByType - Render template bill-v2 (inicio)', [
+                'bill_id' => $bill->id,
+            ]);
+
+            $templateHtml = View::make('pdf.bill-v2.template', compact('company', 'bill', 'range'))->render();
+            $templateHtml = $this->sanitizeHtmlForPdf($templateHtml);
+
+            Log::info('BillController::buildPdfByType - Render template bill-v2 (html listo)', [
+                'bill_id' => $bill->id,
+                'template_length' => strlen($templateHtml),
+            ]);
+
+            $pdf->WriteHTML($templateHtml, HTMLParserMode::HTML_BODY);
+
+            Log::info('BillController::buildPdfByType - Render template bill-v2 (fin)', [
+                'bill_id' => $bill->id,
+                'template_mode' => 'html',
+                'template_length' => strlen($templateHtml),
+            ]);
+
+            return $pdf;
+        } catch (\Throwable $e) {
+            Log::error('BillController::buildPdfByType - Error renderizando bill-v2, aplicando fallback', [
+                'bill_id' => $bill->id,
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+            ]);
+
+            $fallbackPdf = $this->initMPdf();
+            $fallbackPdf->setFooter('{PAGENO}');
+            $fallbackPdf->SetHTMLFooter(View::make('pdf.bill.footer', compact('company', 'bill', 'range')));
+            $fallbackPdf->WriteHTML(View::make('pdf.bill.template', compact('company', 'bill', 'range')), HTMLParserMode::HTML_BODY);
+
+            Log::warning('BillController::buildPdfByType - Fallback a pdf.bill aplicado', [
+                'bill_id' => $bill->id,
+            ]);
+
+            return $fallbackPdf;
+        }
+    }
+
     public function sendWhatsapp(Bill $bill, WhatsappPdfService $service)
     {
         Log::info('Enviando factura por WhatsApp sendWhatsapp', ['bill_id' => $bill->id]);
@@ -45,17 +254,7 @@ class BillController extends Controller
             ];
         }
 
-        if ($company->type_bill === '0') {
-            $pdf = $this->initMPdf();
-            $pdf->setFooter('{PAGENO}');
-            $pdf->SetHTMLFooter(View::make('pdf.bill.footer'));
-            $pdf->WriteHTML(View::make('pdf.bill.template', compact('company', 'bill', 'range')), HTMLParserMode::HTML_BODY);
-        } else {
-            $height = $this->getHeigth($bill->details, $range);
-            $pdf = $this->initMPdfTicket($height);
-            $pdf->SetHTMLFooter(View::make('pdf.ticket.footer'));
-            $pdf->WriteHTML(View::make('pdf.ticket.template', compact('company', 'bill', 'range')), HTMLParserMode::HTML_BODY);
-        }
+        $pdf = $this->buildPdfByType($company, $bill, $range);
 
         $pdf->SetTitle('Factura '.$bill->number);
 
@@ -85,17 +284,7 @@ class BillController extends Controller
             ];
         }
 
-        if ($company->type_bill === '0') {
-            $pdf = $this->initMPdf();
-            $pdf->setFooter('{PAGENO}');
-            $pdf->SetHTMLFooter(View::make('pdf.bill.footer'));
-            $pdf->WriteHTML(View::make('pdf.bill.template', compact('company', 'bill', 'range')), HTMLParserMode::HTML_BODY);
-        } else {
-            $height = $this->getHeigth($bill->details, $range);
-            $pdf = $this->initMPdfTicket($height);
-            $pdf->SetHTMLFooter(View::make('pdf.ticket.footer'));
-            $pdf->WriteHTML(View::make('pdf.ticket.template', compact('company', 'bill', 'range')), HTMLParserMode::HTML_BODY);
-        }
+        $pdf = $this->buildPdfByType($company, $bill, $range);
 
         $pdf->SetTitle('Factura '.$bill->number);
         $fileName = 'Factura_' . ($bill->number ?? $bill->id) . '.pdf';
@@ -122,13 +311,47 @@ class BillController extends Controller
     {
         Log::info('Descargando factura download', ['bill_id' => $bill->id]);
         try {
+            $bill = $this->prepareBillForPdf($bill);
+            $company = session('config') ?? Company::first();
+            $dbTypeBillValue = Company::query()->value('type_bill');
+            $typeBill = (string) ($dbTypeBillValue ?? $company->type_bill ?? '1');
+
             Log::info('📥 BillController::download - Iniciando descarga', [
                 'bill_id' => $bill->id,
-                'is_electronic' => $bill->isElectronic
+                'is_electronic' => $bill->isElectronic,
+                'type_bill' => $typeBill,
             ]);
 
             // Si es factura electrónica, usar el PDF completo con QR y CUFE
             if ($bill->isElectronic && $bill->electronicBill) {
+                if ($typeBill !== '1') {
+                    $range = $bill->numberingRange;
+                    if (!$range) {
+                        $range = (object) [
+                            'resolution_number' => null,
+                            'prefix' => '',
+                            'from' => '',
+                            'to' => '',
+                            'format_date_authorization' => null,
+                        ];
+                    }
+
+                    Log::info('⚡ BillController::download - Factura electrónica con type_bill no ticket, usando buildPdfByType', [
+                        'bill_id' => $bill->id,
+                        'type_bill' => $typeBill,
+                    ]);
+
+                    $pdf = $this->buildPdfByType($company, $bill, $range);
+                    $pdf->SetTitle('Factura '.$bill->number);
+
+                    Log::info('BillController::download - Enviando Output PDF electrónico no-ticket', [
+                        'bill_id' => $bill->id,
+                        'filename' => 'Factura-' . $bill->number . '.pdf',
+                    ]);
+
+                    return $this->pdfDownloadResponse($pdf, 'Factura-' . $bill->number . '.pdf');
+                }
+
                 Log::info('⚡ BillController::download - Descargando factura electrónica', ['bill_id' => $bill->id]);
                 $pdfContent = base64_decode($this->getElectronicBillBase64($bill->id));
                 return response($pdfContent, 200, [
@@ -139,9 +362,42 @@ class BillController extends Controller
 
             // Ticket básico sin dependencias externas
             Log::info('📄 BillController::download - Descargando factura estándar', ['bill_id' => $bill->id]);
-            $company = session('config') ?? Company::first();
+            $dbTypeBill = (string) ($dbTypeBillValue ?? 'null');
 
             Log::info('📄 BillController::download - Descargando factura estándar company ', ['company' => $company]);
+            Log::info('BillController::download - Resolviendo flujo de descarga por type_bill', [
+                'bill_id' => $bill->id,
+                'type_bill_session_or_company' => $typeBill,
+                'type_bill_db' => $dbTypeBill,
+            ]);
+
+            if ($typeBill !== '1') {
+                $range = $bill->numberingRange;
+                if (!$range) {
+                    $range = (object) [
+                        'resolution_number' => null,
+                        'prefix' => '',
+                        'from' => '',
+                        'to' => '',
+                        'format_date_authorization' => null,
+                    ];
+                }
+
+                Log::info('BillController::download - Redirigiendo a buildPdfByType para formato no ticket', [
+                    'bill_id' => $bill->id,
+                    'type_bill' => $typeBill,
+                ]);
+
+                $pdf = $this->buildPdfByType($company, $bill, $range);
+                $pdf->SetTitle('Factura '.$bill->number);
+
+                Log::info('BillController::download - Enviando Output PDF estándar no-ticket', [
+                    'bill_id' => $bill->id,
+                    'filename' => 'Factura-' . $bill->id . '.pdf',
+                ]);
+
+                return $this->pdfDownloadResponse($pdf, 'Factura-' . $bill->id . '.pdf');
+            }
 
             // Medidas del ticket: ancho en mm, alto dinámico aproximado
             $width = optional(session('config'))->width_ticket
@@ -265,7 +521,7 @@ class BillController extends Controller
             $html .= '</div>';
 
             $pdf->WriteHTML($html);
-            return $pdf->Output('Factura-' . $bill->id . '.pdf', 'D');
+            return $this->pdfDownloadResponse($pdf, 'Factura-' . $bill->id . '.pdf');
         } catch (\Throwable $e) {
             Log::error('❌ BillController::download - Error', [
                 'bill_id' => $bill->id ?? 'N/A',
@@ -296,17 +552,7 @@ class BillController extends Controller
                 ];
             }
 
-            if ($company->type_bill === '0') {
-                $pdf = $this->initMPdf();
-                $pdf->setFooter('{PAGENO}');
-                $pdf->SetHTMLFooter(View::make('pdf.bill.footer'));
-                $pdf->WriteHTML(View::make('pdf.bill.template', compact('company', 'bill', 'range')), HTMLParserMode::HTML_BODY);
-            } else {
-                $height = $this->getHeigth($bill->details, $range);
-                $pdf = $this->initMPdfTicket($height);
-                $pdf->SetHTMLFooter(View::make('pdf.ticket.footer'));
-                $pdf->WriteHTML(View::make('pdf.ticket.template', compact('company', 'bill', 'range')), HTMLParserMode::HTML_BODY);
-            }
+            $pdf = $this->buildPdfByType($company, $bill, $range);
 
             $pdf->SetTitle('Factura ' . $bill->number);
             $fileName = 'Factura_' . ($bill->number ?? $bill->id) . '.pdf';
@@ -687,11 +933,20 @@ class BillController extends Controller
         $range = $bill->numberingRange;
         $products = $bill->details->transform(fn ($item) => $item->only(['name', 'amount', 'total']));
         $company = CompanyService::companyData();
+        $dbTypeBillValue = Company::query()->value('type_bill');
+        $typeBill = (string) ($dbTypeBillValue ?? optional(session('config'))->type_bill ?? '1');
+
+        Log::info('BillController::getBill - Datos para impresion frontend', [
+            'bill_id' => $bill->id,
+            'type_bill' => $typeBill,
+            'is_electronic' => (bool) $bill->isElectronic,
+        ]);
 
         $data = [
 
             'is_electronic' => $bill->isElectronic,
             'company' => $company,
+            'type_bill' => $typeBill,
             'customer' => [
                 'identification' => $customer->no_identification,
                 'names' => $customer->names,

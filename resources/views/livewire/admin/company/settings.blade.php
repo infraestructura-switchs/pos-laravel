@@ -41,7 +41,7 @@
                 <x-wireui.input wire:model.defer="direction" icon="direction" placeholder="Dirección de la empresa" />
                 <x-wireui.input wire:model.defer="phone" icon="phone" placeholder="N° celular de la empresa" />
                 <x-wireui.input wire:model.defer="email" icon="email" placeholder="Correo de la empresa" />
-                <x-wireui.native-select wire:model.defer="type_bill"  optionKeyValue="true" placeholder="Tipo de factura" :options="['0' => 'Factura normal', '1' => 'Ticket']"  class="w-full" />
+                <x-wireui.native-select wire:model.defer="type_bill"  optionKeyValue="true" placeholder="Tipo de factura" :options="['0' => 'Factura normal', '1' => 'Ticket', '2' => 'Factura electronica DIAN (nuevo formato)']"  class="w-full" />
                 <x-buttons.switch wire:model.defer="barcode" active="Pistola activada" inactive="Pistola desactivada"/>
             @endif
         </div>

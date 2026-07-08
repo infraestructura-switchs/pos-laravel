@@ -12,10 +12,16 @@ class FactroConfigurationService
     public static function apiConfiguration()
     {
         if (Cache::has('factro_api_configuration')) {
+            Log::info('FactroConfigurationService::apiConfiguration - fuente=cache', [
+                'cache_key' => 'factro_api_configuration',
+            ]);
             return Cache::get('factro_api_configuration');
         }
 
         $configuration = FactroConfiguration::first();
+        Log::info('FactroConfigurationService::apiConfiguration - fuente=database', [
+            'configuration_id' => optional($configuration)->id,
+        ]);
         $api = $configuration ? $configuration->api : [];
 
         /*$api = [
@@ -46,6 +52,9 @@ class FactroConfigurationService
         }
 
         Cache::forever('factro_api_configuration', $api);
+        Log::info('FactroConfigurationService::apiConfiguration - cache actualizado', [
+            'cache_key' => 'factro_api_configuration',
+        ]);
 
         return $api;
     }
@@ -53,14 +62,25 @@ class FactroConfigurationService
     public static function isApiEnabled()
     {
         if (Cache::has('factro_is_api_enabled')) {
-            return (bool) Cache::get('factro_is_api_enabled');
+            $cachedValue = (bool) Cache::get('factro_is_api_enabled');
+            Log::info('FactroConfigurationService::isApiEnabled - fuente=cache', [
+                'cache_key' => 'factro_is_api_enabled',
+                'enabled' => $cachedValue,
+            ]);
+            return $cachedValue;
         }
 
         $configuration = FactroConfiguration::first();
+        Log::info('FactroConfigurationService::isApiEnabled - fuente=database', [
+            'configuration_id' => optional($configuration)->id,
+        ]);
         $apiEnabled = $configuration ? $configuration->is_api_enabled : false;
 
         Cache::forever('factro_is_api_enabled', $apiEnabled);
-        Log::info('Factro API Enabled?', ['enabled' => $apiEnabled]);
+        Log::info('FactroConfigurationService::isApiEnabled - cache actualizado', [
+            'cache_key' => 'factro_is_api_enabled',
+            'enabled' => (bool) $apiEnabled,
+        ]);
 
         return (bool) $apiEnabled;
     }

@@ -9,7 +9,7 @@
         wire:model.defer="company.type_bill"
         optionKeyValue="true"
         placeholder="Seleccionar    "
-        :options="['0' => 'Factura normal', '1' => 'Ticket']"
+        :options="['0' => 'Factura normal', '1' => 'Ticket', '2' => 'Factura electronica DIAN (nuevo formato)']"
         class="w-full" />
 
       <div class="flex justify-between">

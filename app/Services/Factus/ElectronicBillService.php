@@ -78,6 +78,8 @@ class ElectronicBillService
                 throw new CustomException("El producto '{$detail->name}' no tiene código de referencia configurado");
             }
 
+            $unitMeasureCode = trim((string) (optional($detail->product->unitMeasure)->code ?? ''));
+
             $items[] = [
                 'code_reference' => $detail->product->reference,
                 'name' => $detail->name,
@@ -88,7 +90,8 @@ class ElectronicBillService
                 'tax_rate' => $taxRate->rate,
                 'withholding_taxes' => [],
                 'is_excluded' => $detail->product->taxRates->first()->id === 1 ? 1 : 0,
-                'unit_measure_id' => 70, // Unidad
+                'unit_measure_id' => $unitMeasureCode !== '' ? $unitMeasureCode : 70,
+                //'unit_measure_id' => 70, // Unidad
                 'standard_code_id' => 1, // Estándar de adopción del contribuyente
                 'tribute_id' => $tribute->api_tribute_id,
             ];
@@ -197,10 +200,17 @@ class ElectronicBillService
             'bill_number' => $electronicBillData['number']
         ]);
 
+        $qrImage = $electronicBillData['qr_image'] ?? null;
+        if (is_string($qrImage) && str_starts_with($qrImage, 'data:image') && str_contains($qrImage, 'base64,')) {
+            [$meta, $payload] = explode('base64,', $qrImage, 2);
+            $payload = preg_replace('/\s+/', '', $payload ?? '');
+            $qrImage = $meta . 'base64,' . $payload;
+        }
+
         // Preparar datos para guardar
         $dataToSave = [
             'number' => $electronicBillData['number'],
-            'qr_image' => $electronicBillData['qr_image'] ?? null,
+            'qr_image' => $qrImage,
             'cufe' => $electronicBillData['cufe'],
             'numbering_range' => $numberingRange ? json_encode($numberingRange) : null,
             'is_validated' => true,

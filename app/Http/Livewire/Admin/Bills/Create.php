@@ -5,6 +5,7 @@ namespace App\Http\Livewire\Admin\Bills;
 use App\Exceptions\CustomException;
 use Illuminate\Support\Facades\Log;
 use App\Models\Bill;
+use App\Models\Company;
 use App\Models\Customer;
 use App\Models\PaymentMethod;
 use App\Rules\Date;
@@ -190,12 +191,41 @@ class Create extends Component
         if (FactusConfigurationService::isApiEnabled()
         || FactroConfigurationService::isApiEnabled()
         ) {
-            if ($this->validateElectronicBill($bill)) {
-                return;
-            }
+            $this->validateElectronicBill($bill);
         }
 
-        $this->dispatchBrowserEvent('print-ticket', $bill->id);
+        $typeBill = (string) (Company::query()->value('type_bill') ?? optional(session('config'))->type_bill ?? '1');
+        $this->dispatchOutputEvent($bill, $typeBill);
+    }
+
+    protected function getOutputEventName(string $typeBill): string
+    {
+        return $typeBill === '1' ? 'print-ticket' : 'direct-sale-download-ticket';
+    }
+
+    protected function makeOutputEventPayload($billId): array
+    {
+        $billId = (int) $billId;
+
+        return [
+            'bill_id' => $billId,
+            'download_url' => url('/administrador/facturas-download/'.$billId),
+        ];
+    }
+
+    protected function dispatchOutputEvent(Bill $bill, string $typeBill): void
+    {
+        $eventName = $this->getOutputEventName($typeBill);
+        $payload = $this->makeOutputEventPayload($bill->id);
+
+        Log::info('Bills\\Create::store - Evento de salida para factura', [
+            'bill_id' => $bill->id,
+            'type_bill' => $typeBill,
+            'event' => $eventName,
+            'payload' => $payload,
+        ]);
+
+        $this->dispatchBrowserEvent($eventName, $payload);
     }
 
     public function validateElectronicBill(Bill $bill)

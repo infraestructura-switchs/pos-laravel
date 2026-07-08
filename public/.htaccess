@@ -20,3 +20,14 @@
     RewriteRule ^ index.php [L]
 </IfModule>
 
+<IfModule mod_headers.c>
+    SetEnvIfNoCase Origin "^https?://([a-z0-9-]+\.)?adminpos\.dokploy\.movete\.cloud(:[0-9]+)?$" ACAO=$0
+
+    <FilesMatch "\.(ttf|ttc|otf|eot|woff|woff2|css|js|mjs|map)$">
+        Header always set Access-Control-Allow-Origin "%{ACAO}e" env=ACAO
+        Header always set Access-Control-Allow-Methods "GET, OPTIONS"
+        Header always set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+        Header always set Vary "Origin"
+    </FilesMatch>
+</IfModule>
+

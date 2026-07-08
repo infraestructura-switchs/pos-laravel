@@ -14,6 +14,36 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class FactroElectronicBillService
 {
+    private static function buildQrImage(?string $qrString, int $size = 140): ?string
+    {
+        if (!$qrString) {
+            return null;
+        }
+
+        try {
+            return 'data:image/png;base64,' . base64_encode(
+                QrCode::format('png')->size($size)->generate($qrString)
+            );
+        } catch (\Throwable $e) {
+            Log::warning('No fue posible generar QR PNG (imagick). Se intenta SVG.', [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        try {
+            return 'data:image/svg+xml;base64,' . base64_encode(
+                QrCode::format('svg')->size($size)->generate($qrString)
+            );
+        } catch (\Throwable $e) {
+            Log::warning('No fue posible generar QR SVG. Se guarda URL del QR.', [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Ultimo fallback: conservar la URL que entrega el proveedor.
+        return $qrString;
+    }
+
 
     private static function prepareData(Bill $bill): array
     {
@@ -44,6 +74,7 @@ class FactroElectronicBillService
 
 
             $valorUnitarioBruto = $detail->price;
+            $unitMeasureCode = trim((string) (optional($detail->product->unitMeasure)->code ?? ''));
             if ($hasTax) {
                 $valorUnitarioBruto = $detail->price / (1 + $taxRate);
             }
@@ -95,7 +126,7 @@ class FactroElectronicBillService
                 'valorCodigoEstandar' => $detail->product->reference ?? '',
                 'descripcion' => $detail->name,
                 'unidades' => (float) $detail->amount,
-                'unidadMedida' => '94',
+                'unidadMedida' => $unitMeasureCode !== '' ? $unitMeasureCode : '94',
                 'valorUnitarioBruto' => round($valorUnitarioBruto, 2),
                 'valorBruto' => round($valorBruto, 2),
                 'cargosDescuentos' => [],
@@ -271,19 +302,11 @@ class FactroElectronicBillService
 
         $qr = $electronicBill['qr'] ?? '';
         $cufe = $electronicBill['cufeOrCude'] ?? '';
-
-        // Nueva forma: Generar QR en base64 con simple-qrcode
-        if($electronicBill['qr'] ) {
-            $qrString = $electronicBill['qr'];
-            $qrBase64 = 'data:image/png;base64,' . base64_encode(
-                QrCode::format('png')->size(140)
-                ->generate($qrString)
-            );
-        }
+        $qrImage = self::buildQrImage($qr);
 
         $billData = [
             'number' => $billNumberFull,
-            'qr_image' => $qrBase64,
+            'qr_image' => $qrImage,
             'cufe' => $cufe,
             'numbering_range' => $numberingRange ? json_encode($numberingRange) : null,
             'is_validated' => true,
@@ -334,17 +357,11 @@ class FactroElectronicBillService
         ]);
 
 
-        if($responseData['qr'] ?? null) {
-            $qrString = $responseData['qr'];
-            $qrBase64 = 'data:image/png;base64,' . base64_encode(
-                QrCode::format('png')->size(140)
-                ->generate($qrString)
-            );
-        }
+        $qrImage = self::buildQrImage($responseData['qr'] ?? null);
 
         $bill->electronicCreditNote()->create([
             'number' => $responseData['idFactura'],
-            'qr_image' => $qrBase64,
+            'qr_image' => $qrImage,
             'cude' => $responseData['cufeOCode'],
             'is_validated' => true,
         ]);

@@ -4,6 +4,8 @@
 
   <livewire:admin.company.bill />
 
+  <livewire:admin.company.invoice-provider-settings />
+
   @can('isEnabled', [App\Models\Module::class, 'ventas rapidas'])
     <livewire:admin.company.quick-sales />
     <livewire:admin.company.tables />

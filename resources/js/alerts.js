@@ -57,10 +57,10 @@ document.addEventListener('livewire:load', function () {
   })
 
   Livewire.on('alert', (msj) => {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Oops...',
-      text: msj,
+    Toast.fire({
+      icon: 'info',
+      title: msj,
+      customClass: 'no-print',
     })
   })
 })

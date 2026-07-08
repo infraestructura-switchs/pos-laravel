@@ -38,6 +38,9 @@
                     <th>
                         Impuestos(%)
                     </th>
+                    <th>
+                        U.M
+                    </th>
                     <th left>
                         Costo
                     </th>
@@ -81,6 +84,9 @@
                             @else
                                 -
                             @endif
+                        </td>
+                        <td>
+                            {{ $item->unitMeasure?->code ?? '-' }}
                         </td>
                         <td left>
                             @formatToCop($item->cost)

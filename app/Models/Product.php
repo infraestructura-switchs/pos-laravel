@@ -80,6 +80,11 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function unitMeasure(): BelongsTo
+    {
+        return $this->belongsTo(UnitMeasure::class);
+    }
+
     public function taxRates(): BelongsToMany
     {
         return $this->belongsToMany(TaxRate::class)->withPivot('value');
