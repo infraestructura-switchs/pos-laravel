@@ -101,8 +101,11 @@ class Create extends Component
 
         $customer = Customer::create($data);
 
-        $customerData = $customer->only(['id', 'no_identification', 'names', 'phone']);
-        
+        $customerData = array_merge(
+            $customer->only(['id', 'no_identification', 'dv', 'identification_document_id', 'names', 'phone']),
+            ['format_no_identification' => $customer->formatNoIdentification]
+        );
+
         // Disparar evento para actualizar cliente en las mesas
         $this->dispatchBrowserEvent('update-customer', $customerData);
         

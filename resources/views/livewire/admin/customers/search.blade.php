@@ -28,7 +28,7 @@
             <template x-for="(item, index) in filteredItems">
                 <ul 
                     :id="index" 
-                    x-html="`<span class='font-semibold inline-block'>${item.no_identification}</span> - ${item.names}`" 
+                    x-html="`<span class='font-semibold inline-block'>${item.format_no_identification}</span> - ${item.names}`" 
                     x-on:click="setItem(item)"
                     class="pl-6 pr-2 hover:bg-slate-100 cursor-pointer" 
                     :class="index === current ? 'bg-slate-100' : '' " 
@@ -74,9 +74,12 @@
                     this.$refs.contentItems.scrollTop = 0;
 
                     this.results = this.items.filter((element) => {
-                        search = this.search.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                        const search = this.search.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-                        if(element.no_identification.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(search)){
+                        const identification = (element.format_no_identification || element.no_identification)
+                            .toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+                        if (identification.includes(search)) {
                             return true;
                         }
 

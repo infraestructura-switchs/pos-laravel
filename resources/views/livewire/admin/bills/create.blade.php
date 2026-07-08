@@ -13,7 +13,7 @@
 
           <div class="border-b border-gray-300 min-w-0">
             <label class="text-sm font-bold">Nit/Cédula</label>
-            <h1 x-text="customer.no_identification" class="mt-2 h-5 text-sm truncate"></h1>
+            <h1 x-text="customer.format_no_identification || customer.no_identification" class="mt-2 h-5 text-sm truncate"></h1>
           </div>
           <div class="border-b border-gray-300 min-w-0">
             <label class="text-sm font-bold">Nombre</label>

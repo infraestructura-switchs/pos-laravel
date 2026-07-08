@@ -80,8 +80,15 @@ class Create extends Component
         $this->products = collect();
         
         // Obtener el cliente por defecto de forma segura
-        $defaultCustomer = Customer::select(['id', 'no_identification', 'names', 'phone'])->first();
-        $this->customerDefault = $defaultCustomer ? $defaultCustomer->toArray() : null;
+        $defaultCustomer = Customer::select(['id', 'no_identification', 'dv', 'identification_document_id', 'names', 'phone'])->first();
+        if ($defaultCustomer) {
+            $this->customerDefault = array_merge(
+                $defaultCustomer->toArray(),
+                ['format_no_identification' => $defaultCustomer->formatNoIdentification]
+            );
+        } else {
+            $this->customerDefault = null;
+        }
     }
 
     public function render()
@@ -175,8 +182,15 @@ class Create extends Component
         }
 
         $this->products = collect([]);
-        $defaultCustomer = Customer::select(['id', 'no_identification', 'names', 'phone'])->first();
-        $this->customerDefault = $defaultCustomer ? $defaultCustomer->toArray() : null;
+        $defaultCustomer = Customer::select(['id', 'no_identification', 'dv', 'identification_document_id', 'names', 'phone'])->first();
+        if ($defaultCustomer) {
+            $this->customerDefault = array_merge(
+                $defaultCustomer->toArray(),
+                ['format_no_identification' => $defaultCustomer->formatNoIdentification]
+            );
+        } else {
+            $this->customerDefault = null;
+        }
         $this->resetExcept('paymentMethods');
         $this->dispatchBrowserEvent('reset-properties-bill');
         $this->emitTo('admin.products.search', 'getProducts');
